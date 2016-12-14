@@ -1,3 +1,6 @@
+# Ignore 3dxp_data
+3dxp_data/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
