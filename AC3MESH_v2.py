@@ -13,7 +13,7 @@ X_SHAPE=1024
 Y_SHAPE=1024
 Z_SHAPE = (0,75)
 SPLINE_RESOLUTION = 1/16.
-OUT_FOLDER = '/home/harvard/2017/winter/3dxp/3dxp_data/'
+OUT_FOLDER = '/home/john/data/2017/winter/3dxp/3dxp_data/hohoho/'
 DATA = '/home/d/data/ac3x75/mojo/ids/tiles/w=00000000/'
 
 def threshold(arr, val):
