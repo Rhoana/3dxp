@@ -17,26 +17,19 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot import imshow
 get_ipython().magic(u'matplotlib inline')
 
-
-# In[7]:
-
+NEURON_ID = 3036
+X_SHAPE=1024
+Y_SHAPE=1024
+Z_SHAPE = (0,75)
+SPLINE_RESOLUTION = 1/16.
+OUT_FOLDER = '/home/harvard/2017/winter/3dxp/3dxp_data/'
 DATA = '/home/d/data/ac3x75/mojo/ids/tiles/w=00000000/'
-
-
-# In[ ]:
-
-
-
-
-# In[8]:
 
 def threshold(arr, val):
     out = np.zeros((arr.shape[0], arr.shape[1]), dtype=np.bool)
     out[arr == val] = 1
     return out
 
-
-# In[9]:
 
 def store_mesh(arr, filename):
     
@@ -60,19 +53,7 @@ def store_mesh(arr, filename):
     return m
 
 
-# In[10]:
-
-NEURON_ID = 3036
-# X_SHAPE = 8192
-# Y_SHAPE = 8192
-X_SHAPE=1024
-Y_SHAPE=1024
-Z_SHAPE = (0,75)
-SPLINE_RESOLUTION = 1/16.
-
 thresholded_3d = np.zeros((Z_SHAPE[1], Y_SHAPE, X_SHAPE), dtype=np.bool)
-# threed = np.zeros((Z_SHAPE[1], Y_SHAPE, X_SHAPE), dtype=np.uint64)
-
 
 for SLICE in range(Z_SHAPE[0], Z_SHAPE[1]):
 
@@ -185,27 +166,6 @@ volume = upsampled.swapaxes(0,1)
 meshed = Mesher(volume).edge_vol
 
 
-# In[ ]:
-
-# from numpy import random, meshgrid, arange
-# from scipy.ndimage import map_coordinates
-
-# (nx, ny, nz) = (300, 300, 750)
-# A = upsampled[:,0:300,0:300].swapaxes(0,2)
-
-# random floating-point indices in [0, nz-1]
-# Z = random.rand(nx, ny)*(nz-1)
-
-# regular integer indices of shape (nx,ny)
-# X, Y = meshgrid(arange(nx), arange(ny), indexing='ij')
-
-# coords = (X, Y, Z) # X, Y, and Z are of shape (nx, ny)
-
-# len(map_coordinates(A, coords, order=1, cval=-999.))
-
-
-# In[13]:
-
 all_borders = 0
 
 for z in range(meshed.shape[0]):
@@ -216,27 +176,5 @@ plt.figure(figsize=(10,10))
 imshow(all_borders)
 
 
-# In[ ]:
-
-# m1 = store_mesh(thresholded_3d, '/home/d/data/neurons/'+str(NEURON_ID)+'.stl')
-
-
-# In[ ]:
-
-m1 = store_mesh(meshed, '/home/harvard/2017/winter/3dxp/3dxp_data/'+str(NEURON_ID)+'_smooth.stl')
-
-
-# In[ ]:
-
-from scipy.interpolate import griddata
-
-
-# In[ ]:
-
-grid_z = griddate((thresholded_3d[0], thresholded_3d[1], thresholded_3d[2], thresholded_3d[3]), )
-
-
-# In[ ]:
-
-
+m1 = store_mesh(meshed, OUT_FOLDER+str(NEURON_ID)+'_smooth.stl')
 
