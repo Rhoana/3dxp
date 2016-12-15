@@ -2,11 +2,12 @@
 
 import os
 import h5py
-from skimage import measure
+import math
+import scipy
+import numpy as np
 from stl import mesh
 import mahotas as mh
-import numpy as np
-
+from skimage import measure
 
 NEURON_ID = 3036
 X_SHAPE=1024
@@ -65,11 +66,6 @@ for SLICE in range(Z_SHAPE[0], Z_SHAPE[1]):
     # now threshold this bad boy
     thresholded_slice = threshold(img, NEURON_ID)
     thresholded_3d[SLICE] = thresholded_slice
-
-
-import math
-import scipy
-from skimage import measure
 
 def relabel(array):
     return measure.label(array+1).astype(np.uint64)-1
@@ -136,11 +132,5 @@ class Mesher:
 upsampled = thresholded_3d.repeat(10, axis=0)
 volume = upsampled.swapaxes(0,1)
 meshed = Mesher(volume).edge_vol
-
-all_borders = 0
-
-for z in range(meshed.shape[0]):
-
-    all_borders += meshed[z]
 
 m1 = store_mesh(meshed, OUT_FOLDER+str(NEURON_ID)+'_smooth.stl')
