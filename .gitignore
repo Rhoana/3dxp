@@ -1,5 +1,6 @@
 # Ignore 3dxp_data
 3dxp_data/
+*.swp
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
