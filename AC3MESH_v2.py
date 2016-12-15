@@ -1,21 +1,12 @@
-
-# coding: utf-8
-
-# In[6]:
+#!/usr/bin/python
 
 import os
 import h5py
+from skimage import measure
+from stl import mesh
 import mahotas as mh
 import numpy as np
 
-from skimage import measure
-from stl import mesh
-
-
-
-import matplotlib.pyplot as plt
-from matplotlib.pyplot import imshow
-get_ipython().magic(u'matplotlib inline')
 
 NEURON_ID = 3036
 X_SHAPE=1024
@@ -38,7 +29,6 @@ def store_mesh(arr, filename):
     
     mesh_data = np.zeros(applied_verts.shape[0], dtype=mesh.Mesh.dtype)
     
-    print 'Converting', applied_verts.shape[0], 'vertices'
     for i, v in enumerate(applied_verts):
         mesh_data[i][1][0] = v[0]
         mesh_data[i][1][1] = v[1]
@@ -48,7 +38,6 @@ def store_mesh(arr, filename):
     with open(filename, 'w') as f:
         m.save(filename, f)
         
-    print 'Saved.'
     
     return m
 
@@ -76,13 +65,7 @@ for SLICE in range(Z_SHAPE[0], Z_SHAPE[1]):
     # now threshold this bad boy
     thresholded_slice = threshold(img, NEURON_ID)
     thresholded_3d[SLICE] = thresholded_slice
-#     threed[SLICE] = img
-    
-    print 'loaded', SLICE
-            
 
-
-# In[11]:
 
 import math
 import scipy
@@ -95,17 +78,13 @@ def borderer(relabeled):
     big_spot = np.zeros(relabeled.shape, dtype=np.bool)
     return mh.labeled.borders(big_spot, edge)
 
-def ploty(fun,*args,**kwargs):
-    ax = plt.figure(figsize=(1,1)).add_subplot(111)
-    getattr(ax, fun)(*args,**kwargs)
-
 class Edger:
     def __init__(self,spots):
         
         # Generate edge_image output and edges input 
         self.edge_image = np.zeros(spots.shape,dtype=int)
         self.max_shape = np.array(self.edge_image.shape)-1
-        self.edges = measure.find_contours(spots, 0) 
+        self.edges = measure.find_contours(spots, 0)
         self.edges.sort(self.sortAll)
         self.runAll()
         
@@ -135,13 +114,11 @@ class Edger:
         return 2*int((da-db < 0).all())-1
         
     def runAll(self):
-#         ploty('plot',*zip(*self.edges[0]))
         self.run(self.edges[0])
         return
         for edge in self.edges:
-            ploty('plot',*zip(*edge))
             self.run(edge)
-            
+
 class Mesher:
     def __init__(self,volume):
         self.volume = volume
@@ -149,32 +126,21 @@ class Mesher:
         self.edge_vol = np.zeros(volume.shape)
         self.runAll()
     def run(self,k):
-#         ploty('imshow',self.volume[k])
         self.edge_vol[k] = Edger(self.volume[k]).edge_image
         print 'k ',k
     def runAll(self):
-#         self.run(self.slices[146])
-#         return
         for sliced in self.slices:
             self.run(sliced)
 
 
-# In[12]:
-
 upsampled = thresholded_3d.repeat(10, axis=0)
 volume = upsampled.swapaxes(0,1)
 meshed = Mesher(volume).edge_vol
-
 
 all_borders = 0
 
 for z in range(meshed.shape[0]):
 
     all_borders += meshed[z]
-    
-plt.figure(figsize=(10,10))
-imshow(all_borders)
-
 
 m1 = store_mesh(meshed, OUT_FOLDER+str(NEURON_ID)+'_smooth.stl')
-
