@@ -1,6 +1,7 @@
 #!/home/john/venv/mesh/bin/python
 
 import os
+import sys
 import h5py
 import math
 import scipy
@@ -9,62 +10,36 @@ from stl import mesh
 import mahotas as mh
 from skimage import measure
 
-NEURON_ID = 3036
-X_SHAPE=5664
-Y_SHAPE=5664
-Z_SHAPE = (0,700)
+MAX_Z = 10
+NEURON_ID = 18915
+NEURON_ID = sys.argv[1]
 SPLINE_RESOLUTION = 1/16.
 OUT_FOLDER = '/home/john/2017/winter/3dxp/3dxp_data/hohoho/'
 DATA = '/home/john/2017/jan/ecs20/dec/segmentation.h5'
-FMT = 'h5'
-#X_SHAPE=1024
-#Y_SHAPE=1024
-#Z_SHAPE = (0,75)
-#OUT_FOLDER = '/home/john/data/2017/winter/3dxp/3dxp_data/hohoho/3036'
-#DATA = '/home/d/data/ac3x75/mojo/ids/tiles/w=00000000/'
+
 
 def threshold(arr, val):
-    out = np.zeros((arr.shape[0], arr.shape[1]), dtype=np.bool)
+    out = np.zeros(arr.shape, dtype=np.bool)
     out[arr == val] = 1
     return out
 
-
-thresholded_3d = np.zeros((Z_SHAPE[1], Y_SHAPE, X_SHAPE), dtype=np.bool)
-
-for SLICE in range(Z_SHAPE[0], Z_SHAPE[1]):
-
-    if FMT == 'mojo':
-
-        img = np.zeros((Y_SHAPE,X_SHAPE), dtype=np.uint64)
-        tiles = sorted(os.listdir(os.path.join(DATA, 'z='+str(SLICE).zfill(8))))
-
-
-        for t in tiles:
-
-            if t.startswith('.'):
-                continue
-
-            filepath = os.path.join(DATA, 'z='+str(SLICE).zfill(8), t)
-            y = int(t.split(',')[0].split('=')[1])
-            x = int(t.split(',')[1].split('=')[1].split('.')[0])
-            with h5py.File(filepath, 'r') as f:
-                data = f.get('IdMap')
-                img[y*512:y*512+512, x*512:x*512+512] = data
-
-    else:
-        with h5py.File(DATA,'r') as f:
-            key0 = f.keys()[0]
-            img = f[key0][:,:,:]
-
-    # now threshold this bad boy
-    thresholded_slice = threshold(img, NEURON_ID)
-    thresholded_3d[SLICE] = thresholded_slice
+with h5py.File(DATA,'r') as f:
+    upsamp = 10
+    volstack = f[f.keys()[0]]
+    z,y,x = volstack.shape
+    z = min(z,MAX_Z)
+    thresholded_3d = np.zeros([upsamp*z,y,x], dtype=np.bool)
+    #img = f[key0][:,:,:]
+    for SLICE in range(z):
+        print SLICE , '/', z
+        za,zb = [upsamp*i for i in [SLICE,SLICE+1]]
+        thresholded_3d[za:zb] = threshold(volstack[SLICE], NEURON_ID)
 
 class Edger:
     def __init__(self,spots):
 
         # Generate edge_image output and edges input 
-        self.edge_image = np.zeros(spots.shape,dtype=int)
+        self.edge_image = np.zeros(spots.shape,dtype=np.bool)
         self.max_shape = np.array(self.edge_image.shape)-1
         self.edges = measure.find_contours(spots, 0)
         self.edges.sort(self.sortAll)
@@ -100,15 +75,17 @@ class Edger:
         return 2*int((da-db < 0).all())-1
 
     def runAll(self,old_interp):
-        new_interp = self.run(self.edges[0], old_interp)
-        return new_interp
+        if len(self.edges):
+            new_interp = self.run(self.edges[0], old_interp)
+            return new_interp
+        return old_interp
 
 class Mesher:
     old_interp = []
     def __init__(self,volume):
         self.volume = volume
         self.slices = range(self.volume.shape[0])
-        self.edge_vol = np.zeros(volume.shape)
+        self.edge_vol = np.zeros(volume.shape, dtype=np.bool)
         self.runAll()
     def run(self,k):
         edgy = Edger(self.volume[k])
@@ -137,10 +114,8 @@ def store_mesh(arr, filename):
 
     return m
 
-upsampled = thresholded_3d.repeat(10, axis=0)
-volume = upsampled.swapaxes(0,1)
+volume = thresholded_3d.swapaxes(0,1)
 meshed = Mesher(volume).edge_vol
+print 'check one'
 
 m1 = store_mesh(meshed, OUT_FOLDER+str(NEURON_ID)+'_smooth1.stl')
-
-
