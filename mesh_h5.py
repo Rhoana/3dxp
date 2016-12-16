@@ -1,5 +1,3 @@
-#!/home/john/venv/mesh/bin/python
-
 import os
 import sys
 import h5py
@@ -10,30 +8,18 @@ from stl import mesh
 import mahotas as mh
 from skimage import measure
 
-MAX_Z = 10
+MAX_Z = 700
 NEURON_ID = 18915
 NEURON_ID = sys.argv[1]
 SPLINE_RESOLUTION = 1/16.
-OUT_FOLDER = '/home/john/2017/winter/3dxp/3dxp_data/hohoho/'
-DATA = '/home/john/2017/jan/ecs20/dec/segmentation.h5'
+OUT_FOLDER = sys.argv[2]
+DATA = '/n/coxfs01/leek/results/ECS_iarpa_20u_cube/segmentation.h5'
 
 
 def threshold(arr, val):
     out = np.zeros(arr.shape, dtype=np.bool)
     out[arr == val] = 1
     return out
-
-with h5py.File(DATA,'r') as f:
-    upsamp = 10
-    volstack = f[f.keys()[0]]
-    z,y,x = volstack.shape
-    z = min(z,MAX_Z)
-    thresholded_3d = np.zeros([upsamp*z,y,x], dtype=np.bool)
-    #img = f[key0][:,:,:]
-    for SLICE in range(z):
-        print SLICE , '/', z
-        za,zb = [upsamp*i for i in [SLICE,SLICE+1]]
-        thresholded_3d[za:zb] = threshold(volstack[SLICE], NEURON_ID)
 
 class Edger:
     def __init__(self,spots):
@@ -114,8 +100,31 @@ def store_mesh(arr, filename):
 
     return m
 
+#
+#
+#
+
+
+
+with h5py.File(DATA,'r') as f:
+    upsamp = 10
+    volstack = f[f.keys()[0]]
+    z,y,x = volstack.shape
+    z = min(z,MAX_Z)
+    thresholded_3d = np.zeros([upsamp*z,y,x], dtype=np.bool)
+    #img = f[key0][:,:,:]
+    for SLICE in range(z):
+        print SLICE , '/', z
+        za,zb = [upsamp*i for i in [SLICE,SLICE+1]]
+        thresholded_3d[za:zb] = threshold(volstack[SLICE], NEURON_ID)
+
+
+
 volume = thresholded_3d.swapaxes(0,1)
 meshed = Mesher(volume).edge_vol
-print 'check one'
 
+
+print 'storing mesh..'
 m1 = store_mesh(meshed, OUT_FOLDER+str(NEURON_ID)+'_smooth1.stl')
+
+
