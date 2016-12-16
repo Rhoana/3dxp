@@ -47,13 +47,6 @@ for SLICE in range(Z_SHAPE[0], Z_SHAPE[1]):
     thresholded_slice = threshold(img, NEURON_ID)
     thresholded_3d[SLICE] = thresholded_slice
 
-def relabel(array):
-    return measure.label(array+1).astype(np.uint64)-1
-
-def borderer(relabeled):
-    big_spot = np.zeros(relabeled.shape, dtype=np.bool)
-    return mh.labeled.borders(big_spot, edge)
-
 class Edger:
     def __init__(self,spots):
 
