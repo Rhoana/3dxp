@@ -14,7 +14,7 @@ X_SHAPE=1024
 Y_SHAPE=1024
 Z_SHAPE = (0,75)
 SPLINE_RESOLUTION = 1/16.
-OUT_FOLDER = '/home/john/data/2017/winter/3dxp/3dxp_data/hohoho/'
+OUT_FOLDER = '/home/john/data/2017/winter/3dxp/3dxp_data/hohoho/3036'
 DATA = '/home/d/data/ac3x75/mojo/ids/tiles/w=00000000/'
 
 def threshold(arr, val):
@@ -55,9 +55,8 @@ class Edger:
         self.max_shape = np.array(self.edge_image.shape)-1
         self.edges = measure.find_contours(spots, 0)
         self.edges.sort(self.sortAll)
-        self.runAll()
 
-    def run(self, edgen):
+    def run(self, edgen,old_interp):
         y,x = zip(*edgen)
         # get the cumulative distance along the contour
         dist = np.sqrt((np.diff(x))**2 + (np.diff(y))**2).cumsum()[-1]
@@ -75,25 +74,33 @@ class Edger:
         for j in range(1, len(interp)):
             mh.polygon.line(interp[j-1], interp[j], self.edge_image)
 
+        if len(old_interp):
+            # Option 1
+            polygo = old_interp[::-1]+interp
+            mh.polygon.fill_polygon(polygo,self.edge_image)
+
+        return interp
+
     def sortAll(self,a,b):
         xylists = [zip(*a),zip(*b)]
         da,db = [np.array([max(v)-min(v) for v in l]) for l in xylists]
         return 2*int((da-db < 0).all())-1
 
-    def runAll(self):
-        self.run(self.edges[0])
-        return
-        for edge in self.edges:
-            self.run(edge)
+    def runAll(self,old_interp):
+        old_interp = self.run(self.edges[0], old_interp)
+        return new_interp
 
 class Mesher:
+    old_interp = []
     def __init__(self,volume):
         self.volume = volume
         self.slices = range(self.volume.shape[0])
         self.edge_vol = np.zeros(volume.shape)
         self.runAll()
     def run(self,k):
-        self.edge_vol[k] = Edger(self.volume[k]).edge_image
+        edgy = Edger(self.volume[k])
+        self.old_interp = edgy.runAll(self.old_interp)
+        self.edge_vol[k] = edgy.edge_image
         print 'k ',k
     def runAll(self):
         for sliced in self.slices:
@@ -121,6 +128,6 @@ upsampled = thresholded_3d.repeat(10, axis=0)
 volume = upsampled.swapaxes(0,1)
 meshed = Mesher(volume).edge_vol
 
-m1 = store_mesh(meshed, OUT_FOLDER+str(NEURON_ID)+'_smooth.stl')
+m1 = store_mesh(meshed, OUT_FOLDER+str(NEURON_ID)+'_smooth1.stl')
 
 
