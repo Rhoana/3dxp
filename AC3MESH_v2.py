@@ -23,39 +23,19 @@ def threshold(arr, val):
     return out
 
 
-def store_mesh(arr, filename):
-    
-    verts, faces = measure.marching_cubes(arr, 0, spacing=(1.,1.,1.),gradient_direction='ascent')
-    applied_verts = verts[faces]
-    
-    mesh_data = np.zeros(applied_verts.shape[0], dtype=mesh.Mesh.dtype)
-    
-    for i, v in enumerate(applied_verts):
-        mesh_data[i][1][0] = v[0]
-        mesh_data[i][1][1] = v[1]
-        mesh_data[i][1][2] = v[2]
-        
-    m = mesh.Mesh(mesh_data)
-    with open(filename, 'w') as f:
-        m.save(filename, f)
-        
-    
-    return m
-
-
 thresholded_3d = np.zeros((Z_SHAPE[1], Y_SHAPE, X_SHAPE), dtype=np.bool)
 
 for SLICE in range(Z_SHAPE[0], Z_SHAPE[1]):
 
     img = np.zeros((Y_SHAPE,X_SHAPE), dtype=np.uint64)
     tiles = sorted(os.listdir(os.path.join(DATA, 'z='+str(SLICE).zfill(8))))
-    
-    
+
+
     for t in tiles:
-        
+
         if t.startswith('.'):
             continue
-        
+
         filepath = os.path.join(DATA, 'z='+str(SLICE).zfill(8), t)
         y = int(t.split(',')[0].split('=')[1])
         x = int(t.split(',')[1].split('=')[1].split('.')[0])
@@ -76,14 +56,14 @@ def borderer(relabeled):
 
 class Edger:
     def __init__(self,spots):
-        
+
         # Generate edge_image output and edges input 
         self.edge_image = np.zeros(spots.shape,dtype=int)
         self.max_shape = np.array(self.edge_image.shape)-1
         self.edges = measure.find_contours(spots, 0)
         self.edges.sort(self.sortAll)
         self.runAll()
-        
+
     def run(self, edgen):
         y,x = zip(*edgen)
         # get the cumulative distance along the contour
@@ -98,9 +78,7 @@ class Edger:
         interp_x, interp_y = scipy.interpolate.splev(sampler, spline)
         iy,ix = [[int(math.floor(ii)) for ii in i] for i in [interp_x,interp_y]]
         interp = [np.clip(point,[0,0],self.max_shape) for point in zip(ix,iy)]
-        
-        print 'fit ', [max(iy), max(ix)], ' in ', self.edge_image.shape
-        
+
         for j in range(1, len(interp)):
             mh.polygon.line(interp[j-1], interp[j], self.edge_image)
 
@@ -108,7 +86,7 @@ class Edger:
         xylists = [zip(*a),zip(*b)]
         da,db = [np.array([max(v)-min(v) for v in l]) for l in xylists]
         return 2*int((da-db < 0).all())-1
-        
+
     def runAll(self):
         self.run(self.edges[0])
         return
@@ -128,9 +106,28 @@ class Mesher:
         for sliced in self.slices:
             self.run(sliced)
 
+def store_mesh(arr, filename):
+
+    verts, faces = measure.marching_cubes(arr, 0, spacing=(1.,1.,1.),gradient_direction='ascent')
+    applied_verts = verts[faces]
+
+    mesh_data = np.zeros(applied_verts.shape[0], dtype=mesh.Mesh.dtype)
+
+    for i, v in enumerate(applied_verts):
+        mesh_data[i][1][0] = v[0]
+        mesh_data[i][1][1] = v[1]
+        mesh_data[i][1][2] = v[2]
+
+    m = mesh.Mesh(mesh_data)
+    with open(filename, 'w') as f:
+        m.save(filename, f)
+
+    return m
 
 upsampled = thresholded_3d.repeat(10, axis=0)
 volume = upsampled.swapaxes(0,1)
 meshed = Mesher(volume).edge_vol
 
 m1 = store_mesh(meshed, OUT_FOLDER+str(NEURON_ID)+'_smooth.stl')
+
+
