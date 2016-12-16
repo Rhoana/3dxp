@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/home/john/venv/mesh/bin/python
 
 import os
 import h5py
@@ -10,12 +10,18 @@ import mahotas as mh
 from skimage import measure
 
 NEURON_ID = 3036
-X_SHAPE=1024
-Y_SHAPE=1024
-Z_SHAPE = (0,75)
+X_SHAPE=5664
+Y_SHAPE=5664
+Z_SHAPE = (0,700)
 SPLINE_RESOLUTION = 1/16.
-OUT_FOLDER = '/home/john/data/2017/winter/3dxp/3dxp_data/hohoho/3036'
-DATA = '/home/d/data/ac3x75/mojo/ids/tiles/w=00000000/'
+OUT_FOLDER = '/home/john/2017/winter/3dxp/3dxp_data/hohoho/'
+DATA = '/home/john/2017/jan/ecs20/dec/segmentation.h5'
+FMT = 'h5'
+#X_SHAPE=1024
+#Y_SHAPE=1024
+#Z_SHAPE = (0,75)
+#OUT_FOLDER = '/home/john/data/2017/winter/3dxp/3dxp_data/hohoho/3036'
+#DATA = '/home/d/data/ac3x75/mojo/ids/tiles/w=00000000/'
 
 def threshold(arr, val):
     out = np.zeros((arr.shape[0], arr.shape[1]), dtype=np.bool)
@@ -27,21 +33,28 @@ thresholded_3d = np.zeros((Z_SHAPE[1], Y_SHAPE, X_SHAPE), dtype=np.bool)
 
 for SLICE in range(Z_SHAPE[0], Z_SHAPE[1]):
 
-    img = np.zeros((Y_SHAPE,X_SHAPE), dtype=np.uint64)
-    tiles = sorted(os.listdir(os.path.join(DATA, 'z='+str(SLICE).zfill(8))))
+    if FMT == 'mojo':
+
+        img = np.zeros((Y_SHAPE,X_SHAPE), dtype=np.uint64)
+        tiles = sorted(os.listdir(os.path.join(DATA, 'z='+str(SLICE).zfill(8))))
 
 
-    for t in tiles:
+        for t in tiles:
 
-        if t.startswith('.'):
-            continue
+            if t.startswith('.'):
+                continue
 
-        filepath = os.path.join(DATA, 'z='+str(SLICE).zfill(8), t)
-        y = int(t.split(',')[0].split('=')[1])
-        x = int(t.split(',')[1].split('=')[1].split('.')[0])
-        with h5py.File(filepath, 'r') as f:
-            data = f.get('IdMap')
-            img[y*512:y*512+512, x*512:x*512+512] = data
+            filepath = os.path.join(DATA, 'z='+str(SLICE).zfill(8), t)
+            y = int(t.split(',')[0].split('=')[1])
+            x = int(t.split(',')[1].split('=')[1].split('.')[0])
+            with h5py.File(filepath, 'r') as f:
+                data = f.get('IdMap')
+                img[y*512:y*512+512, x*512:x*512+512] = data
+
+    else:
+        with h5py.File(DATA,'r') as f:
+            key0 = f.keys()[0]
+            img = f[key0][:,:,:]
 
     # now threshold this bad boy
     thresholded_slice = threshold(img, NEURON_ID)
@@ -87,7 +100,7 @@ class Edger:
         return 2*int((da-db < 0).all())-1
 
     def runAll(self,old_interp):
-        old_interp = self.run(self.edges[0], old_interp)
+        new_interp = self.run(self.edges[0], old_interp)
         return new_interp
 
 class Mesher:
