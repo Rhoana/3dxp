@@ -13,7 +13,7 @@ NEURON_ID = 18915
 SPLINE_RESOLUTION = 1/16.
 OUT_FOLDER = sys.argv[2]
 NEURON_ID = int(sys.argv[1])
-DATA = '/home/harvard/2017/data/bf/jan/ecs20/first/segmentation.h5'
+DATA = '/home/john/2017/data/bf/jan/ecs20/first/segmentation.h5'
 
 
 def threshold(arr, val):
@@ -125,8 +125,8 @@ with h5py.File(DATA,'r') as f:
             extent = np.argwhere(thresholded)
             box_tl = np.c_[extent.min(0),box_tl].min(0)
             box_br = np.c_[extent.max(0),box_br].max(0)
-            box_dn = SLICE if box_dn < 0 else box_dn
-            box_up = SLICE
+            box_dn = zb if box_dn < 0 else box_dn
+            box_up = za
 
 print (box_dn, box_up)
 zo,ze = [box_dn,box_up]
