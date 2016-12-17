@@ -13,7 +13,7 @@ NEURON_ID = 18915
 SPLINE_RESOLUTION = 1/16.
 OUT_FOLDER = sys.argv[2]
 NEURON_ID = int(sys.argv[1])
-DATA = '/home/john/2017/data/bf/jan/ecs20/first/segmentation.h5'
+DATA = '/n/coxfs01/leek/results/ECS_iarpa_20u_cube/segmentation.h5'
 
 
 def threshold(arr, val):
