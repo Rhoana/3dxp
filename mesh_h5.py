@@ -123,10 +123,10 @@ with h5py.File(DATA,'r') as f:
 
         if thresholded.any():
             extent = np.argwhere(thresholded)
-            box_tl = np.c_[extent.min(0),box_tl].min(0)
-            box_br = np.c_[extent.max(0),box_br].max(0)
-            box_dn = zb if box_dn < 0 else box_dn
-            box_up = za
+            box_tl = np.c_[extent.min(0),box_tl].min(1)
+            box_br = np.c_[extent.max(0),box_br].max(1)
+            box_dn = za if box_dn < 0 else box_dn
+            box_up = zb
 
 print (box_dn, box_up)
 zo,ze = [box_dn,box_up]
