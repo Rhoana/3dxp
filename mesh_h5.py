@@ -8,13 +8,14 @@ from stl import mesh
 import mahotas as mh
 from skimage import measure
 
-MAX_Z = 10
+MAX_Z = 100
+MARGIN = 2
 NEURON_ID = 18915
 SPLINE_RESOLUTION = 1/16.
 OUT_FOLDER = sys.argv[2]
 NEURON_ID = int(sys.argv[1])
 DATA = '/n/coxfs01/leek/results/ECS_iarpa_20u_cube/segmentation.h5'
-
+DATA = '/home/harvard/2017/data/bf/1017/synapse.h5'
 
 def threshold(arr, val):
     out = np.ones(arr.shape, dtype=arr.dtype)*val
@@ -29,7 +30,7 @@ class Edger:
         self.edges = measure.find_contours(spots, 0)
         self.edges.sort(self.sortAll)
 
-    def run(self, edgen,old_interp):
+    def run(self, edgen):
         if len(edgen) <= 4:
             return []
         y,x = zip(*edgen)
@@ -45,42 +46,32 @@ class Edger:
         iy,ix = [[int(math.floor(ii)) for ii in i] for i in [interp_x,interp_y]]
         interp = [np.clip(point,[0,0],self.max_shape) for point in zip(ix,iy)]
 
-        for j in range(1, len(interp)):
-            mh.polygon.line(interp[j-1], interp[j], self.edge_image)
-
-        if len(old_interp):
-            # Option 1
-            polygo = old_interp[::-1]+interp
-            mh.polygon.fill_polygon(polygo,self.edge_image)
-
-        return interp
+        mh.polygon.fill_polygon(interp,self.edge_image)
 
     def sortAll(self,a,b):
         xylists = [zip(*a),zip(*b)]
         da,db = [np.array([max(v)-min(v) for v in l]) for l in xylists]
         return 2*int((da-db < 0).all())-1
 
-    def runAll(self,old_interp):
+    def runAll(self):
         if len(self.edges):
-            new_interp = self.run(self.edges[0], old_interp)
-            return new_interp
-        return old_interp
+            self.run(self.edges[0])
+        return self
 
 class Mesher:
-    old_interp = []
     def __init__(self,volume):
         self.volume = volume
         self.slices = range(self.volume.shape[0])
         self.edge_vol = np.zeros(volume.shape, dtype=np.bool)
         self.runAll()
     def run(self,k):
-        edgy = Edger(self.volume[k])
-        self.old_interp = edgy.runAll(self.old_interp)
+        edgy = Edger(self.volume[k]).runAll()
         self.edge_vol[k] = edgy.edge_image
         print ('k ',k)
     def runAll(self):
         for sliced in self.slices:
             self.run(sliced)
+        return self
 
 def store_mesh(arr, filename):
 
@@ -123,10 +114,10 @@ with h5py.File(DATA,'r') as f:
 
         if thresholded.any():
             extent = np.argwhere(thresholded)
-            box_tl = np.c_[extent.min(0),box_tl].min(0)
-            box_br = np.c_[extent.max(0),box_br].max(0)
-            box_dn = zb if box_dn < 0 else box_dn
-            box_up = za
+            box_tl = np.c_[extent.min(0),box_tl].min(1)
+            box_br = np.c_[extent.max(0),box_br].max(1)
+            box_dn = za if box_dn < 0 else box_dn
+            box_up = zb
 
 print (box_dn, box_up)
 zo,ze = [box_dn,box_up]
@@ -135,9 +126,13 @@ ye,xe = box_br
 
 print ('shape at ',zo,yo,xo)
 volume = thresholded_3d[zo:ze, yo:ye, xo:xe].swapaxes(0,1)
+vy,vz,vx = volume.shape
+z_margin = np.zeros([vy,MARGIN,vx], dtype=bool)
+volume = np.concatenate((z_margin,volume,z_margin),axis=1)
+x_margin = np.zeros([vy,vz+2*MARGIN,MARGIN], dtype=bool)
+volume = np.concatenate((x_margin,volume,x_margin),axis=2)
+
 meshed = Mesher(volume).edge_vol
-
-
 print ('storing mesh..')
 m1 = store_mesh(meshed, OUT_FOLDER+str(NEURON_ID)+'_smooth1.stl')
 
