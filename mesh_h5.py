@@ -8,18 +8,17 @@ from stl import mesh
 import mahotas as mh
 from skimage import measure
 
-MAX_Z = 700
+MAX_Z = 10
 NEURON_ID = 18915
-NEURON_ID = sys.argv[1]
 SPLINE_RESOLUTION = 1/16.
 OUT_FOLDER = sys.argv[2]
-DATA = '/n/coxfs01/leek/results/ECS_iarpa_20u_cube/segmentation.h5'
+NEURON_ID = int(sys.argv[1])
+DATA = '/home/harvard/2017/data/bf/jan/ecs20/first/segmentation.h5'
 
 
 def threshold(arr, val):
-    out = np.zeros(arr.shape, dtype=np.bool)
-    out[arr == val] = 1
-    return out
+    out = np.ones(arr.shape, dtype=arr.dtype)*val
+    return np.equal(arr,out)
 
 class Edger:
     def __init__(self,spots):
@@ -31,13 +30,14 @@ class Edger:
         self.edges.sort(self.sortAll)
 
     def run(self, edgen,old_interp):
+        if len(edgen) <= 4:
+            return []
         y,x = zip(*edgen)
         # get the cumulative distance along the contour
         dist = np.sqrt((np.diff(x))**2 + (np.diff(y))**2).cumsum()[-1]
         # build a spline representation of the contour
         spline, u = scipy.interpolate.splprep([x, y])
-        res =  int(SPLINE_RESOLUTION*dist)
-        print 'res', res
+        res =  int(math.ceil(SPLINE_RESOLUTION*dist))
         sampler = np.linspace(0, u[-1], res)
 
         # resample it at smaller distance intervals
@@ -77,7 +77,7 @@ class Mesher:
         edgy = Edger(self.volume[k])
         self.old_interp = edgy.runAll(self.old_interp)
         self.edge_vol[k] = edgy.edge_image
-        print 'k ',k
+        print ('k ',k)
     def runAll(self):
         for sliced in self.slices:
             self.run(sliced)
@@ -105,26 +105,40 @@ def store_mesh(arr, filename):
 #
 
 
-
 with h5py.File(DATA,'r') as f:
     upsamp = 10
     volstack = f[f.keys()[0]]
     z,y,x = volstack.shape
     z = min(z,MAX_Z)
+
     thresholded_3d = np.zeros([upsamp*z,y,x], dtype=np.bool)
-    #img = f[key0][:,:,:]
+    box_tl,box_br = [[y,x],[0,0]]
+    box_up,box_dn = [-1,-1]
+
     for SLICE in range(z):
-        print SLICE , '/', z
+        print (SLICE , '/', z)
         za,zb = [upsamp*i for i in [SLICE,SLICE+1]]
-        thresholded_3d[za:zb] = threshold(volstack[SLICE], NEURON_ID)
+        thresholded = threshold(volstack[SLICE], NEURON_ID)
+        thresholded_3d[za:zb] = thresholded
 
+        if thresholded.any():
+            extent = np.argwhere(thresholded)
+            box_tl = np.c_[extent.min(0),box_tl].min(0)
+            box_br = np.c_[extent.max(0),box_br].max(0)
+            box_dn = SLICE if box_dn < 0 else box_dn
+            box_up = SLICE
 
+print (box_dn, box_up)
+zo,ze = [box_dn,box_up]
+yo,xo = box_tl
+ye,xe = box_br
 
-volume = thresholded_3d.swapaxes(0,1)
+print ('shape at ',zo,yo,xo)
+volume = thresholded_3d[zo:ze, yo:ye, xo:xe].swapaxes(0,1)
 meshed = Mesher(volume).edge_vol
 
 
-print 'storing mesh..'
+print ('storing mesh..')
 m1 = store_mesh(meshed, OUT_FOLDER+str(NEURON_ID)+'_smooth1.stl')
 
 
