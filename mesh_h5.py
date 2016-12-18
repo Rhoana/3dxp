@@ -1,19 +1,14 @@
 import os
 import sys
 import h5py
-import math
-import scipy
 import numpy as np
-from stl import mesh
-import mahotas as mh
-from skimage import measure
+from hd2stl import Mesher
 
 #import matplotlib.pyplot as plt
 
 MAX_Z = 100
 MARGIN = 2
 NEURON_ID = 18915
-SPLINE_RESOLUTION = 1/16.
 OUT_FOLDER = sys.argv[2]
 NEURON_ID = int(sys.argv[1])
 OUTNAME = os.path.join(OUT_FOLDER,str(NEURON_ID)+'_mesh.stl')
@@ -24,82 +19,8 @@ def threshold(arr, val):
     out = np.ones(arr.shape, dtype=arr.dtype)*val
     return np.equal(arr,out)
 
-class Edger:
-    def __init__(self,spots):
-
-        # Generate edge_image output and edges input 
-        self.edge_image = np.zeros(spots.shape,dtype=np.bool)
-        self.max_shape = np.array(self.edge_image.shape)-1
-        self.edges = measure.find_contours(spots, 0)
-        self.edges.sort(self.sortAll)
-
-    def run(self, edgen):
-        if len(edgen) <= 4:
-            return []
-        y,x = zip(*edgen)
-        # get the cumulative distance along the contour
-        dist = np.sqrt((np.diff(x))**2 + (np.diff(y))**2).cumsum()[-1]
-        # build a spline representation of the contour
-        spline, u = scipy.interpolate.splprep([x, y])
-        res =  int(math.ceil(SPLINE_RESOLUTION*dist))
-        sampler = np.linspace(0, u[-1], res)
-
-        # resample it at smaller distance intervals
-        interp_x, interp_y = scipy.interpolate.splev(sampler, spline)
-        iy,ix = [[int(math.floor(ii)) for ii in i] for i in [interp_x,interp_y]]
-        interp = [np.clip(point,[0,0],self.max_shape) for point in zip(ix,iy)]
-
-        mh.polygon.fill_polygon(interp,self.edge_image)
-
-    def sortAll(self,a,b):
-        xylists = [zip(*a),zip(*b)]
-        da,db = [np.array([max(v)-min(v) for v in l]) for l in xylists]
-        return 2*int((da-db < 0).all())-1
-
-    def runAll(self,k):
-        if len(self.edges):
-            self.run(self.edges[0])
-
-        return self
-
-class Mesher:
-    def __init__(self,volume):
-        self.volume = volume
-        self.slices = range(self.volume.shape[0])
-        self.edge_vol = np.zeros(volume.shape, dtype=np.bool)
-        self.runAll()
-    def run(self,k):
-        edgy = Edger(self.volume[k]).runAll(k)
-        self.edge_vol[k] = edgy.edge_image
-        print ('k ',k)
-    def runAll(self):
-        for sliced in self.slices:
-            self.run(sliced)
-        return self
-    def store_mesh(self, filename, bboff):
-
-        arr = [self.edge_vol,0]
-        params = {
-            'spacing': (1., 1., 1.,),
-            'gradient_direction':'ascent'
-        }
-        verts, faces = measure.marching_cubes(*arr,**params)
-        applied_verts = verts[faces]
-
-        mesh_data = np.zeros(applied_verts.shape[0], dtype=mesh.Mesh.dtype)
-
-        for i, v in enumerate(applied_verts):
-            mesh_data[i][1] = v + bboff
-
-        m = mesh.Mesh(mesh_data)
-        with open(filename, 'w') as f:
-            m.save(filename, f)
-        return m
-
 #
 #
-#
-
 
 with h5py.File(DATA,'r') as f:
     upsamp = 10
