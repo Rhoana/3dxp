@@ -76,22 +76,25 @@ class Mesher:
         for sliced in self.slices:
             self.run(sliced)
         return self
+    def store_mesh(self, filename, bboff):
 
-def store_mesh(arr, filename, bboff):
+        arr = [self.edge_vol,0]
+        params = {
+            'spacing': (1., 1., 1.,),
+            'gradient_direction':'ascent'
+        }
+        verts, faces = measure.marching_cubes(*arr,**params)
+        applied_verts = verts[faces]
 
-    verts, faces = measure.marching_cubes(arr, 0, spacing=(1.,1.,1.),gradient_direction='ascent')
-    applied_verts = verts[faces]
+        mesh_data = np.zeros(applied_verts.shape[0], dtype=mesh.Mesh.dtype)
 
-    mesh_data = np.zeros(applied_verts.shape[0], dtype=mesh.Mesh.dtype)
+        for i, v in enumerate(applied_verts):
+            mesh_data[i][1] = v + bboff
 
-    for i, v in enumerate(applied_verts):
-        mesh_data[i][1] = v + bboff
-
-    m = mesh.Mesh(mesh_data)
-    with open(filename, 'w') as f:
-        m.save(filename, f)
-
-    return m
+        m = mesh.Mesh(mesh_data)
+        with open(filename, 'w') as f:
+            m.save(filename, f)
+        return m
 
 #
 #
@@ -121,7 +124,6 @@ with h5py.File(DATA,'r') as f:
             box_dn = za if box_dn < 0 else box_dn
             box_up = zb
 
-print (box_dn, box_up)
 zo,ze = [box_dn,box_up]
 yo,xo = box_tl
 ye,xe = box_br
@@ -133,8 +135,8 @@ z_margin = np.zeros([vy,MARGIN,vx], dtype=bool)
 volume = np.concatenate((z_margin,volume,z_margin),axis=1)
 x_margin = np.zeros([vy,vz+2*MARGIN,MARGIN], dtype=bool)
 volume = np.concatenate((x_margin,volume,x_margin),axis=2)
-
-meshed = Mesher(volume).edge_vol
 bb_offset = (yo, zo-MARGIN, xo-MARGIN)
+
+meshy = Mesher(volume)
 print ('storing mesh..')
-m1 = store_mesh(meshed, OUTNAME, bb_offset)
+meshy.store_mesh(OUTNAME, bb_offset)
