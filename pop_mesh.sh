@@ -1,5 +1,5 @@
-stlroot=/home/john/2017/data/3dxp/stl
-poproot=/home/john/2017/data/3dxp/stl/pop
+stlroot=/tmp/john/ #/home/john/2017/data/3dxp/stl
+poproot=/tmp/john/pop/ #/home/john/2017/data/3dxp/stl/pop
 geodir=$1"_geo"
 filename=$1"_mesh"
 stlname=$filename".stl"
