@@ -17,4 +17,4 @@ VOL = {
 
 volume, offset = threshbound(**VOL)
 smoothmesh(volume, OUTNAME, offset)
-print('Saved id '+str(FIXED['id'])+'\n')
+print('Saved id '+str(VOL['id'])+'\n')
