@@ -8,12 +8,15 @@ from stl import mesh
 import mahotas as mh
 from skimage import measure
 
+#import matplotlib.pyplot as plt
+
 MAX_Z = 100
 MARGIN = 2
 NEURON_ID = 18915
 SPLINE_RESOLUTION = 1/16.
 OUT_FOLDER = sys.argv[2]
 NEURON_ID = int(sys.argv[1])
+OUTNAME = os.path.join(OUT_FOLDER,str(NEURON_ID)+'_mesh.stl')
 DATA = '/n/coxfs01/leek/results/ECS_iarpa_20u_cube/segmentation.h5'
 DATA = '/home/harvard/2017/data/bf/1017/synapse.h5'
 
@@ -53,9 +56,10 @@ class Edger:
         da,db = [np.array([max(v)-min(v) for v in l]) for l in xylists]
         return 2*int((da-db < 0).all())-1
 
-    def runAll(self):
+    def runAll(self,k):
         if len(self.edges):
             self.run(self.edges[0])
+
         return self
 
 class Mesher:
@@ -65,7 +69,7 @@ class Mesher:
         self.edge_vol = np.zeros(volume.shape, dtype=np.bool)
         self.runAll()
     def run(self,k):
-        edgy = Edger(self.volume[k]).runAll()
+        edgy = Edger(self.volume[k]).runAll(k)
         self.edge_vol[k] = edgy.edge_image
         print ('k ',k)
     def runAll(self):
@@ -73,7 +77,7 @@ class Mesher:
             self.run(sliced)
         return self
 
-def store_mesh(arr, filename):
+def store_mesh(arr, filename, bboff):
 
     verts, faces = measure.marching_cubes(arr, 0, spacing=(1.,1.,1.),gradient_direction='ascent')
     applied_verts = verts[faces]
@@ -81,9 +85,7 @@ def store_mesh(arr, filename):
     mesh_data = np.zeros(applied_verts.shape[0], dtype=mesh.Mesh.dtype)
 
     for i, v in enumerate(applied_verts):
-        mesh_data[i][1][0] = v[0]
-        mesh_data[i][1][1] = v[1]
-        mesh_data[i][1][2] = v[2]
+        mesh_data[i][1] = v + bboff
 
     m = mesh.Mesh(mesh_data)
     with open(filename, 'w') as f:
@@ -133,7 +135,6 @@ x_margin = np.zeros([vy,vz+2*MARGIN,MARGIN], dtype=bool)
 volume = np.concatenate((x_margin,volume,x_margin),axis=2)
 
 meshed = Mesher(volume).edge_vol
+bb_offset = (yo, zo-MARGIN, xo-MARGIN)
 print ('storing mesh..')
-m1 = store_mesh(meshed, OUT_FOLDER+str(NEURON_ID)+'_smooth1.stl')
-
-
+m1 = store_mesh(meshed, OUTNAME, bb_offset)
