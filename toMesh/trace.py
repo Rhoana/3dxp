@@ -4,7 +4,7 @@ import numpy as np
 import mahotas as mh
 from skimage import measure
 
-class Edger:
+class Trace:
     spline_resolution = 1/16.
     def __init__(self,spots):
 
@@ -37,9 +37,11 @@ class Edger:
         da,db = [np.array([max(v)-min(v) for v in l]) for l in xylists]
         return 2*int((da-db < 0).all())-1
 
-    def runAll(self,k):
+    def runAll(self):
         if len(self.edges):
             self.run(self.edges[0])
+        return self.edge_image
 
-        return self
-
+def tracefill(volume):
+    traced = Trace(volume)
+    return traced.runAll()
