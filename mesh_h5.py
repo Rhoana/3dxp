@@ -2,7 +2,7 @@ import os
 import sys
 import h5py
 import numpy as np
-from hd2stl import Mesher
+from toMesh import Mesher
 
 #import matplotlib.pyplot as plt
 
