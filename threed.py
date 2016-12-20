@@ -79,7 +79,7 @@ class ThreeD:
 
 
   @staticmethod
-  def run(datafile, X, Y, outdir, tilewidth=1024):
+  def run(datafile, X, Y, outdir, tilewidth=512):
 
     # create output folder
     if not os.path.exists(outdir):
