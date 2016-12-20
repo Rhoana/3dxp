@@ -7,6 +7,7 @@ import os
 from stl import mesh
 import scipy
 from skimage import measure
+import sys
 from xml.etree import ElementTree
 
 
@@ -85,7 +86,7 @@ class ThreeD:
       os.makedirs(outdir)
 
     with h5py.File(datafile, 'r') as f:
-      vol = f[f.keys()[0]][0:20,Y*tilewidth:Y*tilewidth+tilewidth,X*tilewidth:X*tilewidth+tilewidth]
+      vol = f[f.keys()[0]][:,Y*tilewidth:Y*tilewidth+tilewidth,X*tilewidth:X*tilewidth+tilewidth]
 
     # grab all IDs
     all_ids = np.unique(vol)
@@ -229,16 +230,42 @@ class ThreeD:
 
 
 
+#
+#
+# EXAMPLE USAGE FROM PYTHON (FOR THE TOP 750x400x400 VOXELS)
+#
+# from threed import ThreeD
+#
+# DATA = '/home/d/data/toufiq/segmentation.h5'
+# STLFOLDER = '/tmp/threeDNEW/'
+# X3DFOLDER = '/tmp/x3dNEW/'
+#
+# ThreeD.run(DATA, 0, 0, STLFOLDER, tilewidth=200)
+# ThreeD.run(DATA, 0, 1, STLFOLDER, tilewidth=200)
+# ThreeD.run(DATA, 1, 0, STLFOLDER, tilewidth=200)
+# ThreeD.run(DATA, 1, 1, STLFOLDER, tilewidth=200)
+#
+# ThreeD.create_website(STLFOLDER, X3DFOLDER, None) # <-- None means all IDs
+#
 
+#
+# Now we will run the ThreeD.run with a tilewidth=1024 on the cluster and
+# then ThreeD.create_website on Viper after all STLs were created.
+#
 
+if __name__ == "__main__":
 
+  # we need the following parameters
+  datapath = sys.argv[1]
+  y = sys.argv[2]
+  x = sys.argv[3]
+  outputpath = sys.argv[4]
 
+  if not os.path.exists(outputpath):
+    os.makedirs(outputpath)
 
-
-
-
-
-
+  # now run donkey run
+  ThreeD.run(datapath, int(y), int(x), outputpath)
 
 
 
