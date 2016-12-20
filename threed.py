@@ -57,7 +57,7 @@ class ThreeD:
     return out
 
   @staticmethod
-  def create_stl(vol, filename, X=0, Y=0, tilewidth=1024):
+  def create_stl(vol, filename, X=0, Y=0, tilewidth=512):
 
     verts, faces = measure.marching_cubes(vol, 0, gradient_direction='ascent')
     applied_verts = verts[faces]
