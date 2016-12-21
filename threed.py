@@ -57,7 +57,7 @@ class ThreeD:
     return out
 
   @staticmethod
-  def create_stl(vol, filename, X=0, Y=0, tilewidth=1024):
+  def create_stl(vol, filename, Z=0, Y=0, X=0, tilewidth=200):
 
     verts, faces = measure.marching_cubes(vol, 0, gradient_direction='ascent')
     applied_verts = verts[faces]
@@ -66,7 +66,7 @@ class ThreeD:
     mesh_data = np.zeros(vert_count, dtype=mesh.Mesh.dtype)
 
     # Z, Y and X offsets
-    offset = np.array([0, Y*tilewidth, X*tilewidth])
+    offset = np.array([Z*tilewidth, Y*tilewidth, X*tilewidth])
 
     for i, v in enumerate(applied_verts):
         mesh_data[i][1] = v + offset
@@ -79,14 +79,14 @@ class ThreeD:
 
 
   @staticmethod
-  def run(datafile, X, Y, outdir, tilewidth=512):
+  def run(datafile, Z, Y, X, outdir, tilewidth=200):
 
     # create output folder
     if not os.path.exists(outdir):
       os.makedirs(outdir)
 
     with h5py.File(datafile, 'r') as f:
-      vol = f[f.keys()[0]][:,Y*tilewidth:Y*tilewidth+tilewidth,X*tilewidth:X*tilewidth+tilewidth]
+      vol = f[f.keys()[0]][Z*tilewidth:Z*tilewidth+tilewidth,Y*tilewidth:Y*tilewidth+tilewidth,X*tilewidth:X*tilewidth+tilewidth]
 
     # grab all IDs
     all_ids = np.unique(vol)
@@ -96,7 +96,7 @@ class ThreeD:
     for id in all_ids:
 
       # skip 0
-      outfile = str(id) + '_' + str(X) + '_' + str(Y) + '.stl'
+      outfile = str(id) + '_' + str(Z) + '_' + str(Y) + '_' + str(X) +'.stl'
       if id == 0 or os.path.exists(os.path.join(outdir, outfile)):
         continue
 
@@ -116,8 +116,8 @@ class ThreeD:
 
         # 3. marching cubes
         smoothed = np.swapaxes(smoothed, 0, 1) # Z,Y,X
-        outfile = str(id) + '_' + str(X) + '_' + str(Y) + '.stl'
-        ThreeD.create_stl(smoothed, os.path.join(outdir, outfile), X=X, Y=Y, tilewidth=tilewidth)
+        outfile = str(id) + '_' + str(Z) + '_' + str(Y) + '_' + str(X) + '.stl'
+        ThreeD.create_stl(smoothed, os.path.join(outdir, outfile), Z=Z, Y=Y, X=X, tilewidth=tilewidth)
 
         print 'Stored', outfile
 
@@ -257,15 +257,16 @@ if __name__ == "__main__":
 
   # we need the following parameters
   datapath = sys.argv[1]
-  y = sys.argv[2]
-  x = sys.argv[3]
-  outputpath = sys.argv[4]
+  z = sys.argv[2]    
+  y = sys.argv[3]
+  x = sys.argv[4]
+  outputpath = sys.argv[5]
 
   if not os.path.exists(outputpath):
     os.makedirs(outputpath)
 
   # now run donkey run
-  ThreeD.run(datapath, int(y), int(x), outputpath)
+  ThreeD.run(datapath, int(z), int(y), int(x), outputpath)
 
 
 
