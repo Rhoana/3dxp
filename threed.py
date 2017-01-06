@@ -271,13 +271,14 @@ if __name__ == "__main__":
   y = sys.argv[3]
   x = sys.argv[4]
   outputpath = sys.argv[5]
-  id_list = sys.argv[6]
+  tilewidth = sys.argv[6]
+  id_list = sys.argv[7]
 
   if not os.path.exists(outputpath):
     os.makedirs(outputpath)
 
   # now run donkey run
-  ThreeD.run(datapath, int(z), int(y), int(x), outputpath, id_list.split(' '))
+  ThreeD.run(datapath, int(z), int(y), int(x), outputpath, int(tilewidth), id_list.split(' '))
 
 
 

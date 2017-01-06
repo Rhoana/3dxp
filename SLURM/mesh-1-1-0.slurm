@@ -26,7 +26,7 @@ source /n/home05/haehn/nolearncox/bin/activate
 
 
 cd /n/home05/haehn/Projects/3dxp/
-python threed.py /n/coxfs01/leek/dropbox/8x_downsampled_segmentation.h5 1 1 0 /n/coxfs01/haehn/downsampledSTLs/ "49146 49266 50513 51536 54306 68584 81359 91293 114967 117847 123959 151877 163906"
+python threed.py /n/coxfs01/leek/dropbox/8x_downsampled_segmentation.h5 1 1 0 /n/coxfs01/haehn/downsampledSTLs/ 512 "49146 49266 50513 51536 54306 68584 81359 91293 114967 117847 123959 151877 163906"
 
 # end of program
 exit 0;
