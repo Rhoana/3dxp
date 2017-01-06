@@ -8,7 +8,7 @@ ROOTDIR = HOME + '/2017/data/3dxp/jan_push/'
 STLFOLDER = ROOTDIR + 'stl'
 X3DFOLDER = ROOTDIR + 'x3d'
 ALL_IDS = [1,2,3]
-INDEX = '123.html'
+INDEX = 'test.html'
 
 
 subvols = zip(*np.where(np.ones([2]*3)))

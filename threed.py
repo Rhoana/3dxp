@@ -231,7 +231,7 @@ class ThreeD:
 
     # return html_content
 
-    with open(os.path.join(outputfolder, 'outfile'), 'w') as f:
+    with open(os.path.join(outputfolder, outfile), 'w') as f:
       f.write(html_header + html_content + html_footer)
 
     print 'Stored ' + outfile
