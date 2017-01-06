@@ -129,7 +129,7 @@ class ThreeD:
     print 'All done.'
 
   @staticmethod
-  def create_website(stldir, outputfolder, ids=None):
+  def create_website(stldir, outputfolder, ids=None, outfile='index.html'):
 
     stl_files = None
 
@@ -231,10 +231,10 @@ class ThreeD:
 
     # return html_content
 
-    with open(os.path.join(outputfolder, 'index.html'), 'w') as f:
+    with open(os.path.join(outputfolder, 'outfile'), 'w') as f:
       f.write(html_header + html_content + html_footer)
 
-    print 'Stored index.html.'      
+    print 'Stored ' + outfile
 
 
 
