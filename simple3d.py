@@ -1,8 +1,9 @@
 import numpy as np
 from threed import ThreeD
 
-DATA = '/home/harvard/2017/data/bf/jan_push/8x_downsampled_segmentation.h5'
-ROOTDIR = '/home/harvard/2017/data/3dxp/jan_push/'
+HOME = os.path.expanduser('~')
+DATA = HOME + '/2017/data/bf/jan_push/8x_downsampled_segmentation.h5'
+ROOTDIR = HOME + '/2017/data/3dxp/jan_push/'
 STLFOLDER = ROOTDIR + 'stl'
 X3DFOLDER = ROOTDIR + 'x3d'
 ALL_IDS = [1,2,3,4]
