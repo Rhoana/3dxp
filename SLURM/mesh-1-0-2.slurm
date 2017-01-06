@@ -5,7 +5,7 @@
 #SBATCH -p cox
 #SBATCH -n 1 # Number of cores
 #SBATCH -N 1 # Ensure that all cores are on one machine #SBITCH --gres=gpu
-#SBATCH --mem=10000#6720
+#SBATCH --mem=10000#111484
 #SBATCH -t 10-12:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=haehn@seas.harvard.edu
@@ -26,7 +26,7 @@ source /n/home05/haehn/nolearncox/bin/activate
 
 
 cd /n/home05/haehn/Projects/3dxp/
-python threed.py /n/coxfs01/leek/results/ECS_iarpa_20u_cube/segmentation.h5 1 0 2 /n/coxfs01/haehn/STLs/
+python threed.py /n/coxfs01/leek/dropbox/8x_downsampled_segmentation.h5 1 0 2 /n/coxfs01/haehn/downsampledSTLs/ "49146 49266 50513 51536 54306 68584 81359 91293 114967 117847 123959 151877 163906"
 
 # end of program
 exit 0;

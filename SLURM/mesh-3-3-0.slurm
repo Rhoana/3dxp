@@ -9,8 +9,8 @@
 #SBATCH -t 10-12:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=haehn@seas.harvard.edu
-#SBATCH -o /n/home05/haehn/SLURM/out-mesh-1-0-3.txt
-#SBATCH -e /n/home05/haehn/SLURM/err-mesh-1-0-3.txt
+#SBATCH -o /n/home05/haehn/SLURM/out-mesh-3-3-0.txt
+#SBATCH -e /n/home05/haehn/SLURM/err-mesh-3-3-0.txt
 
 source new-modules.sh
 module load Anaconda/2.5.0-fasrc01
@@ -26,7 +26,7 @@ source /n/home05/haehn/nolearncox/bin/activate
 
 
 cd /n/home05/haehn/Projects/3dxp/
-python threed.py /n/coxfs01/leek/dropbox/8x_downsampled_segmentation.h5 1 0 3 /n/coxfs01/haehn/downsampledSTLs/ "49146 49266 50513 51536 54306 68584 81359 91293 114967 117847 123959 151877 163906"
+python threed.py /n/coxfs01/leek/dropbox/8x_downsampled_segmentation.h5 3 3 0 /n/coxfs01/haehn/downsampledSTLs/ "49146 49266 50513 51536 54306 68584 81359 91293 114967 117847 123959 151877 163906"
 
 # end of program
 exit 0;

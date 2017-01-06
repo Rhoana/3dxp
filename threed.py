@@ -92,6 +92,8 @@ class ThreeD:
     all_ids = np.unique(vol)
     if not idlist:
         idlist = all_ids
+    else:
+        print 'ID List', idlist
 
     print 'Loaded data..'
 
@@ -269,12 +271,13 @@ if __name__ == "__main__":
   y = sys.argv[3]
   x = sys.argv[4]
   outputpath = sys.argv[5]
+  id_list = sys.argv[6]
 
   if not os.path.exists(outputpath):
     os.makedirs(outputpath)
 
   # now run donkey run
-  ThreeD.run(datapath, int(z), int(y), int(x), outputpath)
+  ThreeD.run(datapath, int(z), int(y), int(x), outputpath, id_list.split(' '))
 
 
 
