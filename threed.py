@@ -79,7 +79,7 @@ class ThreeD:
 
 
   @staticmethod
-  def run(datafile, Z, Y, X, outdir, tilewidth=200):
+  def run(datafile, Z, Y, X, outdir, tilewidth=200, idlist=[]):
 
     # create output folder
     if not os.path.exists(outdir):
@@ -90,6 +90,8 @@ class ThreeD:
 
     # grab all IDs
     all_ids = np.unique(vol)
+    if not idlist:
+        idlist = all_ids
 
     print 'Loaded data..'
 
@@ -97,7 +99,7 @@ class ThreeD:
 
       # skip 0
       outfile = str(id) + '_' + str(Z) + '_' + str(Y) + '_' + str(X) +'.stl'
-      if id == 0 or os.path.exists(os.path.join(outdir, outfile)):
+      if id == 0 or id not in idlist or os.path.exists(os.path.join(outdir, outfile)):
         continue
 
       try:
