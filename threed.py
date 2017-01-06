@@ -186,12 +186,20 @@ class ThreeD:
       mipmaps = f.replace('.stl', '_')
       html_file = os.path.join(outputfolder, f.replace('.stl', '.html'))
 
-      x3d_cmd = 'aopt -i '+ stl_file +' -x '+ x3d_file
-      r = os.system(x3d_cmd)
-      mipmap_cmd = 'aopt -i '+ x3d_file + ' -K ' + mipmaps + ':pb -N '+ html_file
-      r2 = os.system('cd ' + outputfolder + ' && ' + mipmap_cmd)
+      if not os.path.exists(html_file):
 
-      if r == 0 and r2 == 0:
+        x3d_cmd = 'aopt -i '+ stl_file +' -x '+ x3d_file
+        r = os.system(x3d_cmd)
+        mipmap_cmd = 'aopt -i '+ x3d_file + ' -K ' + mipmaps + ':pb -N '+ html_file
+        r2 = os.system('cd ' + outputfolder + ' && ' + mipmap_cmd)
+
+      else:
+        r = -1000
+        r2 = -1000
+
+      if r == -1000 and r2 == -1000:
+        print 'X3D exists for', f
+      elif r == 0 and r2 == 0:
         print 'Generated X3D for', f
       else:
         print 'Error for', f
