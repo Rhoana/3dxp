@@ -1,4 +1,4 @@
-import os
+import os, h5py
 import numpy as np
 from threed import ThreeD
 
@@ -7,14 +7,18 @@ DATA = HOME + '/2017/data/bf/jan_push/8x_downsampled_segmentation.h5'
 ROOTDIR = HOME + '/2017/data/3dxp/jan_push/'
 STLFOLDER = ROOTDIR + 'stl'
 X3DFOLDER = ROOTDIR + 'x3d'
-ALL_IDS = [1,2,3]
-INDEX = 'test.html'
+ALL_IDS = [ 49146, 49266, 50513, 51536, 54306, 68584, 81359, 91293, 114967, 117847, 123959, 151877, 163906]
+INDEX = 'toufiq.html'
+NTILES = 4
 
+with h5py.File(DATA, 'r') as df:
+    MAXSIZE = np.max(df[df.keys()[0]].shape)
+    TILESIZE = MAXSIZE // NTILES
 
-subvols = zip(*np.where(np.ones([2]*3)))
+subvols = zip(*np.where(np.ones([NTILES]*3)))
 
-#for z,y,x in subvols:
-#    ThreeD.run(DATA, z, y, x, STLFOLDER, 200, ALL_IDS)
+for z,y,x in subvols:
+    ThreeD.run(DATA, z, y, x, STLFOLDER, TILESIZE, ALL_IDS)
 
-ThreeD.create_website(STLFOLDER, X3DFOLDER, [1], INDEX)
+ThreeD.create_website(STLFOLDER, X3DFOLDER, ALL_IDS, INDEX)
 
