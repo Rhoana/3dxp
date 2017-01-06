@@ -75,7 +75,7 @@ class ThreeD:
     # with open(filename, 'w') as f:
     m.save(filename)
 
-    return m    
+    return m
 
 
   @staticmethod
@@ -107,12 +107,10 @@ class ThreeD:
         for z in range(thresholded.shape[0]):
             thresholded[z] = mh.close_holes(thresholded[z])
 
-        thresholded = np.repeat(thresholded, 10, axis=0)
-
-        # 2. smoothing along Y
+        # 2. padding and swapping along Y
         thresholded_swapped = np.swapaxes(thresholded, 0, 1)
         thresholded_padded = np.pad(thresholded_swapped, 2, mode='constant')
-        smoothed = ThreeD.smoothen(thresholded_padded)
+        smoothed = thresholded_padded
 
         # 3. marching cubes
         smoothed = np.swapaxes(smoothed, 0, 1) # Z,Y,X
