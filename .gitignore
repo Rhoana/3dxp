@@ -2,8 +2,10 @@
 3dxp_data/
 *.swp
 
-x3d/*
-!X3DOM/*
+x3d
+X3DOM/*
+!X3DOM/index.html
+!X3DOM/javascript
 
 XTK/*
 !XTK/index.html
