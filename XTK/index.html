@@ -1,0 +1,82 @@
+<html>
+<head>
+
+<style>
+  html, body { 
+    background-color:#000;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden !important;  
+  }
+</style>
+
+<script type='text/javascript' src='xtk.js'></script>
+
+<script type='text/javascript'>
+
+window.onload = function() {
+
+  var r = new X.renderer3D();
+  r.init();
+  
+  // var volume = new X.slice();
+  // volume.file = '1000.png';
+  
+  // r.add(volume);
+  var s = new X.cube();
+  s.texture.file = '0.png';
+  s.lengthX = 1;
+  s.lengthY = 2000;
+  s.lengthZ = 2000;
+
+  SLICE = s;
+  SLICENUMBER = 0;
+
+  r.add(s);
+
+  var meshes = ['50513_0_0_1.stl',
+                '50513_0_1_1.stl',
+                '50513_1_0_0.stl',
+                '50513_1_0_1.stl',
+                '50513_2_0_0.stl',
+                '50513_2_0_1.stl']
+
+  for (var m in meshes) {
+    m = meshes[m];
+
+    var m2 = new X.mesh();
+    m2.opacity = 0.3;
+    m2.file = m;
+    m2.color = [1,0,0]
+    m2.transform.matrix = new Float32Array([1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1]);
+    r.add(m2);
+
+  }
+
+  
+
+  
+  r.render();
+  
+};
+
+window.onkeypress = function() {
+
+  SLICENUMBER += 100;
+  SLICE.texture.file = parseInt(SLICENUMBER) + '.png';
+  SLICE.center = [SLICE.center[0]+100, SLICE.center[1], SLICE.center[2]];
+  SLICE.modified();
+
+}
+
+
+</script>
+
+</head>
+
+
+<body>
+
+</body>
+</html>
