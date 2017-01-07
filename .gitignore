@@ -2,8 +2,10 @@
 3dxp_data/
 *.swp
 
-XTK/**/*.png
-XTX/**/*.stl
+XTK/*
+!XTK/index.html
+!XTK/xtk.js
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
