@@ -1,0 +1,57 @@
+
+<html>
+<head>
+  <script type='text/javascript' src='https://www.x3dom.org/x3dom/release/x3dom.js'></script>
+  <script type='text/javascript'>
+    
+    window.onload = function() {
+
+  runtime = document.getElementById("r").runtime;
+  scene = document.getElementById( "scene" );
+runtime.showAll();
+
+  }
+  </script>
+</head>
+<body style='padding:0px; margin:0px; overflow:hidden; background-color: #000'>
+  <x3d id='r' width='100%' height='100%'>
+
+<!--
+
+               <img src="images/600.png" height="2048" width="2048"> 
+//-->
+
+    <scene id='scene'>
+      <viewpoint id='viewpoint1' position='0 0 0' bind='true'></viewpoint>
+
+          <!-- <Switch whichChoice="0" id="switcher"> -->
+            <shape id='shape1'>
+
+              <appearance id='ourappearance' alphaClipThreshold='0'>
+              
+                <ImageTexture id='ourtexture' url="images/600.png"> 
+                </ImageTexture>
+              
+              </appearance>
+              <plane id='ourplane' primType='TRIANGLES' size='2000 2000' solid='false'></plane>
+            </shape>
+<!-- 
+
+            <shape id='shape2'>
+              <appearance id='ourappearance2'>
+                <material id='material2' transparency='0'>
+                <texture id='ourtexture2'>
+                   <img id='em_slice2' src="images/1000.png"> 
+                </texture>
+                </material>
+              </appearance>
+              <plane id='ourplane2' primType='TRIANGLES' size='2000 2000' solid='false'></plane>
+            </shape>
+ -->
+          <!-- </Switch> -->
+
+    </scene>
+  </x3d>
+</body>
+</html>
+    
