@@ -1,10 +1,10 @@
 RATE = -20;
-INTERV = 800
-ALLSLICE = 1774
-loading = false
-slice = 1773
-buffer = 0
-
+INTERV = 800;
+ALLSLICE = 1774;
+loading = false;
+slice = 1773;
+buffer = 0;
+viewport = 0;
 
 function slice_mover(zed, delta=false){
 
@@ -31,6 +31,21 @@ function slice_mover(zed, delta=false){
   }
   loading = true
   slice = z_new
+
+  // update viewport
+  if (viewport == 0 && slice < 1000) {
+
+    viewport = 1;
+    vp = document.getElementById('viewpoint1');
+    vp.setAttribute('bind', true);
+
+  } else if (viewport == 1 && slice < 500) {
+
+    viewport = 2;
+    vp = document.getElementById('viewpoint2');
+    vp.setAttribute('bind', true);
+
+  }
 
   // get texture inforrmation
   var now_hide = move_now.children[0]
@@ -89,7 +104,7 @@ window.onload = function() {
 
   // update camera
   // runtime.showAll();
-  vp = document.getElementById('viewpoint2');
+  vp = document.getElementById('viewpoint_start');
   vp.setAttribute('bind', true);
 
   slice_mover(slice)
@@ -97,6 +112,10 @@ window.onload = function() {
 };
 
 window.onkeypress = function() {
+
+  vp = document.getElementById('viewpoint0');
+  vp.setAttribute('bind', true);
+
   animate();
 }
 
