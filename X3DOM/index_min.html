@@ -3,55 +3,122 @@
 <head>
   <script type='text/javascript' src='https://www.x3dom.org/x3dom/release/x3dom.js'></script>
   <script type='text/javascript'>
-    
-    window.onload = function() {
+RATE = -5;
+INTERV = 100
+ALLSLICE = 1774
+loading = false
+slice = 1773
+buffer = 0
+
+
+function slice_mover(zed, delta=false){
+
+  // get location information  
+  var move_slice = document.getElementById('move_slice')
+  var xyz_origin = move_slice.getAttribute('translation')
+  var origin = xyz_origin.split('-')[0]
+  var z_old = slice
+  var z_new = zed
+
+  // get new z
+  if (delta){
+    z_new = Number(z_old) + zed
+  }
+  if (z_new < 0 || z_new >= ALLSLICE) {
+    return 1;
+  }
+  if (loading){
+    return 0;
+  }
+  loading = true
+  slice = z_new
+  console.log(slice)
+
+  now = Number(buffer)
+  buffer = Number(!buffer)
+
+  // update slice location
+  move_slice.setAttribute('translation', origin +'-'+ z_new)
+  // clipPlanes[0].Move(z_new/ALLSLICE);
+  // clipPlanes[1].Move(z_new/ALLSLICE);
+
+  // get texture inforrmation
+  var shape_list = document.getElementById('shape_list')
+  var buffer_hide = shape_list.children[buffer]
+  var now_hide = shape_list.children[now]
+
+  buffer_shape = buffer_hide.children[0]
+  buffer_parent = buffer_shape.children[0]
+  buffer_texture = document.createElement('Texture')
+  buffer_img = document.createElement('img')
+  buffer_parent.innnerHTML = ''
+
+  buffer_hide.setAttribute('scale','1 -1 1')
+  now_hide.setAttribute('scale','0 0 0')
+
+  buffer_img.onload = function() {
+    buffer_texture.appendChild(buffer_img)
+    buffer_parent.appendChild(buffer_texture)
+    now_hide.setAttribute('scale','1 -1 1')
+    buffer_hide.setAttribute('scale','0 0 0')
+    loading = false
+  }
+  buffer_img.src = 'images/'+ z_new +'.png'
+  buffer_img.style.display = "none" 
+
+  // return sucess
+  return 0
+};
+
+function animate() {
+  interv = setInterval(function() {
+    if (slice_mover(RATE, true)){
+      clearInterval(interv);
+    }
+  }, INTERV);
+};
+
+  
+window.onload = function() {
 
   runtime = document.getElementById("r").runtime;
   scene = document.getElementById( "scene" );
-runtime.showAll();
-
-  }
+  runtime.showAll();
+  //slice_mover(slice);
+}
   </script>
 </head>
 <body style='padding:0px; margin:0px; overflow:hidden; background-color: #000'>
   <x3d id='r' width='100%' height='100%'>
 
-<!--
-
-               <img src="images/600.png" height="2048" width="2048"> 
-//-->
-
     <scene id='scene'>
       <viewpoint id='viewpoint1' position='0 0 0' bind='true'></viewpoint>
-
-          <!-- <Switch whichChoice="0" id="switcher"> -->
-            <shape id='shape1'>
-
-              <appearance id='ourappearance' alphaClipThreshold='0'>
-              
-                <ImageTexture id='ourtexture' url="images/600.png"> 
-                </ImageTexture>
-              
+        <transform id='move_slice' bboxCenter='0,0,0' translation='0 0 -1773'>
+        </transform>
+        <group id='shape_list'>
+            <transform bboxCenter='0,0,0' scale='1 -1 1'>
+            <shape>
+              <appearance>
+                  <Texture>
+                    <img style="display: none" src='images/1773.png'></img>
+                  </Texture>
               </appearance>
-              <plane id='ourplane' primType='TRIANGLES' size='2000 2000' solid='false'></plane>
+              <plane primType='TRIANGLES' size='2000 2000' solid='false'></plane>
             </shape>
-<!-- 
-
-            <shape id='shape2'>
-              <appearance id='ourappearance2'>
-                <material id='material2' transparency='0'>
-                <texture id='ourtexture2'>
-                   <img id='em_slice2' src="images/1000.png"> 
-                </texture>
-                </material>
+            </transform>
+            <transform bboxCenter='0,0,0' scale='1 -1 1'>
+            <shape>
+              <appearance>
+                  <Texture>
+                    <img style="display: none" src='images/1773.png'></img>
+                  </Texture>
               </appearance>
-              <plane id='ourplane2' primType='TRIANGLES' size='2000 2000' solid='false'></plane>
+              <plane primType='TRIANGLES' size='2000 2000' solid='false'></plane>
             </shape>
- -->
-          <!-- </Switch> -->
-
+            </transform>
+        </group>
     </scene>
-  </x3d>
+ </x3d>
 </body>
 </html>
-    
+   

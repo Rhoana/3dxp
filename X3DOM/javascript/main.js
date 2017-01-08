@@ -1,54 +1,79 @@
-SLICE = 1773;
-DECLINE = 5;
-alldone = true;
+RATE = -20;
+INTERV = 800
+ALLSLICE = 1774
+loading = false
+slice = 1773
+buffer = 0
 
-function slice_mover(zed){
 
-  if (zed < 0) {
-    return;
+function slice_mover(zed, delta=false){
+
+  now = Number(buffer)
+  buffer = Number(!buffer)
+
+  // get location information  
+  var move_now = document.getElementById('move'+now)
+  var move_buffer = document.getElementById('move'+buffer)
+  var xyz_origin = move_buffer.getAttribute('translation')
+  var origin = xyz_origin.split('-')[0]
+  var z_old = slice
+  var z_new = zed
+
+  // get new z
+  if (delta){
+    z_new = Number(z_old) + zed
   }
-
-  move_slice = document.getElementById('move_slice')
-  move_origin = move_slice.getAttribute('translation').split('-')[0]
-  move_slice.setAttribute('translation',move_origin+'-'+ zed)
-
-  new_t = document.createElement('texture');
-  new_img = document.createElement('img');
-  
-  new_img.onload = function() {
-    a = document.getElementById('ourappearance');
-
-    // a.innerHTML = "";    
-    new_t.appendChild(new_img);
-    a.appendChild(new_t);
-
-    alldone = true;
-
-    // update clipping planes
-    clipPlanes[0].Move(SLICE/1773);
-    clipPlanes[1].Move(SLICE/1773);
-
+  if (z_new < 0 || z_new >= ALLSLICE) {
+    return 1;
   }
-  new_img.src = 'images/'+zed+'.png';  
+  if (loading){
+    return 0;
+  }
+  loading = true
+  slice = z_new
 
+  // get texture inforrmation
+  var now_hide = move_now.children[0]
+  var buffer_hide = move_buffer.children[0] 
+
+  buffer_shape = buffer_hide.children[0]
+  buffer_parent = buffer_shape.children[0]
+  buffer_texture = document.createElement('Texture')
+  buffer_img = document.createElement('img')
+  buffer_parent.innnerHTML = ''
+
+  // update slice location
+  move_buffer.setAttribute('translation', origin +'-'+ slice)
+  buffer_hide.setAttribute('scale','1 -1 1')
+  now_hide.setAttribute('scale','0 0 0')
+  clipPlanes[0].Move(slice/ALLSLICE);
+  clipPlanes[1].Move(slice/ALLSLICE);
+
+  buffer_img.onload = function() {
+    buffer_texture.appendChild(buffer_img)
+    buffer_parent.appendChild(buffer_texture)
+
+    // update visible slices
+    now_hide.setAttribute('scale','1 -1 1')
+    buffer_hide.setAttribute('scale','0 0 0')
+    move_now.setAttribute('translation', origin +'-'+ slice)
+    loading = false
+  }
+  buffer_img.src = 'images/'+ slice +'.png'
+  buffer_img.style.display = "none" 
+
+  // return sucess
+  return 0
 };
 
 function animate() {
-  if (SLICE < 0) {
-    SLICE = 1773;
-  }
-
   interv = setInterval(function() {
-    if (alldone) {
-      alldone = false;
-      SLICE = SLICE-DECLINE;
-      slice_mover(SLICE);
-      curchild = a.children[0];
-      a.removeChild(curchild);      
+    if (slice_mover(RATE, true)){
+      clearInterval(interv);
     }
-    // alldone = false;
-  }, 500)
+  }, INTERV);
 };
+
 
 window.onload = function() {
 
@@ -67,11 +92,7 @@ window.onload = function() {
   vp = document.getElementById('viewpoint2');
   vp.setAttribute('bind', true);
 
-
-
-  slice_mover(SLICE);
-
-  // animate();
+  slice_mover(slice)
   
 };
 
