@@ -1,6 +1,7 @@
 RATE = -20;
 INTERV = 800;
 ALLSLICE = Math.min(ALLFRAMES.length, 1774);
+animation = false;
 loading = false;
 slice = 1773;
 buffer = 0;
@@ -59,10 +60,12 @@ function slice_mover(zed, delta=false){
     clipPlanes[0].Move(slice/ALLSLICE);
     clipPlanes[1].Move(slice/ALLSLICE);
 
-    // move camera
-    var frame_new = ALLFRAMES[ALLSLICE-slice];
-    vp.setAttribute('orientation',frame_new[1]);
-    vp.setAttribute('position',frame_new[0]);
+    // move camera if animating
+    if (animation) {
+      var frame_new = ALLFRAMES[ALLSLICE-slice];
+      vp.setAttribute('orientation',frame_new[1]);
+      vp.setAttribute('position',frame_new[0]);
+    }
     loading = false
   }
   buffer_img.src = 'images/'+ slice +'.png'
@@ -73,8 +76,9 @@ function slice_mover(zed, delta=false){
 };
 
 function animate() {
+  animation = !animation;
   var interv = setInterval(function() {
-    if (slice_mover(RATE, true)){
+    if (!animation || slice_mover(RATE, true)){
       clearInterval(interv);
     }    
   }, INTERV);
@@ -97,8 +101,16 @@ window.onload = function() {
   
 };
 
-window.onkeypress = function() {
-  animate();
+var actions = {
+  32: animate,
+  38: slice_mover.bind(null,10,true),
+  40: slice_mover.bind(null,-10,true) 
+}
+
+window.onkeydown = function(event) {
+  if (event.keyCode in actions){
+    actions[event.keyCode]();
+  }
 }
 
 //////
