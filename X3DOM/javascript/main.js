@@ -1,4 +1,4 @@
-RATE = -20;
+RATE = 20;
 INTERV = 800;
 ALLSLICE = Math.min(ALLFRAMES.length, 1774);
 allstates = {allframes:[], allslices:[]};
@@ -79,7 +79,7 @@ function slice_mover(zed, delta=false){
 function animate() {
   animation = !animation;
   var interv = setInterval(function() {
-    if (!animation || slice_mover(RATE, true)){
+    if (!animation || slice_mover(-1*RATE, true)){
       clearInterval(interv);
     }    
   }, INTERV);
@@ -133,10 +133,19 @@ function save_states(){
   window.location = 'data:Application/octet-stream,'+saved;
 }
 
+function user_down(){
+  animate = false;
+  slice_mover(-1*RATE,true);
+}
+function user_up(){
+  animate = false;
+  slice_mover(RATE,true);
+}
+
 var actions = {
   32: animate,
-  38: slice_mover.bind(null,10,true),
-  40: slice_mover.bind(null,-10,true),
+  38: user_down,
+  40: user_up,
   37: pop_state,
   39: save_state,
   16: save_states 
