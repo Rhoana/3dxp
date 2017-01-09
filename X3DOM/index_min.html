@@ -1,0 +1,180 @@
+
+<html>
+<head>
+  <script type='text/javascript' src='https://www.x3dom.org/x3dom/release/x3dom.js'></script>
+  <script type='text/javascript' src='javascript/frames.js'></script>
+  <script type='text/javascript'>
+FRAMES = [];
+RATE = -5;
+INTERV = 100
+ALLSLICE = 1774
+NEWEVENT = false
+loading = false
+slice = 1773
+buffer = 0
+
+
+function slice_mover(zed, delta=false){
+
+  // get location information  
+  var move_slice = document.getElementById('move_slice')
+  var xyz_origin = move_slice.getAttribute('translation')
+  var origin = xyz_origin.split('-')[0]
+  var z_old = slice
+  var z_new = zed
+
+  // get new z
+  if (delta){
+    z_new = Number(z_old) + zed
+  }
+  if (z_new < 0 || z_new >= ALLSLICE) {
+    return 1;
+  }
+  if (loading){
+    return 0;
+  }
+  loading = true
+  slice = z_new
+  console.log(slice)
+
+  now = Number(buffer)
+  buffer = Number(!buffer)
+
+  // update slice location
+  move_slice.setAttribute('translation', origin +'-'+ z_new)
+  // clipPlanes[0].Move(z_new/ALLSLICE);
+  // clipPlanes[1].Move(z_new/ALLSLICE);
+
+  // get texture inforrmation
+  var shape_list = document.getElementById('shape_list')
+  var buffer_hide = shape_list.children[buffer]
+  var now_hide = shape_list.children[now]
+
+  buffer_shape = buffer_hide.children[0]
+  buffer_parent = buffer_shape.children[0]
+  buffer_texture = document.createElement('Texture')
+  buffer_img = document.createElement('img')
+  buffer_parent.innnerHTML = ''
+
+  buffer_hide.setAttribute('scale','1 -1 1')
+  now_hide.setAttribute('scale','0 0 0')
+
+  buffer_img.onload = function() {
+    buffer_texture.appendChild(buffer_img)
+    buffer_parent.appendChild(buffer_texture)
+    now_hide.setAttribute('scale','1 -1 1')
+    buffer_hide.setAttribute('scale','0 0 0')
+    loading = false
+  }
+  buffer_img.src = 'images/'+ z_new +'.png'
+  buffer_img.style.display = "none" 
+
+  // return sucess
+  return 0
+}
+
+// viewpoint changed
+function viewFunc(evt) {
+// show viewpoint values
+  if (evt && NEWEVENT) {
+    NEWEVENT = false
+    var pos = evt.position;
+    var rot = evt.orientation;
+
+    var camPos = [pos.x, pos.y, pos.z].join(' ')
+    var camRot = [rot[0].x, rot[0].y, rot[0].z, rot[1]].join(' ');
+
+    var frame = [camPos, camRot]
+    console.log(frame)
+    FRAMES.push(frame)
+  }
+}
+
+function print_frames(keys,key_i){
+  var tt = 15
+  var vp = document.getElementById('viewpoint'+(key_i));
+  var time = document.getElementById('time');
+  time.setAttribute('transitiontime',String(tt));
+  if (vp && key_i < keys.length) {
+    vp.addEventListener('viewpointChanged', viewFunc);
+    vp.setAttribute('bind', true);
+    var key_count = keys[key_i];
+    var frame_count = 0;
+    console.log('printing: viewpoint'+key_i)
+    var interv = setInterval(function() {
+      if (frame_count == key_count){
+        clearInterval(interv);
+        print_frames(keys,key_i+1);
+        return;
+      }
+      NEWEVENT = true
+      frame_count += 1;
+    }, tt*1000/key_count);
+    return;
+  }
+  var save_string = JSON.stringify(FRAMES,null,'\t');
+  var saved = encodeURIComponent('ALLFRAMES ='+save_string);
+  window.location = 'data:Application/octet-stream,'+saved;
+}
+
+function save_frames() {
+  var keyframes = [774,500,500] 
+  vps = document.getElementById('viewpoint_start')
+  FRAMES.push([vps.position,vps.orientation])
+  print_frames(keyframes,0)
+}
+
+function animate() {
+  interv = setInterval(function() {
+    if (slice_mover(RATE, true)){
+      clearInterval(interv);
+    }
+  }, INTERV);
+};
+
+  
+window.onload = function() {
+
+  runtime = document.getElementById("r").runtime;
+  scene = document.getElementById( "scene" );
+}
+  </script>
+</head>
+<body style='padding:0px; margin:0px; overflow:hidden; background-color: #000'>
+  <x3d id='r' width='100%' height='100%'>
+
+    <scene id='scene'>
+      <navigationinfo id=time></navigationinfo>
+      <viewpoint id="viewpoint_start" bind="true" position="3929.3813885733343 -2071.8817790267294 -1912.3739230587557" orientation="0.6159574590769997 0.7844869949019639 -0.07194833866803957 2.17017692095808" description="camera"></viewpoint>
+      <viewpoint id="viewpoint0" position="2923.6009183538895 -1276.082796725692 -1336.390349232792" orientation="0.6152591341759697 0.7862299781292711 -0.057433607790945744 2.194664784451713" description="camera"></viewpoint>
+      <viewpoint id="viewpoint1" position="2433.0703978997594 -456.7749136360531 -2372.3984954040025" orientation="0.6352957593211621 0.7722524186646147 -0.005049757935005974 2.5491950957442286" description="camera"></viewpoint>
+      <viewpoint id="viewpoint2" position="1443.1913045286567 -1455.816820876881 289.11737503970056" orientation="0.681814387661702 0.6473329891338491 -0.3407185670851193 1.968413756097624" description="camera"></viewpoint>      
+        <transform id='move_slice' bboxCenter='0,0,0' translation='0 0 -1773'>
+        </transform>
+        <group id='shape_list'>
+            <transform bboxCenter='0,0,0' scale='1 -1 1'>
+            <shape>
+              <appearance>
+                  <Texture>
+                    <img style="display: none" src='images/1773.png'></img>
+                  </Texture>
+              </appearance>
+              <plane primType='TRIANGLES' size='2000 2000' solid='false'></plane>
+            </shape>
+            </transform>
+            <transform bboxCenter='0,0,0' scale='1 -1 1'>
+            <shape>
+              <appearance>
+                  <Texture>
+                    <img style="display: none" src='images/1773.png'></img>
+                  </Texture>
+              </appearance>
+              <plane primType='TRIANGLES' size='2000 2000' solid='false'></plane>
+            </shape>
+            </transform>
+        </group>
+    </scene>
+ </x3d>
+</body>
+</html>
+   
