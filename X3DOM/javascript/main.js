@@ -1,6 +1,7 @@
 RATE = -20;
 INTERV = 800;
 ALLSLICE = Math.min(ALLFRAMES.length, 1774);
+allstates = {allframes:[], allslices:[]};
 animation = false;
 loading = false;
 slice = 1773;
@@ -101,10 +102,44 @@ window.onload = function() {
   
 };
 
+function pop_state(){
+  document.body.className = 'red';
+  setTimeout(function(){
+    document.body.className = '';
+  },1000);
+  allstates.allslices.pop();
+}
+
+function save_state(){
+  document.body.className = 'green';
+  setTimeout(function(){
+    document.body.className = '';
+  },1000);
+  var vp = document.getElementById('view');
+  camRot = vp.orientation; 
+  camPos = vp.position;
+  allstates.allframes.push([camPos, camRot]);
+  allstates.allslices.push(slice);
+}
+
+function save_states(){
+  document.body.className = 'green';
+  setTimeout(function(){
+    document.body.className = '';
+  },1000);
+  var sv_layers = 'LAYERS =' + JSON.stringify(allstates.allslices,null,'\t');
+  var sv_frames = 'KEYFRAMES =' + JSON.stringify(allstates.allframes,null,'\t');
+  var saved = encodeURIComponent(sv_layers+'\n\n'+sv_frames);
+  window.location = 'data:Application/octet-stream,'+saved;
+}
+
 var actions = {
   32: animate,
   38: slice_mover.bind(null,10,true),
-  40: slice_mover.bind(null,-10,true) 
+  40: slice_mover.bind(null,-10,true),
+  37: pop_state,
+  39: save_state,
+  16: save_states 
 }
 
 window.onkeydown = function(event) {
