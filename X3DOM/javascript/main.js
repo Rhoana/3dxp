@@ -135,11 +135,11 @@ function save_states(){
 
 function user_down(){
   animate = false;
-  slice_mover(-1*RATE,true);
+  slice_mover(RATE,true);
 }
 function user_up(){
   animate = false;
-  slice_mover(RATE,true);
+  slice_mover(-1*RATE,true);
 }
 
 var actions = {
