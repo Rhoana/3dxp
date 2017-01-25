@@ -3,8 +3,8 @@
 
 ## Installing and running on MacOS
 
-- Clone the repo
-- Update pip and install all requirements (coming soon)
+- Clone the repo and `cd 3dxp`
+- `pip install -r requirements.txt`
 - Download  and install [Instant Reality Player for X3DOM](http://doc.instantreality.org/media/uploads/downloads/2.8.0/InstantPlayer-MacOS-10.10-x64-2.8.0.38619.dmg)
 - `echo "alias aopt='/Applications/Instant\ Player.app/Contents/MacOS/aopt'" >> ~/.bash_profile`
 - make local changes to [simple3d.py](https://github.com/Rhoana/3dxp/blob/master/simple3d.py)
