@@ -6,6 +6,8 @@ x3d
 X3DOM/*
 !X3DOM/index.html
 !X3DOM/javascript
+!X3DOM/css
+
 
 XTK/*
 !XTK/index.html

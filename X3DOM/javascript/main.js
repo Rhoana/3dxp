@@ -1,10 +1,11 @@
-RATE = -20;
+RATE = 20;
 INTERV = 800;
-ALLSLICE = 1774;
+ALLSLICE = Math.min(ALLFRAMES.length, 1774);
+allstates = {allframes:[], allslices:[]};
+animation = false;
 loading = false;
 slice = 1773;
 buffer = 0;
-viewport = 0;
 
 function slice_mover(zed, delta=false){
 
@@ -12,6 +13,7 @@ function slice_mover(zed, delta=false){
   buffer = Number(!buffer)
 
   // get location information  
+  var vp = document.getElementById('view');
   var move_now = document.getElementById('move'+now)
   var move_buffer = document.getElementById('move'+buffer)
   var xyz_origin = move_buffer.getAttribute('translation')
@@ -31,22 +33,8 @@ function slice_mover(zed, delta=false){
   }
   loading = true
   slice = z_new
-
-  // update viewport
-  if (viewport == 0 && slice < 1000) {
-
-    viewport = 1;
-    vp = document.getElementById('viewpoint1');
-    vp.setAttribute('bind', true);
-
-  } else if (viewport == 1 && slice < 500) {
-
-    viewport = 2;
-    vp = document.getElementById('viewpoint2');
-    vp.setAttribute('bind', true);
-
-  }
-
+ 
+ 
   // get texture inforrmation
   var now_hide = move_now.children[0]
   var buffer_hide = move_buffer.children[0] 
@@ -57,12 +45,9 @@ function slice_mover(zed, delta=false){
   buffer_img = document.createElement('img')
   buffer_parent.innnerHTML = ''
 
-  // update slice location
-  move_buffer.setAttribute('translation', origin +'-'+ slice)
+  // hide current slice location
   buffer_hide.setAttribute('scale','1 -1 1')
   now_hide.setAttribute('scale','0 0 0')
-  clipPlanes[0].Move(slice/ALLSLICE);
-  clipPlanes[1].Move(slice/ALLSLICE);
 
   buffer_img.onload = function() {
     buffer_texture.appendChild(buffer_img)
@@ -72,6 +57,16 @@ function slice_mover(zed, delta=false){
     now_hide.setAttribute('scale','1 -1 1')
     buffer_hide.setAttribute('scale','0 0 0')
     move_now.setAttribute('translation', origin +'-'+ slice)
+    move_buffer.setAttribute('translation', origin +'-'+ slice)
+    clipPlanes[0].Move(slice/ALLSLICE);
+    clipPlanes[1].Move(slice/ALLSLICE);
+
+    // move camera if animating
+    if (animation) {
+      var frame_new = ALLFRAMES[ALLSLICE-slice];
+      vp.setAttribute('orientation',frame_new[1]);
+      vp.setAttribute('position',frame_new[0]);
+    }
     loading = false
   }
   buffer_img.src = 'images/'+ slice +'.png'
@@ -82,10 +77,11 @@ function slice_mover(zed, delta=false){
 };
 
 function animate() {
-  interv = setInterval(function() {
-    if (slice_mover(RATE, true)){
+  animation = !animation;
+  var interv = setInterval(function() {
+    if (!animation || slice_mover(-1*RATE, true)){
       clearInterval(interv);
-    }
+    }    
   }, INTERV);
 };
 
@@ -102,21 +98,63 @@ window.onload = function() {
   clipPlanes.push( new ClipPlane(clipScopeX, scene, runtime) );
   clipPlanes.push( new ClipPlane(clipScopeY, scene, runtime) );
 
-  // update camera
-  // runtime.showAll();
-  vp = document.getElementById('viewpoint_start');
-  vp.setAttribute('bind', true);
-
   slice_mover(slice)
   
 };
 
-window.onkeypress = function() {
+function pop_state(){
+  document.body.className = 'red';
+  setTimeout(function(){
+    document.body.className = '';
+  },1000);
+  allstates.allslices.pop();
+}
 
-  vp = document.getElementById('viewpoint0');
-  vp.setAttribute('bind', true);
+function save_state(){
+  document.body.className = 'green';
+  setTimeout(function(){
+    document.body.className = '';
+  },1000);
+  var vp = document.getElementById('view');
+  camRot = vp.orientation; 
+  camPos = vp.position;
+  allstates.allframes.push([camPos, camRot]);
+  allstates.allslices.push(slice);
+}
 
-  animate();
+function save_states(){
+  document.body.className = 'green';
+  setTimeout(function(){
+    document.body.className = '';
+  },1000);
+  var sv_layers = 'LAYERS =' + JSON.stringify(allstates.allslices,null,'\t');
+  var sv_frames = 'KEYFRAMES =' + JSON.stringify(allstates.allframes,null,'\t');
+  var saved = encodeURIComponent(sv_layers+'\n\n'+sv_frames);
+  window.location = 'data:Application/octet-stream,'+saved;
+}
+
+function user_down(){
+  animate = false;
+  slice_mover(RATE,true);
+}
+function user_up(){
+  animate = false;
+  slice_mover(-1*RATE,true);
+}
+
+var actions = {
+  32: animate,
+  38: user_down,
+  40: user_up,
+  37: pop_state,
+  39: save_state,
+  16: save_states 
+}
+
+window.onkeydown = function(event) {
+  if (event.keyCode in actions){
+    actions[event.keyCode]();
+  }
 }
 
 //////
