@@ -131,7 +131,7 @@ class ThreeD:
     print 'All done.'
 
   @staticmethod
-  def create_website(stldir, outputfolder, ids=None, outfile='index.html'):
+  def create_website(stldir, outputfolder, ids=None, outfile='index.html', dimx=1024, dimy=1024, dimz=1024):
 
     stl_files = None
 
@@ -150,6 +150,9 @@ class ThreeD:
 <html>
 <head>
   <script type='text/javascript' src='https://www.x3dom.org/x3dom/release/x3dom.js'></script>
+  <script type='text/javascript' src='javascript/frames.js'></script>
+  <script type='text/javascript' src='javascript/main.js'></script>
+  <link rel="stylesheet" href="css/main.css" type="text/css">  
   <script>
 
   window.onload = function() {
@@ -160,14 +163,95 @@ class ThreeD:
 
   </script>
 </head>
-<body style='padding:0px; margin:0px; overflow:hidden; background-color: #000'>
+<body>
   <x3d id='r' width='100%' height='100%'>
 
+    <scene id='scene'>
+      <viewpoint id="view" bind="true" position="3929.3813885733343 -2071.8817790267294 -1912.3739230587557" orientation="0.6159574590769997 0.7844869949019639 -0.07194833866803957 2.17017692095808" description="camera"></viewpoint>
+            <transform bboxCenter='0,0,0' rotation='0 1 0 -1.5708'>
+            <transform id='move0' bboxCenter='0,0,0' translation='{HALFDIMX} {HALFDIMY} -{DIMZ}'>
+            <transform bboxCenter='0,0,0' scale='1 -1 1'>
+            <shape>
+              <appearance>
+                  <Texture>
+                    <img style="display: none" src='images/{LASTIMAGE}.png'></img>
+                  </Texture>
+              </appearance>
+              <plane primType='TRIANGLES' size='{DIMX} {DIMY}' solid='false'></plane>
+            </shape>
+            </transform>
+            </transform>
+            </transform>
+            <transform bboxCenter='0,0,0' rotation='0 1 0 -1.5708'>
+            <transform id='move1' bboxCenter='0,0,0' translation='{HALFDIMX} {HALFDIMY} -{DIMZ}'>
+            <transform bboxCenter='0,0,0' scale='1 -1 1'>
+            <shape>
+              <appearance>
+                  <Texture>
+                    <img style="display: none" src='images/{LASTIMAGE}.png'></img>
+                  </Texture>
+              </appearance>
+              <plane primType='TRIANGLES' size='{DIMX} {DIMY}' solid='false'></plane>
+            </shape>
+            </transform>
+            </transform>
+            </transform> 
 
 
-    <scene>
-      <viewpoint position='0 0 10' ></viewpoint>
+        <!-- SHOULD BE IN X -->
+        <transform id='clipScopeX'>
+        <transform bboxCenter='0,0,0' rotation='0 0 1 -1.5708'>
+        <!-- <transform bboxCenter='0,0,0' rotation='0 0 1 -1.5708'> -->
+        <transform id='move_slice' bboxCenter='0,0,0' translation='-{HALFDIMY} {HALFDIMZ} 0'>
+        <transform bboxCenter='0,0,0' scale='-1 -1 1'>
+            <shape>
+              <appearance>
+                <texture>
+                   <img style="display:none" src="images/0_in_x.png"> 
+                </texture>
+              </appearance>
+              <plane primType='TRIANGLES' size='{DIMY} {DIMZ}' solid='false'></plane>
+            </shape>
+        </transform> 
+        <!-- </transform>  -->
+        </transform> 
+        </transform> 
+        </transform> 
+
+
+        <!-- SHOULD BE IN Y -->
+        <transform id='clipScopeY'>
+        <transform bboxCenter='0,0,0' rotation='0 0 1 -1.5708'>
+        <transform bboxCenter='0,0,0' rotation='0 1 0 -1.5708'>
+        <transform id='move_slice' bboxCenter='0,0,0' translation='{HALFDIMX} {HALFDIMZ} 0'>
+        <transform bboxCenter='0,0,0' scale='1 -1 1'>
+            <shape>
+              <appearance>
+                <texture>
+                   <img style="display:none" src="images/0_in_y.png"> 
+                </texture>
+              </appearance>
+              <plane primType='TRIANGLES' size='{DIMX} {DIMZ}' solid='false'></plane>
+            </shape>
+        </transform> 
+        </transform> 
+        </transform> 
+        </transform> 
+        </transform> 
+
+
     '''
+
+    html_header = html_header.replace('{DIMX}', str(dimx))
+    html_header = html_header.replace('{DIMY}', str(dimy))
+    html_header = html_header.replace('{DIMZ}', str(dimz))
+    html_header = html_header.replace('{HALFDIMX}', str(int(dimx/2.)))
+    html_header = html_header.replace('{HALFDIMY}', str(int(dimy/2.)))
+    html_header = html_header.replace('{HALFDIMZ}', str(int(dimz/2.)))
+    html_header = html_header.replace('{LASTIMAGE}', str(int(dimz-1)))
+
+
+
 
     html_content = ''
 

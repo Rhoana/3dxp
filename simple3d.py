@@ -11,6 +11,11 @@ ALL_IDS = [ 49146, 49266, 50513, 51536, 54306, 68584, 81359, 91293, 114967, 1178
 INDEX = 'toufiq.html'
 NTILES = 4
 
+DIMX=1024
+DIMY=1024
+DIMZ=1024
+
+
 with h5py.File(DATA, 'r') as df:
     MAXSIZE = np.max(df[df.keys()[0]].shape)
     TILESIZE = MAXSIZE // NTILES
@@ -20,5 +25,5 @@ subvols = zip(*np.where(np.ones([NTILES]*3)))
 for z,y,x in subvols:
     ThreeD.run(DATA, z, y, x, STLFOLDER, TILESIZE, ALL_IDS)
 
-ThreeD.create_website(STLFOLDER, X3DFOLDER, ALL_IDS, INDEX)
+ThreeD.create_website(STLFOLDER, X3DFOLDER, ALL_IDS, INDEX, DIMX, DIMY, DIMZ)
 
