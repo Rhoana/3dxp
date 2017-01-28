@@ -85,55 +85,49 @@ class ThreeD:
     if not os.path.exists(outdir):
       os.makedirs(outdir)
 
-    stl_template = '_' + str(Z) + '_' + str(Y) + '_' + str(X) +'.stl'
-
-    stl_outfiles = [str(id)+stl_template for id in idlist]
-    already_done = [os.path.exists(os.path.join(outdir, outfile)) for outfile in stl_outfiles]
-    if np.all(already_done):
-        return
-
     with h5py.File(datafile, 'r') as f:
       vol = f[f.keys()[0]][Z*tilewidth:Z*tilewidth+tilewidth,Y*tilewidth:Y*tilewidth+tilewidth,X*tilewidth:X*tilewidth+tilewidth]
 
     # grab all IDs
-#    all_ids = np.unique(vol)
-#    if not idlist:
-#        idlist = all_ids
+    all_ids = np.unique(vol)
+    if len(all_ids) == 0:
+        idlist = all_ids
+    print 'ID List', idlist
 
-    for idi,id in enumerate(idlist):
+    print 'Loaded data..'
+
+    for id in all_ids:
 
       # skip 0
-      outfile = stl_outfiles[idi]
-      if id == 0 or id not in idlist or already_done[idi]:
+      outfile = str(id) + '_' + str(Z) + '_' + str(Y) + '_' + str(X) +'.stl'
+      if id == 0 or id not in idlist or os.path.exists(os.path.join(outdir, outfile)):
         continue
 
       try:
+
         # 1. thresholding
         thresholded = ThreeD.threshold(vol, id)
         for z in range(thresholded.shape[0]):
             thresholded[z] = mh.close_holes(thresholded[z])
-      except:
-        print 'could not threshhold '+str(id)
-        continue
 
-      try:
         # 2. padding and swapping along Y
         thresholded_swapped = np.swapaxes(thresholded, 0, 1)
         thresholded_padded = np.pad(thresholded_swapped, 2, mode='constant')
         smoothed = thresholded_padded
-      except:
-        print 'could not pad '+str(id)
-        continue
 
-      try:
         # 3. marching cubes
         smoothed = np.swapaxes(smoothed, 0, 1) # Z,Y,X
+        outfile = str(id) + '_' + str(Z) + '_' + str(Y) + '_' + str(X) + '.stl'
         ThreeD.create_stl(smoothed, os.path.join(outdir, outfile), Z=Z, Y=Y, X=X, tilewidth=tilewidth)
 
         print 'Stored', outfile
+
       except:
-        print 'could not make mesh for ' +str(id)
+
+        print 'Skipped', id
         continue
+
+    print 'All done.'
 
   @staticmethod
   def create_website(stldir, outputfolder, ids=None, outfile='index.html', dimx=1024, dimy=1024, dimz=1024):
