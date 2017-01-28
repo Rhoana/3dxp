@@ -254,6 +254,8 @@ class ThreeD:
 </html>
     '''
 
+    html_string = lambda s: ElementTree.tostring(s,method='html')
+
     for f in stl_files:
 
       STRID = f.split('_')[0]
@@ -276,11 +278,9 @@ class ThreeD:
 
       if id_saved:
         if not id_read:
-          ide = ElementTree.parse(html_id_file).getroot()
-          grouptext = ''.join([ElementTree.tostring(shape) for shape in ide.findall('.//group/*')])
-          grouptext = grouptext.replace('primType="&quot;TRIANGLES&quot;"', "primType='\"TRIANGLES\"'")
-          grouptext = grouptext.replace(' />', '></popGeometryLevel>')
-          html_content[STRID] = grouptext
+          shapes = ElementTree.parse(html_id_file).getroot().findall('.//group/*')
+          grouptext = [html_string(shape) for shape in shapes]
+          html_content[STRID] = ''.join(grouptext)
         print 'X3D exists for', f
         continue
 
@@ -301,9 +301,7 @@ class ThreeD:
       # grab popGeometry HTML
       e = ElementTree.parse(html_file).getroot()
       geometrynode = e.find('.//popGeometry')
-      geometrytext = ElementTree.tostring(geometrynode)
-      geometrytext = geometrytext.replace('primType="&quot;TRIANGLES&quot;"', "primType='\"TRIANGLES\"'")
-      geometrytext = geometrytext.replace(' />', '></popGeometryLevel>')
+      geometrytext = html_string(geometrynode)
 
       # create html
       color = np.mod(107*ID,700), np.mod(509*ID,700), np.mod(200*ID,700)
@@ -330,7 +328,7 @@ class ThreeD:
         pop_html = html_content[pop_key]
         all_html += pop_html
 
-        pop_id_file = os.path.join(outputfolder, pop_key+'.html')
+        pop_id_file = pop_key+'.html'
         with open(os.path.join(outputfolder, pop_id_file), 'w') as f:
             f.write(html_header + pop_html + html_footer)
 

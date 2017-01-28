@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description=help['help'])
     parser.add_argument('hd5', default='hd5', nargs='?', help=help['hd5'])
-    parser.add_argument('out', default='mojo', nargs='?', help=help['out'])
+    parser.add_argument('out', default='www', nargs='?', help=help['out'])
     parser.add_argument('-s', type=int, default=256, help=help['s'])
     parser.add_argument('-n', type=int, default=1, help=help['n'])
     parser.add_argument('-o', default='index.html', help=help['o'])
