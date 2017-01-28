@@ -2,7 +2,7 @@ import os, h5py
 import numpy as np
 from threed import ThreeD
 
-N_TOP_IDS = 50 +1
+N_TOP_IDS = 4 +1
 HOME = os.path.expanduser('~')
 DATA = HOME + '/2017/data/seg_100x4x4/stitched_seg.h5'
 ROOTDIR = HOME + '/2017/winter/3dxp1338/X3DOM/seg_100x4x4/'

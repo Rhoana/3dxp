@@ -258,7 +258,7 @@ class ThreeD:
       ID = int(STRID)
 
       stl_file = os.path.join(stldir, f)
-      x3d_file = os.path.join(outputfolder, f.replace('.stl', '.x3d'))
+      x3d_file = os.path.join(mipdir, f.replace('.stl', '.x3d'))
       html_file = os.path.join(outputfolder, f.replace('.stl', '.html'))
       html_id_file = os.path.join(outputfolder, STRID+'.html')
 
@@ -266,23 +266,25 @@ class ThreeD:
         os.makedirs(mipdir)
 
       id_saved = os.path.exists(html_id_file)
+      id_x3d_done = os.path.exists(x3d_file)
       id_read = STRID in html_content
 
       if id_saved:
         if not id_read:
           ide = ElementTree.parse(html_id_file).getroot()
-          groupnode = ElementTree.tostringlist(ide.find('.//group'))
-          grouptext = "".join(groupnode[1:-2])
+          grouptext = ''.join(ide.find('.//group').itertext())
           grouptext = grouptext.replace('primType="&quot;TRIANGLES&quot;"', "primType='\"TRIANGLES\"'")
-          grouptext = grouptext.replace('\" />', '\"></popGeometryLevel>')
+          grouptext = grouptext.replace(' />', '></popGeometryLevel>')
           html_content[STRID] = grouptext
         print 'X3D exists for', f
         continue
 
-      x3d_cmd = 'aopt -i '+ stl_file +' -x '+ x3d_file
+      result = 0
+      if not id_x3d_done:
+        result += os.system('aopt -i '+ stl_file +' -x '+ x3d_file)
       mipmap_cmd = 'aopt -i '+ x3d_file + ' -K ' + STRID+'/'+mipmaps + ':pb -N '+ html_file
-      result = os.system(x3d_cmd + '&& cd ' + outputfolder + ' && ' + mipmap_cmd)
-      os.remove(x3d_file)
+      result += os.system('cd ' + outputfolder + ' && ' + mipmap_cmd)
+
       if not id_read:
         html_content[STRID] = ''
       if result == 0:
