@@ -5,24 +5,23 @@ import numpy as np
 HOME = os.path.expanduser('~')
 
 IMG_IN = HOME + '/2017/data/seg_100x4x4/grayscale.h5'
-IMG_OUT = HOME + '/2017/data/bf/seg_100x4x4/sides'
+IMG_OUT = HOME + '/2017/winter/3dxp1338/X3DOM/seg_100x4x4/x3d/images'
 
-def back(vol):
-    return vol[:,:,vol.shape(2)-1]
-def right(vol):
-    return vol[:,vol.shape(1)-1,:]
 def left(vol):
     return vol[:,0,:]
 def front(vol):
     return vol[:,:,0]
 
-all_sides = [back,right,left,front]
+all_sides = {
+    'y': left,
+    'x': front
+}
 
-with h5py.File(IDS_IN, 'r') as df:
+with h5py.File(IMG_IN, 'r') as df:
     vol = df[df.keys()[0]]
-    for side in 4:
-        image = all_sides[side]()
-        sidefile = os.path.join(IMG_OUT, str(zed)+'.png')
-        colorgrey = cv2.cvtColor(grey, cv2.COLOR_GRAY2RGB)
-        cv2.imwrite(boolfile, colorgrey)
-        print 'wrote', boolfile
+    for key in all_sides:
+        image = all_sides[key](vol)
+        sidefile = os.path.join(IMG_OUT, '0_in_'+key+'.png')
+        colorgrey = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+        cv2.imwrite(sidefile, colorgrey)
+        print 'wrote', sidefile
