@@ -85,11 +85,10 @@ class ThreeD:
     if not os.path.exists(outdir):
       os.makedirs(outdir)
 
-    #if len(idlist) != 0:
-        #out_temp = '_' + str(Z) + '_' + str(Y) + '_' + str(X) +'.stl'
-        #all_path = [os.path.join(outdir, (str(id)+out_temp)) for id in idlist]
-        #if np.all([os.path.exists(apa) for apa in all_path]):
-        #    return 0
+    re_path = [os.path.join(outdir,str(intid)+'*') for intid in idlist]
+    found_file = [any(glob.iglob(re_file)) for re_file in re_path]
+    if len(found_file) > 0 and all(found_file):
+        return 0
 
     with h5py.File(datafile, 'r') as f:
       vol = f[f.keys()[0]][Z*tilewidth:Z*tilewidth+tilewidth,Y*tilewidth:Y*tilewidth+tilewidth,X*tilewidth:X*tilewidth+tilewidth]
