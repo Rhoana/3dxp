@@ -2,12 +2,13 @@ import os, h5py
 import numpy as np
 from threed import ThreeD
 
+N_TOP_IDS = 50 +1
 HOME = os.path.expanduser('~')
 DATA = HOME + '/2017/data/seg_100x4x4/stitched_seg.h5'
 ROOTDIR = HOME + '/2017/winter/3dxp1338/X3DOM/seg_100x4x4/'
 STLFOLDER = ROOTDIR + 'stl'
 X3DFOLDER = ROOTDIR + 'x3d'
-ALL_IDS = np.loadtxt(os.path.join(ROOTDIR,'out.txt'),dtype=np.uint32)[-4:-1]
+ALL_IDS = np.loadtxt(os.path.join(ROOTDIR,'out.txt'),dtype=np.uint32)[-N_TOP_IDS:-1]
 INDEX = 'one.html'
 TILESIZE = 256
 SIZES = []
@@ -22,7 +23,7 @@ with h5py.File(DATA, 'r') as df:
 subvols = zip(*np.where(np.ones(ntiles)))
 
 for z,y,x in subvols:
-    ThreeD.run(DATA, z, y, x, STLFOLDER, TILESIZE, ALL_IDS)
+    #ThreeD.run(DATA, z, y, x, STLFOLDER, TILESIZE, ALL_IDS)
 
     z_done = z*z_base + y*y_base + x*x_base
     print("%.1f%% done with stl" % (100*z_done) )

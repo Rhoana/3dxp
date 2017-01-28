@@ -274,7 +274,7 @@ class ThreeD:
           groupnode = ElementTree.tostringlist(ide.find('.//group'))
           grouptext = "".join(groupnode[1:-2])
           grouptext = grouptext.replace('primType="&quot;TRIANGLES&quot;"', "primType='\"TRIANGLES\"'")
-          grouptext = grouptext.replace(' />', '></popGeometryLevel>')
+          grouptext = grouptext.replace('\" />', '\"></popGeometryLevel>')
           html_content[STRID] = grouptext
         print 'X3D exists for', f
         continue
