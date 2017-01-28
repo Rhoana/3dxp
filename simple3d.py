@@ -7,7 +7,7 @@ DATA = HOME + '/2017/data/seg_100x4x4/stitched_seg.h5'
 ROOTDIR = HOME + '/2017/winter/3dxp1338/X3DOM/seg_100x4x4/'
 STLFOLDER = ROOTDIR + 'stl'
 X3DFOLDER = ROOTDIR + 'x3d'
-ALL_IDS = np.loadtxt(os.path.join(ROOTDIR,'out.txt'),dtype=np.uint32)[-3:-1]
+ALL_IDS = np.loadtxt(os.path.join(ROOTDIR,'out.txt'),dtype=np.uint32)[-4:-1]
 INDEX = 'one.html'
 TILESIZE = 256
 SIZES = []

@@ -275,8 +275,8 @@ class ThreeD:
           grouptext = "".join(groupnode[1:-2])
           grouptext = grouptext.replace('primType="&quot;TRIANGLES&quot;"', "primType='\"TRIANGLES\"'")
           grouptext = grouptext.replace(' />', '></popGeometryLevel>')
-          html_content[STRID] = "".join(groupnode[1:-2])
-         print 'X3D exists for', f
+          html_content[STRID] = grouptext
+        print 'X3D exists for', f
         continue
 
       x3d_cmd = 'aopt -i '+ stl_file +' -x '+ x3d_file
