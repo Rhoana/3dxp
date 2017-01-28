@@ -47,7 +47,7 @@ if __name__ == "__main__":
     subvols = zip(*np.where(np.ones(ntiles)))
 
     for z,y,x in subvols:
-        #ThreeD.run(DATA, z, y, x, STLFOLDER, TILESIZE, ALL_IDS)
+        ThreeD.run(DATA, z, y, x, STLFOLDER, TILESIZE, ALL_IDS)
 
         z_done = z*z_base + y*y_base + x*x_base
         print("%.1f%% done with stl" % (100*z_done) )
