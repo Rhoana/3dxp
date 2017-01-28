@@ -278,7 +278,7 @@ class ThreeD:
       if id_saved:
         if not id_read:
           ide = ElementTree.parse(html_id_file).getroot()
-          grouptext = ''.join(ide.find('.//group').itertext())
+          grouptext = ''.join([ElementTree.tostring(shape) for shape in ide.findall('.//group/*')])
           grouptext = grouptext.replace('primType="&quot;TRIANGLES&quot;"', "primType='\"TRIANGLES\"'")
           grouptext = grouptext.replace(' />', '></popGeometryLevel>')
           html_content[STRID] = grouptext
