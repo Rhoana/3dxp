@@ -272,8 +272,11 @@ class ThreeD:
         if not id_read:
           ide = ElementTree.parse(html_id_file).getroot()
           groupnode = ElementTree.tostringlist(ide.find('.//group'))
+          grouptext = "".join(groupnode[1:-2])
+          grouptext = grouptext.replace('primType="&quot;TRIANGLES&quot;"', "primType='\"TRIANGLES\"'")
+          grouptext = grouptext.replace(' />', '></popGeometryLevel>')
           html_content[STRID] = "".join(groupnode[1:-2])
-          print 'X3D exists for', f
+         print 'X3D exists for', f
         continue
 
       x3d_cmd = 'aopt -i '+ stl_file +' -x '+ x3d_file
