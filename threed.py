@@ -90,10 +90,9 @@ class ThreeD:
 
     # grab all IDs
     all_ids = np.unique(vol)
-    if not idlist:
+    if len(all_ids) == 0:
         idlist = all_ids
-    else:
-        print 'ID List', idlist
+    print 'ID List', idlist
 
     print 'Loaded data..'
 
@@ -152,16 +151,7 @@ class ThreeD:
   <script type='text/javascript' src='https://www.x3dom.org/x3dom/release/x3dom.js'></script>
   <script type='text/javascript' src='javascript/frames.js'></script>
   <script type='text/javascript' src='javascript/main.js'></script>
-  <link rel="stylesheet" href="css/main.css" type="text/css">  
-  <script>
-
-  window.onload = function() {
-
-    document.getElementById('r').runtime.showAll();
-
-  };
-
-  </script>
+  <link rel="stylesheet" href="css/main.css" type="text/css"/>
 </head>
 <body>
   <x3d id='r' width='100%' height='100%'>
@@ -195,7 +185,7 @@ class ThreeD:
             </shape>
             </transform>
             </transform>
-            </transform> 
+            </transform>
 
 
         <!-- SHOULD BE IN X -->
@@ -207,16 +197,15 @@ class ThreeD:
             <shape>
               <appearance>
                 <texture>
-                   <img style="display:none" src="images/0_in_x.png"> 
+                   <img style="display:none" src="0_in_x.png"></img>
                 </texture>
               </appearance>
               <plane primType='TRIANGLES' size='{DIMY} {DIMZ}' solid='false'></plane>
             </shape>
-        </transform> 
-        <!-- </transform>  -->
-        </transform> 
-        </transform> 
-        </transform> 
+        </transform>
+        </transform>
+        </transform>
+        </transform>
 
 
         <!-- SHOULD BE IN Y -->
@@ -228,71 +217,79 @@ class ThreeD:
             <shape>
               <appearance>
                 <texture>
-                   <img style="display:none" src="images/0_in_y.png"> 
+                   <img style="display:none" src="0_in_y.png"></img>
                 </texture>
               </appearance>
               <plane primType='TRIANGLES' size='{DIMX} {DIMZ}' solid='false'></plane>
             </shape>
-        </transform> 
-        </transform> 
-        </transform> 
-        </transform> 
-        </transform> 
+        </transform>
+        </transform>
+        </transform>
+        </transform>
+        </transform>
 
-
+    <group>
     '''
-
+    string_pad = 5
     html_header = html_header.replace('{DIMX}', str(dimx))
     html_header = html_header.replace('{DIMY}', str(dimy))
     html_header = html_header.replace('{DIMZ}', str(dimz))
     html_header = html_header.replace('{HALFDIMX}', str(int(dimx/2.)))
     html_header = html_header.replace('{HALFDIMY}', str(int(dimy/2.)))
     html_header = html_header.replace('{HALFDIMZ}', str(int(dimz/2.)))
-    html_header = html_header.replace('{LASTIMAGE}', str(int(dimz-1)))
+    html_header = html_header.replace('{LASTIMAGE}', str(int(dimz-1)).zfill(string_pad))
 
-
-
-
-    html_content = ''
+    html_content = {}
 
     html_footer = '''
+    </group>
     </scene>
   </x3d>
 </body>
 </html>
     '''
 
-    
     for f in stl_files:
 
-      ID = int(f.split('_')[0])
+      STRID = f.split('_')[0]
+      mipfile = '_'.join(f.split('_')[1:])
+      mipmaps = mipfile.replace('.stl', '_')
+      mipdir = os.path.join(outputfolder,STRID)
+      ID = int(STRID)
 
       stl_file = os.path.join(stldir, f)
       x3d_file = os.path.join(outputfolder, f.replace('.stl', '.x3d'))
-      mipmaps = f.replace('.stl', '_')
       html_file = os.path.join(outputfolder, f.replace('.stl', '.html'))
+      html_id_file = os.path.join(outputfolder, STRID+'.html')
 
-      if not os.path.exists(html_file):
+      if not os.path.exists(mipdir):
+        os.makedirs(mipdir)
 
-        x3d_cmd = 'aopt -i '+ stl_file +' -x '+ x3d_file
-        r = os.system(x3d_cmd)
-        mipmap_cmd = 'aopt -i '+ x3d_file + ' -K ' + mipmaps + ':pb -N '+ html_file
-        r2 = os.system('cd ' + outputfolder + ' && ' + mipmap_cmd)
+      id_saved = os.path.exists(html_id_file)
+      id_read = STRID in html_content
 
-      else:
-        r = -1000
-        r2 = -1000
+      if id_saved:
+        if not id_read:
+          ide = ElementTree.parse(html_id_file).getroot()
+          groupnode = ElementTree.tostringlist(ide.find('.//group'))
+          html_content[STRID] = "".join(groupnode[1:-2])
+          print 'X3D exists for', f
+        continue
 
-      if r == -1000 and r2 == -1000:
-        print 'X3D exists for', f
-      elif r == 0 and r2 == 0:
+      x3d_cmd = 'aopt -i '+ stl_file +' -x '+ x3d_file
+      mipmap_cmd = 'aopt -i '+ x3d_file + ' -K ' + STRID+'/'+mipmaps + ':pb -N '+ html_file
+      result = os.system(x3d_cmd + '&& cd ' + outputfolder + ' && ' + mipmap_cmd)
+      os.remove(x3d_file)
+      if not id_read:
+        html_content[STRID] = ''
+      if result == 0:
         print 'Generated X3D for', f
       else:
         print 'Error for', f
         continue
 
       # grab popGeometry HTML
-      e = ElementTree.parse(os.path.join(outputfolder, f.replace('.stl', '.html'))).getroot()
+      e = ElementTree.parse(html_file).getroot()
       geometrynode = e.find('.//popGeometry')
       geometrytext = ElementTree.tostring(geometrynode)
       geometrytext = geometrytext.replace('primType="&quot;TRIANGLES&quot;"', "primType='\"TRIANGLES\"'")
@@ -311,14 +308,24 @@ class ThreeD:
       mesh_html += '\n          ' + geometrytext
       mesh_html += '\n      ' + '</shape>'
 
-      html_content += mesh_html + '\n'
+      html_content[STRID] += mesh_html + '\n'
 
       print 'Generated HTML for', f
+      os.remove(html_file)
+
 
     # return html_content
+    all_html = ''
+    for pop_key in html_content:
+        pop_html = html_content[pop_key]
+        all_html += pop_html
+
+        pop_id_file = os.path.join(outputfolder, pop_key+'.html')
+        with open(os.path.join(outputfolder, pop_id_file), 'w') as f:
+            f.write(html_header + pop_html + html_footer)
 
     with open(os.path.join(outputfolder, outfile), 'w') as f:
-      f.write(html_header + html_content + html_footer)
+        f.write(html_header + all_html + html_footer)
 
     print 'Stored ' + outfile
 
@@ -351,7 +358,7 @@ if __name__ == "__main__":
 
   # we need the following parameters
   datapath = sys.argv[1]
-  z = sys.argv[2]    
+  z = sys.argv[2]
   y = sys.argv[3]
   x = sys.argv[4]
   outputpath = sys.argv[5]
@@ -363,39 +370,4 @@ if __name__ == "__main__":
 
   # now run donkey run
   ThreeD.run(datapath, int(z), int(y), int(x), outputpath, int(tilewidth), id_list.split(' '))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
