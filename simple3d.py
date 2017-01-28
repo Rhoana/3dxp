@@ -29,9 +29,9 @@ if __name__ == "__main__":
 
     N_TOP_IDS = args['n'] + 1
     ROOTDIR = realpath('out')
-    DATA = realpath('hdf5')
-    STLFOLDER = ROOTDIR + 'stl'
-    X3DFOLDER = ROOTDIR + 'x3d'
+    DATA = realpath('hd5')
+    STLFOLDER = os.path.join(ROOTDIR ,'stl')
+    X3DFOLDER = os.path.join(ROOTDIR , 'x3d')
     ALL_IDS = np.loadtxt(os.path.join(ROOTDIR,'out.txt'),dtype=np.uint32)[-N_TOP_IDS:-1]
     TILESIZE = args['s']
     INDEX = args['o']
