@@ -3,9 +3,7 @@ import numpy as np
 import sys, argparse
 from threed import ThreeD
 
-
-
-def main(_args):
+def start(_args):
 
     args = parseArgv(_args)
     # expand all system paths
@@ -69,9 +67,9 @@ def parseArgv(argv):
     # attain all arguments
     return vars(parser.parse_args())
 
-def start(_args, **_flags):
-    main(toArgv(_args,**_flags))
+def main(_args, **_flags):
+    start(toArgv(_args,**_flags))
 
 if __name__ == "__main__":
-    main(sys.argv)
+    start(sys.argv)
 
