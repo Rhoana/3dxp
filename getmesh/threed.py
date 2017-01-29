@@ -246,6 +246,7 @@ class ThreeD:
     html_header = html_header.replace('{LASTIMAGE}', str(int(dimz-1)).zfill(string_pad))
 
     html_content = {}
+    html_new_files = {}
 
     html_footer = '''
     </group>
@@ -267,7 +268,7 @@ class ThreeD:
 
       stl_file = os.path.join(stldir, f)
       x3d_file = os.path.join(mipdir, f.replace('.stl', '.x3d'))
-      html_file = os.path.join(outputfolder, f.replace('.stl', '.html'))
+      html_tmp_file = os.path.join(outputfolder, f.replace('.stl', '.html'))
       html_id_file = os.path.join(outputfolder, STRID+'.html')
 
       if not os.path.exists(mipdir):
@@ -285,22 +286,22 @@ class ThreeD:
         print 'X3D exists for', f
         continue
 
-      result = 0
+      result = [0,0]
       if not id_x3d_done:
-        result += os.system('aopt -i '+ stl_file +' -x '+ x3d_file)
-      mipmap_cmd = 'aopt -i '+ x3d_file + ' -K ' + STRID+'/'+mipmaps + ':pb -N '+ html_file
-      result += os.system('cd ' + outputfolder + ' && ' + mipmap_cmd)
+        result[0] = os.system('aopt -i '+ stl_file +' -x '+ x3d_file)
+      mipmap_cmd = 'aopt -i '+ x3d_file + ' -K ' + STRID+'/'+mipmaps + ':pb -N '+ html_tmp_file
+      result[1] = os.system('cd ' + outputfolder + ' && ' + mipmap_cmd)
 
       if not id_read:
         html_content[STRID] = ''
-      if result == 0:
-        print 'Generated X3D for', f
+      if not any(result):
+        print 'Generated HTML for', mipmaps
       else:
-        print 'Error for', f
+        print 'Error making', mipmaps
         continue
 
       # grab popGeometry HTML
-      e = ElementTree.parse(html_file).getroot()
+      e = ElementTree.parse(html_tmp_file).getroot()
       geometrynode = e.find('.//popGeometry')
       geometrytext = html_string(geometrynode)
 
@@ -318,9 +319,10 @@ class ThreeD:
       mesh_html += '\n      ' + '</shape>'
 
       html_content[STRID] += mesh_html + '\n'
+      html_new_files[STRID] = html_id_file
 
       print 'Generated HTML for', f
-      os.remove(html_file)
+      os.remove(html_tmp_file)
 
 
     # return html_content
@@ -329,9 +331,9 @@ class ThreeD:
         pop_html = html_content[pop_key]
         all_html += pop_html
 
-        pop_id_file = pop_key+'.html'
-        with open(os.path.join(outputfolder, pop_id_file), 'w') as f:
-            f.write(html_header + pop_html + html_footer)
+        if pop_key in html_new_files:
+            with open(html_new_files[pop_key], 'w') as f:
+                f.write(html_header + pop_html + html_footer)
 
     with open(os.path.join(outputfolder, outfile), 'w') as f:
         f.write(html_header + all_html + html_footer)
