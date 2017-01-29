@@ -1,10 +1,12 @@
 RATE = 20;
 INTERV = 800;
-ALLSLICE = Math.min(ALLFRAMES.length, 1774);
-allstates = {allframes:[], allslices:[]};
+NEWEVENT = false;
+ALLSLICE = Math.min(ALLFRAMES.length, 3282);
+allstates = {allslices:[]};
+allstates.allframes =[];
 animation = false;
 loading = false;
-slice = 1773;
+slice = 3282;
 buffer = 0;
 
 function slice_mover(zed, delta=false){
@@ -69,7 +71,14 @@ function slice_mover(zed, delta=false){
     }
     loading = false
   }
-  buffer_img.src = 'images/'+ slice +'.png'
+  var pad = "00000";
+  if (pad.length){
+    var sli = (pad+slice).slice(-pad.length)
+    buffer_img.src = 'images/'+ sli +'.png'
+  }
+  else{
+    buffer_img.src = 'images/'+ slice +'.png'
+  }
   buffer_img.style.display = "none" 
 
   // return sucess
@@ -102,6 +111,25 @@ window.onload = function() {
   
 };
 
+//
+// viewpoint changed
+function viewFunc(evt) {
+// show viewpoint values
+  if (evt && NEWEVENT) {
+    NEWEVENT = false
+    var pos = evt.position;
+    var rot = evt.orientation;
+
+    var camPos = [pos.x, pos.y, pos.z].join(' ')
+    var camRot = [rot[0].x, rot[0].y, rot[0].z, rot[1]].join(' ');
+
+    var frame = [camPos, camRot]
+    console.log(frame)
+    allstates.allslices.push(slice);
+    allstates.allframes.push(frame);
+  }
+}
+
 function pop_state(){
   document.body.className = 'red';
   setTimeout(function(){
@@ -116,10 +144,9 @@ function save_state(){
     document.body.className = '';
   },1000);
   var vp = document.getElementById('view');
-  camRot = vp.orientation; 
-  camPos = vp.position;
-  allstates.allframes.push([camPos, camRot]);
-  allstates.allslices.push(slice);
+  vp.addEventListener('viewpointChanged', viewFunc);
+  vp.setAttribute('bind', true);
+  NEWEVENT = true;
 }
 
 function save_states(){
@@ -128,7 +155,7 @@ function save_states(){
     document.body.className = '';
   },1000);
   var sv_layers = 'LAYERS =' + JSON.stringify(allstates.allslices,null,'\t');
-  var sv_frames = 'KEYFRAMES =' + JSON.stringify(allstates.allframes,null,'\t');
+  var sv_frames = 'FRAMES =' + JSON.stringify(allstates.allframes,null,'\t');
   var saved = encodeURIComponent(sv_layers+'\n\n'+sv_frames);
   window.location = 'data:Application/octet-stream,'+saved;
 }
