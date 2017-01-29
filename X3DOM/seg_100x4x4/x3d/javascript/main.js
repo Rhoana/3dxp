@@ -136,6 +136,7 @@ function pop_state(){
     document.body.className = '';
   },1000);
   allstates.allslices.pop();
+  allstates.allframes.pop();
 }
 
 function save_state(){

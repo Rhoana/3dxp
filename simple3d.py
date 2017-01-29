@@ -1,21 +1,24 @@
 import os, h5py
-import argparse
 import numpy as np
+import sys, argparse
 from threed import ThreeD
 
-def main(_hd5_name, _out_name, _n_ids, _tile_size, _index):
 
+
+def main(_args):
+
+    args = parseArgv(_args)
     # expand all system paths
     realpath = lambda pathy: os.path.realpath(os.path.expanduser(pathy))
 
-    N_TOP_IDS = _n_ids + 1
-    ROOTDIR = realpath(_out_name)
-    DATA = realpath(_hd5_name)
+    N_TOP_IDS = args['n'] + 1
+    ROOTDIR = realpath(args['out'])
+    DATA = realpath(args['hd5'])
     STLFOLDER = os.path.join(ROOTDIR ,'stl')
     X3DFOLDER = os.path.join(ROOTDIR , 'x3d')
     ALL_IDS = np.loadtxt(os.path.join(ROOTDIR,'out.txt'),dtype=np.uint32)[-N_TOP_IDS:-1]
-    TILESIZE = _tile_size
-    INDEX = _index
+    TILESIZE = args['s']
+    INDEX = args['o']
     SIZES = []
 
     with h5py.File(DATA, 'r') as df:
@@ -33,11 +36,19 @@ def main(_hd5_name, _out_name, _n_ids, _tile_size, _index):
         z_done = z*z_base + y*y_base + x*x_base
         print("%.1f%% done with stl" % (100*z_done) )
 
-
     DIMZ,DIMY,DIMX = SIZES
     ThreeD.create_website(STLFOLDER, X3DFOLDER, ALL_IDS, INDEX, DIMX, DIMY, DIMZ)
 
-if __name__ == "__main__":
+def toArgv(args, **flags):
+    keyvals = flags.items()
+    all_tokens = range(2*len(keyvals))
+    endash = lambda fkey: '-'+fkey if len(fkey) == 1 else '--'+fkey
+    enflag = lambda kv,fl: str(kv[fl]) if fl else endash(str(kv[fl]))
+    kargv = [enflag(keyvals[i//2],i%2) for i in all_tokens]
+    return ['main'] + list(map(str,args)) + kargv
+
+def parseArgv(argv):
+    sys.argv = argv
 
     help = {
         'hd5': 'input hd5 file (default hd5)',
@@ -56,5 +67,11 @@ if __name__ == "__main__":
     parser.add_argument('-o', default='index.html', help=help['o'])
 
     # attain all arguments
-    args = vars(parser.parse_args())
-    main(args['hd5'],args['out'],args['n'],args['s'],args['o'])
+    return vars(parser.parse_args())
+
+def start(_args, **_flags):
+    main(toArgv(_args,**_flags))
+
+if __name__ == "__main__":
+    main(sys.argv)
+
