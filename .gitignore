@@ -8,12 +8,6 @@ X3DOM/seg_100x4x4/x3d
 !X3DOM/seg_100x4x4/x3d/index.html
 !X3DOM/seg_100x4x4/x3d/css
 
-
-
-XTK/*
-!XTK/index.html
-!XTK/xtk.js
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
