@@ -2,8 +2,8 @@
 3dxp_data/
 *.swp
 
-X3DOM/seg_100x4x4/stl
-X3DOM/seg_100x4x4/x3d
+X3DOM/seg_100x4x4/stl/*
+X3DOM/seg_100x4x4/x3d/*
 !X3DOM/seg_100x4x4/x3d/javascript
 !X3DOM/seg_100x4x4/x3d/index.html
 !X3DOM/seg_100x4x4/x3d/css
