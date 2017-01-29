@@ -163,6 +163,7 @@ class ThreeD:
 
     <scene id='scene'>
       <viewpoint id="view" bind="true" position="3929.3813885733343 -2071.8817790267294 -1912.3739230587557" orientation="0.6159574590769997 0.7844869949019639 -0.07194833866803957 2.17017692095808" description="camera"></viewpoint>
+
             <transform bboxCenter='0,0,0' rotation='0 1 0 -1.5708'>
             <transform id='move0' bboxCenter='0,0,0' translation='{HALFDIMX} {HALFDIMY} -{DIMZ}'>
             <transform bboxCenter='0,0,0' scale='1 -1 1'>
@@ -334,6 +335,9 @@ class ThreeD:
 
     with open(os.path.join(outputfolder, outfile), 'w') as f:
         f.write(html_header + all_html + html_footer)
+
+    with open(os.path.join(outputfolder, 'null.html'), 'w') as f:
+        f.write(html_header + html_footer)
 
     print 'Stored ' + outfile
 
