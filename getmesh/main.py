@@ -2,25 +2,29 @@ import os, h5py
 import numpy as np
 import sys, argparse
 from threed import ThreeD
-from scripts import toArgv
-from scripts import biggest
+from scripts import *
 
 def start(_argv):
 
     args = parseArgv(_argv)
     # expand all system paths
-    realpath = lambda pathy: os.path.realpath(os.path.expanduser(pathy))
+    homepath = lambda pathy: os.path.expanduser(pathy)
+    realpath = lambda pathy: os.path.realpath(homepath(pathy))
+    sharepath = lambda share,pathy: os.path.join(share, homepath(pathy))
 
     SIZES = []
-    INDEX = args['o']
-    TILESIZE = args['s']
-    N_TOP_IDS = args['n'] + 1
-    DATA = realpath(args['hd5'])
-    ROOTDIR = realpath(args['out'])
-    STLFOLDER = os.path.join(ROOTDIR, 'stl')
-    X3DFOLDER = os.path.join(ROOTDIR, 'x3d')
-    COUNTPATH = os.path.join(ROOTDIR, 'count.txt')
+    INDEX = args['index']
+    TILESIZE = args['size']
+    N_TOP_IDS = args['number'] + 1
+    ROOTOUT = realpath(args['out'])
+    ROOTIN = realpath(args['root'])
+    STLFOLDER = sharepath(ROOTOUT, 'stl')
+    X3DFOLDER = sharepath(ROOTOUT, 'x3d')
+    DATA = sharepath(ROOTIN, args['ids'])
+    IMAGE = sharepath(ROOTIN, args['raw'])
+    COUNTPATH = sharepath(ROOTOUT, 'count.txt')
     ALL_IDS = biggest(DATA,COUNTPATH,s=TILESIZE)[-N_TOP_IDS:-1]
+    #sides(rel)
 
     with h5py.File(DATA, 'r') as df:
         SIZES = df[df.keys()[0]].shape
@@ -44,8 +48,10 @@ def parseArgv(argv):
     sys.argv = argv
 
     help = {
-        'hd5': 'input hd5 file (default in.h5)',
+        'ids': 'input hd5 id volume (default in.h5)',
         'out': 'output web directory (default www)',
+        'raw': 'input raw h5 volume (default raw.h5)',
+        'R': 'root of both hd5 volumes (default .)',
         'o': 'output filename (default index.html)',
         's': 'load h5 in s*s*s chunks (default 256)',
         'n': 'make meshes for the top n ids (default 1)',
@@ -53,11 +59,15 @@ def parseArgv(argv):
     }
 
     parser = argparse.ArgumentParser(description=help['help'])
-    parser.add_argument('hd5', default='in.h5', nargs='?', help=help['hd5'])
     parser.add_argument('out', default='www', nargs='?', help=help['out'])
-    parser.add_argument('-s', type=int, default=256, help=help['s'])
-    parser.add_argument('-n', type=int, default=1, help=help['n'])
-    parser.add_argument('-o', default='index.html', help=help['o'])
+    parser.add_argument('-o','--index', default='index.html', help=help['o'])
+
+    parser.add_argument('-s','--size', type=int, default=256, help=help['s'])
+    parser.add_argument('-n','--number',type=int, default=1, help=help['n'])
+
+    parser.add_argument('-i','--ids', default='in.h5', help=help['ids'])
+    parser.add_argument('-r','--raw', default='raw.h5', help=help['raw'])
+    parser.add_argument('-R','--root', default='.', help=help['R'])
 
     # attain all arguments
     return vars(parser.parse_args())
