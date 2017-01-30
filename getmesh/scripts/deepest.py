@@ -23,6 +23,8 @@ def start(_argv):
         vol = df[df.keys()[0]]
         ntiles = np.array(vol.shape)//TILESIZE
 
+        # All below must happen with df open
+
         subvols = zip(*np.where(np.ones(ntiles[1:])))
         subdepths = np.arange(ntiles[0])
         z_base = 1./ntiles[0]
