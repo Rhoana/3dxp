@@ -321,7 +321,7 @@ class ThreeD:
       html_content[STRID] += mesh_html + '\n'
       html_new_files[STRID] = html_id_file
 
-      print 'Generated HTML for', f
+      print 'Generated HTML ', html_tmp_file
       os.remove(html_tmp_file)
 
 
