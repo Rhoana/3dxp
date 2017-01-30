@@ -2,22 +2,25 @@ import os, h5py
 import numpy as np
 import sys, argparse
 from threed import ThreeD
+from scripts import toArgv
+from scripts import biggest
 
-def start(_args):
+def start(_argv):
 
-    args = parseArgv(_args)
+    args = parseArgv(_argv)
     # expand all system paths
     realpath = lambda pathy: os.path.realpath(os.path.expanduser(pathy))
 
-    N_TOP_IDS = args['n'] + 1
-    ROOTDIR = realpath(args['out'])
-    DATA = realpath(args['hd5'])
-    STLFOLDER = os.path.join(ROOTDIR ,'stl')
-    X3DFOLDER = os.path.join(ROOTDIR , 'x3d')
-    ALL_IDS = np.loadtxt(os.path.join(ROOTDIR,'out.txt'),dtype=np.uint32)[-N_TOP_IDS:-1]
-    TILESIZE = args['s']
-    INDEX = args['o']
     SIZES = []
+    INDEX = args['o']
+    TILESIZE = args['s']
+    N_TOP_IDS = args['n'] + 1
+    DATA = realpath(args['hd5'])
+    ROOTDIR = realpath(args['out'])
+    STLFOLDER = os.path.join(ROOTDIR, 'stl')
+    X3DFOLDER = os.path.join(ROOTDIR, 'x3d')
+    COUNTPATH = os.path.join(ROOTDIR, 'count.txt')
+    ALL_IDS = biggest(DATA,COUNTPATH,s=TILESIZE)[-N_TOP_IDS:-1]
 
     with h5py.File(DATA, 'r') as df:
         SIZES = df[df.keys()[0]].shape
@@ -37,19 +40,11 @@ def start(_args):
     DIMZ,DIMY,DIMX = SIZES
     ThreeD.create_website(STLFOLDER, X3DFOLDER, ALL_IDS, INDEX, DIMX, DIMY, DIMZ)
 
-def toArgv(args, **flags):
-    keyvals = flags.items()
-    all_tokens = range(2*len(keyvals))
-    endash = lambda fkey: '-'+fkey if len(fkey) == 1 else '--'+fkey
-    enflag = lambda kv,fl: str(kv[fl]) if fl else endash(str(kv[fl]))
-    kargv = [enflag(keyvals[i//2],i%2) for i in all_tokens]
-    return ['main'] + list(map(str,args)) + kargv
-
 def parseArgv(argv):
     sys.argv = argv
 
     help = {
-        'hd5': 'input hd5 file (default hd5)',
+        'hd5': 'input hd5 file (default in.h5)',
         'out': 'output web directory (default www)',
         'o': 'output filename (default index.html)',
         's': 'load h5 in s*s*s chunks (default 256)',
@@ -58,7 +53,7 @@ def parseArgv(argv):
     }
 
     parser = argparse.ArgumentParser(description=help['help'])
-    parser.add_argument('hd5', default='hd5', nargs='?', help=help['hd5'])
+    parser.add_argument('hd5', default='in.h5', nargs='?', help=help['hd5'])
     parser.add_argument('out', default='www', nargs='?', help=help['out'])
     parser.add_argument('-s', type=int, default=256, help=help['s'])
     parser.add_argument('-n', type=int, default=1, help=help['n'])
@@ -67,9 +62,9 @@ def parseArgv(argv):
     # attain all arguments
     return vars(parser.parse_args())
 
-def main(_args, **_flags):
-    start(toArgv(_args,**_flags))
+def main(*_args, **_flags):
+    return start(toArgv(*_args, **_flags))
 
 if __name__ == "__main__":
-    start(sys.argv)
+    print start(sys.argv)
 

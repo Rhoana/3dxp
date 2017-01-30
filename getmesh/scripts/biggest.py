@@ -4,16 +4,16 @@ from mahotas.histogram import fullhistogram
 import numpy as np
 import os, h5py
 
-def start(_args):
-    args = parseArgv(_args)
+def start(_argv):
+    args = parseArgv(_argv)
 
-    HOME = os.path.expanduser('~')
-    DATA = HOME + '/2017/data/seg_100x4x4/stitched_seg.h5'
-    ROOTDIR = HOME + '/2017/winter/3dxp1338/X3DOM/seg_100x4x4'
-    N_IDS = 50
-    INDEX = 'one.html'
-    TILESIZE = 256
+    DATA = args['hd5']
+    TILESIZE = args['s']
+    COUNTPATH = args['out']
     COUNTS = np.zeros(1)
+
+    if os.path.exists(COUNTPATH):
+        return np.loadtxt(COUNTPATH,dtype=np.uint32)
 
     with h5py.File(DATA, 'r') as df:
         vol = df[df.keys()[0]]
@@ -36,24 +36,31 @@ def start(_args):
             COUNTS = COUNTS + new_count
 
             z_done = z*z_base + y*y_base + x*x_base
-            print("%.1f%% done" % (100*z_done) )
+            print("%.1f%% done with counting" % (100*z_done) )
 
-        topIDs = np.argsort(COUNTS)[-N_IDS:-1].astype(np.uint32)
-        np.savetxt(os.path.join(ROOTDIR,'count.txt'), topIDs, fmt='%i', delimiter=',')
+        topIDs = np.argsort(COUNTS).astype(np.uint32)
+        np.savetxt(COUNTPATH, topIDs, fmt='%i')
+        return topIDs
 
 def parseArgv(argv):
     sys.argv = argv
 
     help = {
+        's': 'load h5 in s*s*s chunks (default 256)',
+        'out': 'output count text file (defalt count.txt)',
+        'hd5': 'input segmentation hd5 file (default in.h5)',
         'help': 'Find biggest IDs in segmented volume'
     }
 
     parser = argparse.ArgumentParser(description=help['help'])
+    parser.add_argument('hd5', default='in.h5', nargs='?', help=help['hd5'])
+    parser.add_argument('out', default='count.txt', nargs='?', help=help['out'])
+    parser.add_argument('-s', type=int, default=256, help=help['s'])
 
     return vars(parser.parse_args())
 
-def main(_args, **_flags):
-    start(toArgv(_args, **_flags))
+def main(*_args, **_flags):
+    return start(toArgv(*_args, **_flags))
 
 if __name__ == "__main__":
     start(sys.argv)

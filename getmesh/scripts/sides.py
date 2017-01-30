@@ -4,8 +4,8 @@ import os, cv2, h5py
 import mahotas as mh
 import numpy as np
 
-def start(_args):
-    args = parseArgv(_args)
+def start(_argv):
+    args = parseArgv(_argv)
     HOME = os.path.expanduser('~')
 
     IMG_IN = HOME + '/2017/data/seg_100x4x4/grayscale.h5'
@@ -36,9 +36,9 @@ def parseArgv(argv):
 
     return vars(parser.parse_args())
 
-def main(_args, **_flags):
-    start(toArgv(_args, **_flags))
+def main(*_args, **_flags):
+    return start(toArgv(*_args, **_flags))
 
 if __name__ == "__main__":
-    start(sys.argv)
+    print start(sys.argv)
 
