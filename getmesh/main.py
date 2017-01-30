@@ -23,9 +23,8 @@ def start(_argv):
     PNGS = sharepath(ROOTIN, args['png'])
     IMAGE = sharepath(ROOTIN, args['raw'])
     COUNTPATH = sharepath(ROOTOUT, 'count.txt')
-    # Count most common ids and make pngs for cube sides
+    # Count most common ids 
     ALL_IDS = biggest(DATA,COUNTPATH,s=TILESIZE)[-N_TOP_IDS:-1]
-    sides(X3DFOLDER, IMAGE, PNGS)
 
     # Load ids and make stl files
     if os.path.exists(DATA):
@@ -49,6 +48,8 @@ def start(_argv):
 
     # Load stl (and cached x3d) to make x3dom html
     ThreeD.create_website(STLFOLDER, X3DFOLDER, ALL_IDS, INDEX, *sizes)
+    # Link full image stack and create cube sides
+    sides(X3DFOLDER, IMAGE, PNGS)
 
 def parseArgv(argv):
     sys.argv = argv
@@ -71,10 +72,8 @@ def parseArgv(argv):
     parser.add_argument('raw', default='raw.h5', nargs='?', help=help['raw'])
     parser.add_argument('png', default='pngs', nargs='?', help=help['png'])
     parser.add_argument('-o','--index', default='index.html', help=help['o'])
-
     parser.add_argument('-s','--size', type=int, default=256, help=help['s'])
     parser.add_argument('-n','--number',type=int, default=1, help=help['n'])
-
     parser.add_argument('-R','--root', default='.', help=help['R'])
 
     # attain all arguments
