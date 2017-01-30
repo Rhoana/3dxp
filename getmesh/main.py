@@ -20,10 +20,12 @@ def start(_argv):
     STLFOLDER = sharepath(ROOTOUT, 'stl')
     X3DFOLDER = sharepath(ROOTOUT, 'x3d')
     DATA = sharepath(ROOTIN, args['ids'])
+    PNGS = sharepath(ROOTIN, args['png'])
     IMAGE = sharepath(ROOTIN, args['raw'])
     COUNTPATH = sharepath(ROOTOUT, 'count.txt')
+    # Count most common ids and make pngs for cube sides
     ALL_IDS = biggest(DATA,COUNTPATH,s=TILESIZE)[-N_TOP_IDS:-1]
-    #sides(rel)
+    sides(X3DFOLDER, IMAGE, PNGS)
 
     # Load ids and make stl files
     if os.path.exists(DATA):
@@ -55,6 +57,7 @@ def parseArgv(argv):
         'ids': 'input hd5 id volume (default in.h5)',
         'out': 'output web directory (default www)',
         'raw': 'input raw h5 volume (default raw.h5)',
+        'png': 'input raw png folder (default pngs)',
         'R': 'root of both hd5 volumes (default .)',
         'o': 'output filename (default index.html)',
         's': 'load h5 in s*s*s chunks (default 256)',
@@ -66,6 +69,7 @@ def parseArgv(argv):
     parser.add_argument('out', default='www', help=help['out'])
     parser.add_argument('ids', default='in.h5', nargs='?', help=help['ids'])
     parser.add_argument('raw', default='raw.h5', nargs='?', help=help['raw'])
+    parser.add_argument('png', default='pngs', nargs='?', help=help['png'])
     parser.add_argument('-o','--index', default='index.html', help=help['o'])
 
     parser.add_argument('-s','--size', type=int, default=256, help=help['s'])
