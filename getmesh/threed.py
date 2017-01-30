@@ -160,8 +160,9 @@ class ThreeD:
   <x3d id='r' width='100%' height='100%'>
 
     <scene id='scene'>
-      <viewpoint id="view" bind="true" position="3929.3813885733343 -2071.8817790267294 -1912.3739230587557" orientation="0.6159574590769997 0.7844869949019639 -0.07194833866803957 2.17017692095808" description="camera"></viewpoint>
+      <viewpoint id="view" bind="true" position="-3907.452893023825 3412.645607228069 1698.6871532265088" orientation="-0.38641924151512014 0.5710252704568496 0.7242998759399042 4.044510548789248" description="camera"></viewpoint>
 
+            <transform bboxCenter='0 0 0' scale='10 1 1'>
             <transform bboxCenter='0,0,0' rotation='0 1 0 -1.5708'>
             <transform id='move0' bboxCenter='0,0,0' translation='{HALFDIMX} {HALFDIMY} -{DIMZ}'>
             <transform bboxCenter='0,0,0' scale='1 -1 1'>
@@ -176,6 +177,9 @@ class ThreeD:
             </transform>
             </transform>
             </transform>
+            </transform>
+
+            <transform bboxCenter='0 0 0' scale='10 1 1'>
             <transform bboxCenter='0,0,0' rotation='0 1 0 -1.5708'>
             <transform id='move1' bboxCenter='0,0,0' translation='{HALFDIMX} {HALFDIMY} -{DIMZ}'>
             <transform bboxCenter='0,0,0' scale='1 -1 1'>
@@ -190,12 +194,13 @@ class ThreeD:
             </transform>
             </transform>
             </transform>
+            </transform>
 
 
         <!-- SHOULD BE IN X -->
+        <transform bboxCenter='0 0 0' scale='10 1 1'>
         <transform id='clipScopeX'>
         <transform bboxCenter='0,0,0' rotation='0 0 1 -1.5708'>
-        <!-- <transform bboxCenter='0,0,0' rotation='0 0 1 -1.5708'> -->
         <transform id='move_slice' bboxCenter='0,0,0' translation='-{HALFDIMY} {HALFDIMZ} 0'>
         <transform bboxCenter='0,0,0' scale='-1 -1 1'>
             <shape>
@@ -210,9 +215,11 @@ class ThreeD:
         </transform>
         </transform>
         </transform>
+        </transform>
 
 
         <!-- SHOULD BE IN Y -->
+        <transform bboxCenter='0 0 0' scale='10 1 1'>
         <transform id='clipScopeY'>
         <transform bboxCenter='0,0,0' rotation='0 0 1 -1.5708'>
         <transform bboxCenter='0,0,0' rotation='0 1 0 -1.5708'>
@@ -231,8 +238,10 @@ class ThreeD:
         </transform>
         </transform>
         </transform>
+        </transform>
 
     <group>
+    <transform bboxCenter='0 0 0' scale='10 1 1'>
     '''
     string_pad = 5
     html_header = html_header.replace('{DIMX}', str(dimx))
@@ -247,6 +256,7 @@ class ThreeD:
     html_new_files = {}
 
     html_footer = '''
+    </transform>
     </group>
     </scene>
   </x3d>
@@ -278,7 +288,7 @@ class ThreeD:
 
       if id_saved:
         if not id_read:
-          shapes = ElementTree.parse(html_id_file).getroot().findall('.//group/*')
+          shapes = ElementTree.parse(html_id_file).getroot().findall('.//group/transform/*')
           grouptext = [html_string(shape) for shape in shapes]
           html_content[STRID] = ''.join(grouptext)
         print 'X3D exists for', f

@@ -6,6 +6,7 @@ if __name__ == "__main__":
         #'size': 256,
         #'index': 'index.html',
         'www': '../../www',
+        'deep': int(sys.argv[2]),
         'number': int(sys.argv[1]),
         'root': '~/2017/data/seg_100x4x4'
     }

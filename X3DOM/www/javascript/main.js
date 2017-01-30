@@ -1,7 +1,8 @@
 RATE = 20;
 INTERV = 800;
 NEWEVENT = false;
-ALLSLICE = Math.min(ALLFRAMES.length, 3282);
+//ALLSLICE = Math.min(ALLFRAMES.length, 3282);
+ALLSLICE = Math.min(3282+1, 3282+1);
 allstates = {allslices:[]};
 allstates.allframes =[];
 animation = false;
@@ -171,7 +172,7 @@ function user_up(){
 }
 
 var actions = {
-  32: animate,
+  // 32: animate,
   38: user_down,
   40: user_up,
   37: pop_state,

@@ -15,6 +15,7 @@ def start(_argv):
 
     INDEX = args['index']
     TILESIZE = args['size']
+    TOP_DEEP = args['deep']
     N_TOP_IDS = args['number'] + 1
     ROOTOUT = realpath(args['out'])
     ROOTIN = realpath(args['root'])
@@ -24,12 +25,15 @@ def start(_argv):
     DATA = sharepath(ROOTIN, args['ids'])
     PNGS = sharepath(ROOTIN, args['png'])
     IMAGE = sharepath(ROOTIN, args['raw'])
-    COUNTPATH = sharepath(ROOTOUT, 'deep_count.txt')
-    # Count most common ids 
-    ALL_IDS,ALL_COUNTS = deepest(DATA,COUNTPATH,s=TILESIZE)
-    top_counts = ALL_COUNTS[-N_TOP_IDS:-1]
-    top_ids = ALL_IDS[-N_TOP_IDS:-1]
-
+    SORTER = [biggest, deepest][TOP_DEEP]
+    SORT_TOP = ['spread_','deep_'][TOP_DEEP]+'count.txt'
+    COUNTPATH = sharepath(ROOTOUT, SORT_TOP)
+    # Count most spread or deep ids 
+    BIG_IDS, BIG_COUNTS = biggest(DATA,'spread_count.txt',s=TILESIZE)
+    DEEP_IDS, DEEP_COUNTS = deepest(DATA,'deep_count.txt',s=TILESIZE)
+    top_ids = [BIG_IDS, DEEP_IDS][TOP_DEEP][-N_TOP_IDS:-1]
+    big_ids = [np.where(BIG_IDS == tid)[0][0] for tid in top_ids]
+    top_counts = BIG_COUNTS[big_ids]
 
     # Load ids and make stl files
     if os.path.exists(DATA):
@@ -66,6 +70,7 @@ def parseArgv(argv):
     sys.argv = argv
 
     help = {
+        'deep': 'rank top ids by depth (default 0)',
         'ids': 'input hd5 id volume (default in.h5)',
         'out': 'output web directory (default .)',
         'raw': 'input raw h5 volume (default raw.h5)',
@@ -86,6 +91,7 @@ def parseArgv(argv):
     parser.add_argument('-o','--index', default='index.html', help=help['o'])
     parser.add_argument('-s','--size', type=int, default=256, help=help['s'])
     parser.add_argument('-n','--number',type=int, default=1, help=help['n'])
+    parser.add_argument('-D','--deep',type=int, default=0, help=help['deep'])
     parser.add_argument('-w','--www', default='www', help=help['w'])
     parser.add_argument('-R','--root', default='.', help=help['R'])
 
