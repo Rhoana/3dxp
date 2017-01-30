@@ -17,6 +17,7 @@ def start(_argv):
     N_TOP_IDS = args['number'] + 1
     ROOTOUT = realpath(args['out'])
     ROOTIN = realpath(args['root'])
+    WWW = realpath(args['www'])
     STLFOLDER = sharepath(ROOTOUT, 'stl')
     X3DFOLDER = sharepath(ROOTOUT, 'x3d')
     DATA = sharepath(ROOTIN, args['ids'])
@@ -47,7 +48,7 @@ def start(_argv):
             print("%.1f%% done with stl" % (100*z_done) )
 
     # Load stl (and cached x3d) to make x3dom html
-    ThreeD.create_website(STLFOLDER, X3DFOLDER, ALL_IDS, INDEX, *sizes)
+    ThreeD.create_website(STLFOLDER, X3DFOLDER, ALL_IDS, INDEX, *sizes, www=WWW)
     # Link full image stack and create cube sides
     sides(X3DFOLDER, IMAGE, PNGS)
 
@@ -56,24 +57,26 @@ def parseArgv(argv):
 
     help = {
         'ids': 'input hd5 id volume (default in.h5)',
-        'out': 'output web directory (default www)',
+        'out': 'output web directory (default .)',
         'raw': 'input raw h5 volume (default raw.h5)',
         'png': 'input raw png folder (default pngs)',
         'R': 'root of both hd5 volumes (default .)',
         'o': 'output filename (default index.html)',
         's': 'load h5 in s*s*s chunks (default 256)',
         'n': 'make meshes for the top n ids (default 1)',
+        'w': 'folder containing js/css (default www)',
         'help': 'Make an hdf5 file into html meshes!'
     }
 
     parser = argparse.ArgumentParser(description=help['help'])
-    parser.add_argument('out', default='www', help=help['out'])
+    parser.add_argument('out', default='.', help=help['out'])
     parser.add_argument('ids', default='in.h5', nargs='?', help=help['ids'])
     parser.add_argument('raw', default='raw.h5', nargs='?', help=help['raw'])
     parser.add_argument('png', default='pngs', nargs='?', help=help['png'])
     parser.add_argument('-o','--index', default='index.html', help=help['o'])
     parser.add_argument('-s','--size', type=int, default=256, help=help['s'])
     parser.add_argument('-n','--number',type=int, default=1, help=help['n'])
+    parser.add_argument('-w','--www', default='www', help=help['w'])
     parser.add_argument('-R','--root', default='.', help=help['R'])
 
     # attain all arguments

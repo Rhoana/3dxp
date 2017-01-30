@@ -135,7 +135,7 @@ class ThreeD:
     print 'All done.'
 
   @staticmethod
-  def create_website(stldir, outputfolder, ids=None, outfile='index.html', dimz=1024, dimy=1024, dimx=1024):
+  def create_website(stldir, outputfolder, ids=None, outfile='index.html', dimz=1024, dimy=1024, dimx=1024,**kwargs):
 
     stl_files = None
 
@@ -343,7 +343,15 @@ class ThreeD:
 
     print 'Stored ' + outfile
 
+    # Link scripts
+    WWW_IN = os.path.relpath(kwargs['www'], outputfolder)
 
+    if os.path.exists(kwargs['www']):
+        for lang in ['css', 'javascript']:
+            in_link = os.path.join(WWW_IN, lang)
+            out_link = os.path.join(outputfolder, lang)
+        if os.path.exists(in_link) and not os.path.exists(out_link):
+            os.symlink(in_link, out_link)
 
 #
 #

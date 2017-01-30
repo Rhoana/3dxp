@@ -5,6 +5,7 @@ if __name__ == "__main__":
     flags = {
         #'size': 256,
         #'index': 'index.html',
+        'www': '../../www',
         'number': int(sys.argv[1]),
         'root': '~/2017/data/seg_100x4x4'
     }
