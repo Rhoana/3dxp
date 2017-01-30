@@ -24,9 +24,9 @@ def start(_argv):
     DATA = sharepath(ROOTIN, args['ids'])
     PNGS = sharepath(ROOTIN, args['png'])
     IMAGE = sharepath(ROOTIN, args['raw'])
-    COUNTPATH = sharepath(ROOTOUT, 'count.txt')
+    COUNTPATH = sharepath(ROOTOUT, 'deep_count.txt')
     # Count most common ids 
-    ALL_IDS,ALL_COUNTS = biggest(DATA,COUNTPATH,s=TILESIZE)
+    ALL_IDS,ALL_COUNTS = deepest(DATA,COUNTPATH,s=TILESIZE)
     top_counts = ALL_COUNTS[-N_TOP_IDS:-1]
     top_ids = ALL_IDS[-N_TOP_IDS:-1]
 
