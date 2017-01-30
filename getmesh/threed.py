@@ -99,7 +99,7 @@ class ThreeD:
 
     print 'Loaded data..'
 
-    for id in idlist:
+    for id in np.intersect1d(all_ids,idlist):
 
       # skip 0
       outfile = str(id) + '_' + str(Z) + '_' + str(Y) + '_' + str(X) +'.stl'
