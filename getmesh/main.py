@@ -47,15 +47,15 @@ def start(_argv):
 
         # Only search volume for ids that need more stl files
         re_path = [os.path.join(STLFOLDER,str(intid)+'_*') for intid in top_ids]
-        found_counts = [len(glob.glob(re_file)) for re_file in re_path]
-        top_ids = top_ids[top_counts>found_counts]
 
-        if len(top_ids):
-            for z,y,x in subvols:
-                ThreeD.run(DATA, z, y, x, STLFOLDER, TILESIZE, top_ids)
+        for z,y,x in subvols:
+            found_counts = [len(glob.glob(re_file)) for re_file in re_path]
+            top_stl_ids = top_ids[top_counts>found_counts]
+            if len(top_stl_ids):
+                ThreeD.run(DATA, z, y, x, STLFOLDER, TILESIZE, top_stl_ids)
 
-                z_done = z*z_base + y*y_base + x*x_base
-                print("%.1f%% done with stl" % (100*z_done) )
+            z_done = z*z_base + y*y_base + x*x_base
+            print("%.1f%% done with stl" % (100*z_done) )
 
     # Load stl (and cached x3d) to make x3dom html
     ThreeD.create_website(STLFOLDER, X3DFOLDER, top_ids, INDEX, *sizes, www=WWW)
