@@ -1,3 +1,4 @@
+import glob
 import os, h5py
 import numpy as np
 import sys, argparse
@@ -25,7 +26,10 @@ def start(_argv):
     IMAGE = sharepath(ROOTIN, args['raw'])
     COUNTPATH = sharepath(ROOTOUT, 'count.txt')
     # Count most common ids 
-    ALL_IDS = biggest(DATA,COUNTPATH,s=TILESIZE)[-N_TOP_IDS:-1]
+    ALL_IDS,ALL_COUNTS = biggest(DATA,COUNTPATH,s=TILESIZE)
+    top_counts = ALL_COUNTS[-N_TOP_IDS:-1]
+    top_ids = ALL_IDS[-N_TOP_IDS:-1]
+
 
     # Load ids and make stl files
     if os.path.exists(DATA):
@@ -41,14 +45,20 @@ def start(_argv):
         # Get all possible tile offsets
         subvols = zip(*np.where(np.ones(ntiles)))
 
-        for z,y,x in subvols:
-            ThreeD.run(DATA, z, y, x, STLFOLDER, TILESIZE, ALL_IDS)
+        # Only search volume for ids that need more stl files
+        re_path = [os.path.join(STLFOLDER,str(intid)+'_*') for intid in top_ids]
+        found_counts = [len(glob.glob(re_file)) for re_file in re_path]
+        top_ids = top_ids[top_counts>found_counts]
 
-            z_done = z*z_base + y*y_base + x*x_base
-            print("%.1f%% done with stl" % (100*z_done) )
+        if len(top_ids):
+            for z,y,x in subvols:
+                ThreeD.run(DATA, z, y, x, STLFOLDER, TILESIZE, top_ids)
+
+                z_done = z*z_base + y*y_base + x*x_base
+                print("%.1f%% done with stl" % (100*z_done) )
 
     # Load stl (and cached x3d) to make x3dom html
-    ThreeD.create_website(STLFOLDER, X3DFOLDER, ALL_IDS, INDEX, *sizes, www=WWW)
+    ThreeD.create_website(STLFOLDER, X3DFOLDER, top_ids, INDEX, *sizes, www=WWW)
     # Link full image stack and create cube sides
     sides(X3DFOLDER, IMAGE, PNGS)
 

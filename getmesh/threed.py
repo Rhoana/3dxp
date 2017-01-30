@@ -85,27 +85,26 @@ class ThreeD:
     if not os.path.exists(outdir):
       os.makedirs(outdir)
 
-#    re_path = [os.path.join(outdir,str(intid)+'*') for intid in idlist]
-#    found_file = [any(glob.iglob(re_file)) for re_file in re_path]
-#    if len(found_file) > 0 and all(found_file):
-#        return 0
-
     with h5py.File(datafile, 'r') as f:
-      vol = f[f.keys()[0]][Z*tilewidth:Z*tilewidth+tilewidth,Y*tilewidth:Y*tilewidth+tilewidth,X*tilewidth:X*tilewidth+tilewidth]
+      zo,ze = np.array([Z,Z+1])*tilewidth
+      yo,ye = np.array([Y,Y+1])*tilewidth
+      xo,xe = np.array([X,X+1])*tilewidth
+      vol = f[f.keys()[0]][zo:ze, yo:ye, xo:xe]
 
     # grab all IDs
     all_ids = np.unique(vol)
-    if len(all_ids) == 0:
+    if len(idlist) == 0:
         idlist = all_ids
     print 'ID List', idlist
 
     print 'Loaded data..'
 
-    for id in all_ids:
+    for id in idlist:
 
       # skip 0
       outfile = str(id) + '_' + str(Z) + '_' + str(Y) + '_' + str(X) +'.stl'
-      if id == 0 or id not in idlist or os.path.exists(os.path.join(outdir, outfile)):
+      outpath = os.path.join(outdir, outfile)
+      if id == 0 or os.path.exists(outpath):
         continue
 
       try:
@@ -122,8 +121,7 @@ class ThreeD:
 
         # 3. marching cubes
         smoothed = np.swapaxes(smoothed, 0, 1) # Z,Y,X
-        outfile = str(id) + '_' + str(Z) + '_' + str(Y) + '_' + str(X) + '.stl'
-        ThreeD.create_stl(smoothed, os.path.join(outdir, outfile), Z=Z, Y=Y, X=X, tilewidth=tilewidth)
+        ThreeD.create_stl(smoothed, outpath, Z=Z, Y=Y, X=X, tilewidth=tilewidth)
 
         print 'Stored', outfile
 
