@@ -6,8 +6,8 @@ if __name__ == "__main__":
         #'size': 256,
         #'index': 'index.html',
         'number': int(sys.argv[1]),
-        'ids': '~/2017/data/seg_100x4x4/stitched_seg.h5',
-        'raw': '~/2017/data/seg_100x4x4/grayscale.h5'
+        'root': '~/2017/data/seg_100x4x4'
     }
-    output_www = '~/2017/winter/3dxp1338/X3DOM/seg_100x4x4/'
-    getmesh.main(output_www, **flags)
+    outpath = '~/2017/winter/3dxp1338/X3DOM/seg_100x4x4/'
+    inpaths = ['stitched_seg.h5', 'grayscale.h5']
+    getmesh.main(outpath, *inpaths, **flags)

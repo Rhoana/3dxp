@@ -135,7 +135,7 @@ class ThreeD:
     print 'All done.'
 
   @staticmethod
-  def create_website(stldir, outputfolder, ids=None, outfile='index.html', dimx=1024, dimy=1024, dimz=1024):
+  def create_website(stldir, outputfolder, ids=None, outfile='index.html', dimz=1024, dimy=1024, dimx=1024):
 
     stl_files = None
 
