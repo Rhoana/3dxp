@@ -32,6 +32,9 @@ def start(_argv):
     with h5py.File(IDS_IN, 'r') as df:
         vol = df[df.keys()[0]]
         for zed in range(vol.shape[0]):
+            zpath = os.path.join(IDS_OUT,str(zed).zfill(5)+'.png')
+            if os.path.exists(zpath):
+                continue
             plane = vol[zed,:,:]
             black = np.zeros(plane.shape, dtype=np.bool)
             for idy in ALL_IDS:
@@ -40,7 +43,7 @@ def start(_argv):
                 black = mh.dilate(black)
             grey = black.astype(np.uint8)*255
 
-            boolfile = os.path.join(IDS_OUT, str(zed)+'.png')
+            boolfile = os.path.join(IDS_OUT, zpath)
             colorgrey = cv2.cvtColor(grey, cv2.COLOR_GRAY2RGB)
             cv2.imwrite(boolfile, colorgrey)
             print 'wrote', boolfile
