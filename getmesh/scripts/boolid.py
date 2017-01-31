@@ -17,20 +17,20 @@ def start(_argv):
     TOP_DEEP = args['deep']
     TILESIZE = args['size']
     N_TOP_IDS = args['number'] + 1
-    IDS_IN = realpath(args['ids'])
+    DATA = realpath(args['ids'])
     IDS_OUT = sharepath(ROOTOUT,args['images'])
     # Count most spread or deep ids 
-    BIG_IDS, BIG_COUNTS = biggest(DATA, sharepath(ROOTOUT,'spread_count.txt'), s=TILESIZE)
-    DEEP_IDS, DEEP_COUNTS = deepest(DATA, sharepath(ROOTOUT,'deep_count.txt'), s=TILESIZE)
+    BIG_IDS, BIG_COUNTS = biggest.main(DATA, sharepath(ROOTOUT,'spread_count.txt'), s=TILESIZE)
+    DEEP_IDS, DEEP_COUNTS = deepest.main(DATA, sharepath(ROOTOUT,'deep_count.txt'), s=TILESIZE)
     ALL_IDS = [BIG_IDS, DEEP_IDS][TOP_DEEP][-N_TOP_IDS:-1]
 
-    if not os.path.exists(args['out']):
-        print args['out'], 'must exist'
+    if not os.path.exists(ROOTOUT):
+        print ROOTOUT, 'must exist'
         return -1
     if not os.path.exists(IDS_OUT):
         os.makedirs(IDS_OUT)
 
-    with h5py.File(IDS_IN, 'r') as df:
+    with h5py.File(DATA, 'r') as df:
         vol = df[df.keys()[0]]
         for zed in range(vol.shape[0]):
             zpath = os.path.join(IDS_OUT,str(zed).zfill(5)+'.png')
@@ -44,10 +44,9 @@ def start(_argv):
                 black = mh.dilate(black)
             grey = black.astype(np.uint8)*255
 
-            boolfile = os.path.join(IDS_OUT, zpath)
             colorgrey = cv2.cvtColor(grey, cv2.COLOR_GRAY2RGB)
-            cv2.imwrite(boolfile, colorgrey)
-            print 'wrote', boolfile
+            cv2.imwrite(zpath, colorgrey)
+            print 'wrote', zpath
 
 def parseArgv(argv):
     sys.argv = argv
