@@ -25,12 +25,9 @@ def start(_argv):
     DATA = sharepath(ROOTIN, args['ids'])
     PNGS = sharepath(ROOTIN, args['png'])
     IMAGE = sharepath(ROOTIN, args['raw'])
-    SORTER = [biggest, deepest][TOP_DEEP]
-    SORT_TOP = ['spread_','deep_'][TOP_DEEP]+'count.txt'
-    COUNTPATH = sharepath(ROOTOUT, SORT_TOP)
     # Count most spread or deep ids 
-    BIG_IDS, BIG_COUNTS = biggest(DATA,'spread_count.txt',s=TILESIZE)
-    DEEP_IDS, DEEP_COUNTS = deepest(DATA,'deep_count.txt',s=TILESIZE)
+    BIG_IDS, BIG_COUNTS = biggest(DATA, s=TILESIZE)
+    DEEP_IDS, DEEP_COUNTS = deepest(DATA, s=TILESIZE)
     top_ids = [BIG_IDS, DEEP_IDS][TOP_DEEP][-N_TOP_IDS:-1]
     big_ids = [np.where(BIG_IDS == tid)[0][0] for tid in top_ids]
     top_counts = BIG_COUNTS[big_ids]
@@ -76,7 +73,7 @@ def parseArgv(argv):
         'raw': 'input raw h5 volume (default raw.h5)',
         'png': 'input raw png folder (default pngs)',
         'R': 'root of both hd5 volumes (default .)',
-        'o': 'output filename (default index.html)',
+        'f': 'output filename (default index.html)',
         's': 'load h5 in s*s*s chunks (default 256)',
         'n': 'make meshes for the top n ids (default 1)',
         'w': 'folder containing js/css (default www)',
@@ -84,14 +81,14 @@ def parseArgv(argv):
     }
 
     parser = argparse.ArgumentParser(description=help['help'])
-    parser.add_argument('out', default='.', help=help['out'])
-    parser.add_argument('ids', default='in.h5', nargs='?', help=help['ids'])
-    parser.add_argument('raw', default='raw.h5', nargs='?', help=help['raw'])
-    parser.add_argument('png', default='pngs', nargs='?', help=help['png'])
-    parser.add_argument('-o','--index', default='index.html', help=help['o'])
+    parser.add_argument('ids', default='in.h5', help=help['ids'])
+    parser.add_argument('raw', default='raw.h5', help=help['raw'])
+    parser.add_argument('png', default='pngs', help=help['png'])
+    parser.add_argument('out', default='.', nargs='?', help=help['out'])
+    parser.add_argument('-f','--index', default='index.html', help=help['f'])
+    parser.add_argument('-D','--deep',type=int, default=0, help=help['deep'])
     parser.add_argument('-s','--size', type=int, default=256, help=help['s'])
     parser.add_argument('-n','--number',type=int, default=1, help=help['n'])
-    parser.add_argument('-D','--deep',type=int, default=0, help=help['deep'])
     parser.add_argument('-w','--www', default='www', help=help['w'])
     parser.add_argument('-R','--root', default='.', help=help['R'])
 

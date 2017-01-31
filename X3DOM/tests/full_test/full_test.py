@@ -11,4 +11,4 @@ if __name__ == "__main__":
         'root': '~/2017/data/seg_100x4x4'
     }
     inpaths = ['stitched_seg.h5', 'grayscale.h5', 'grayscale_maps_converted']
-    getmesh.main('.', *inpaths, **flags)
+    getmesh.main(*inpaths, **flags)

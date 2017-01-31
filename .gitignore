@@ -7,6 +7,7 @@
 *.png
 *.html
 **/x3d/*
+**mask/*
 **images/*
 !index.html
 !main.html
