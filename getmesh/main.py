@@ -26,8 +26,8 @@ def start(_argv):
     PNGS = sharepath(ROOTIN, args['png'])
     IMAGE = sharepath(ROOTIN, args['raw'])
     # Count most spread or deep ids 
-    BIG_IDS, BIG_COUNTS = biggest(DATA, sharepath(ROOTOUT,'spread_count.tx'), s=TILESIZE)
-    DEEP_IDS, DEEP_COUNTS = deepest(DATA, sharepath(ROOTOUT,'deep_count.tx'), s=TILESIZE)
+    BIG_IDS, BIG_COUNTS = biggest(DATA, sharepath(ROOTOUT,'spread_count.txt'), s=TILESIZE)
+    DEEP_IDS, DEEP_COUNTS = deepest(DATA, sharepath(ROOTOUT,'deep_count.txt'), s=TILESIZE)
     top_ids = [BIG_IDS, DEEP_IDS][TOP_DEEP][-N_TOP_IDS:-1]
     big_ids = [np.where(BIG_IDS == tid)[0][0] for tid in top_ids]
     top_counts = BIG_COUNTS[big_ids]

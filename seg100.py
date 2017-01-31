@@ -11,5 +11,5 @@ if __name__ == "__main__":
         'deep': 1
     }
     inpaths = ['stitched_seg.h5', 'grayscale.h5', 'grayscale_maps_converted']
-    inpaths.extend(['X3DOM/seg_100x4x'])
+    inpaths.extend(['X3DOM/seg_100x4x4'])
     getmesh.main(*inpaths, **flags)

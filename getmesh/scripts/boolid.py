@@ -20,8 +20,8 @@ def start(_argv):
     IDS_IN = realpath(args['ids'])
     IDS_OUT = sharepath(ROOTOUT,args['images'])
     # Count most spread or deep ids 
-    BIG_IDS, BIG_COUNTS = biggest(DATA, sharepath(ROOTOUT,'spread_count.tx'), s=TILESIZE)
-    DEEP_IDS, DEEP_COUNTS = deepest(DATA, sharepath(ROOTOUT,'deep_count.tx'), s=TILESIZE)
+    BIG_IDS, BIG_COUNTS = biggest(DATA, sharepath(ROOTOUT,'spread_count.txt'), s=TILESIZE)
+    DEEP_IDS, DEEP_COUNTS = deepest(DATA, sharepath(ROOTOUT,'deep_count.txt'), s=TILESIZE)
     ALL_IDS = [BIG_IDS, DEEP_IDS][TOP_DEEP][-N_TOP_IDS:-1]
 
     if not os.path.exists(args['out']):
