@@ -13,14 +13,15 @@ def start(_argv):
     sharepath = lambda share,pathy: os.path.join(share, homepath(pathy))
 
     GROWN = args['grow']
+    ROOTOUT = args['out']
     TOP_DEEP = args['deep']
     TILESIZE = args['size']
     N_TOP_IDS = args['number'] + 1
     IDS_IN = realpath(args['ids'])
-    IDS_OUT = sharepath(args['out'],args['images'])
+    IDS_OUT = sharepath(ROOTOUT,args['images'])
     # Count most spread or deep ids 
-    BIG_IDS, BIG_COUNTS = biggest.main(IDS_IN, s=TILESIZE)
-    DEEP_IDS, DEEP_COUNTS = deepest.main(IDS_IN, s=TILESIZE)
+    BIG_IDS, BIG_COUNTS = biggest(DATA, sharepath(ROOTOUT,'spread_count.tx'), s=TILESIZE)
+    DEEP_IDS, DEEP_COUNTS = deepest(DATA, sharepath(ROOTOUT,'deep_count.tx'), s=TILESIZE)
     ALL_IDS = [BIG_IDS, DEEP_IDS][TOP_DEEP][-N_TOP_IDS:-1]
 
     if not os.path.exists(args['out']):
