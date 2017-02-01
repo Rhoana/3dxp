@@ -9,6 +9,7 @@
 **/x3d/*
 **mask/*
 **images/*
+**.tar.*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -30,23 +30,37 @@ def start(_argv):
     if not os.path.exists(IDS_OUT):
         os.makedirs(IDS_OUT)
 
+    def savepng(zpath, black):
+        grey = black.astype(np.uint8)*255
+        colorgrey = cv2.cvtColor(grey, cv2.COLOR_GRAY2RGB)
+        cv2.imwrite(zpath, colorgrey)
+        print 'wrote', zpath
+
     with h5py.File(DATA, 'r') as df:
         vol = df[df.keys()[0]]
         for zed in range(vol.shape[0]):
-            zpath = os.path.join(IDS_OUT,str(zed).zfill(5)+'.png')
+            zpath = os.path.join(IDS_OUT,str(zed+1).zfill(5)+'.png')
             if os.path.exists(zpath):
                 continue
+
             plane = vol[zed,:,:]
             black = np.zeros(plane.shape, dtype=np.bool)
-            for idy in ALL_IDS:
-                black[plane == idy] = True
+            is_all_black= np.zeros(len(ALL_IDS), dtype=np.bool)
+
+            for idin, idy in enumerate(ALL_IDS):
+                idy_in_plane = plane == idy
+                if (not np.any(idy_in_plane)):
+                    is_all_black[idin] = True
+                    continue
+                black[idy_in_plane] = True
+
+            if (not np.any(is_all_black)):
+                savepng(zpath, black)
+                continue
+
             for grow in range(GROWN):
                 black = mh.dilate(black)
-            grey = black.astype(np.uint8)*255
-
-            colorgrey = cv2.cvtColor(grey, cv2.COLOR_GRAY2RGB)
-            cv2.imwrite(zpath, colorgrey)
-            print 'wrote', zpath
+            savepng(zpath, black)
 
 def parseArgv(argv):
     sys.argv = argv
