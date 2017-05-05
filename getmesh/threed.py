@@ -57,7 +57,7 @@ class ThreeD:
     return out
 
   @staticmethod
-  def create_stl(vol, filename, Z=0, Y=0, X=0, tilewidth=200):
+  def create_stl(vol, filename, blockshape, Z=0, Y=0, X=0):
 
     verts, faces = measure.marching_cubes(vol, 0, gradient_direction='ascent')
     applied_verts = verts[faces]
@@ -66,7 +66,7 @@ class ThreeD:
     mesh_data = np.zeros(vert_count, dtype=mesh.Mesh.dtype)
 
     # Z, Y and X offsets
-    offset = np.array([Z*tilewidth, Y*tilewidth, X*tilewidth])
+    offset = [Z, Y, X] * blockshape
 
     for i, v in enumerate(applied_verts):
         mesh_data[i][1] = v + offset
@@ -81,14 +81,19 @@ class ThreeD:
   @staticmethod
   def run(datafile, Z, Y, X, outdir, tilewidth=200, idlist=[]):
 
+    # Get tilewidth for all dimensions
+    if not hasattr(tilewidth, '__len__'):
+        blockshape = [tilewidth]*3
+    blockshape = np.uint32(blockshape)
+
     # create output folder
     if not os.path.exists(outdir):
       os.makedirs(outdir)
 
     with h5py.File(datafile, 'r') as f:
-      zo,ze = np.array([Z,Z+1])*tilewidth
-      yo,ye = np.array([Y,Y+1])*tilewidth
-      xo,xe = np.array([X,X+1])*tilewidth
+      zo,ze = np.array([Z,Z+1])*blockshape[0]
+      yo,ye = np.array([Y,Y+1])*blockshape[1]
+      xo,xe = np.array([X,X+1])*blockshape[2]
       vol = f[f.keys()[0]][zo:ze, yo:ye, xo:xe]
 
     # grab all IDs
@@ -121,7 +126,7 @@ class ThreeD:
 
         # 3. marching cubes
         smoothed = np.swapaxes(smoothed, 0, 1) # Z,Y,X
-        ThreeD.create_stl(smoothed, outpath, Z=Z, Y=Y, X=X, tilewidth=tilewidth)
+        ThreeD.create_stl(smoothed, outpath, blockshape, Z=Z, Y=Y, X=X)
 
         print 'Stored', outfile
 

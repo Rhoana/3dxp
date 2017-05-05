@@ -24,7 +24,7 @@ def start(_argv):
             for key in all_sides:
                 sidefile = os.path.join(IMG_OUT, '0_in_'+key+'.png')
                 if not os.path.exists(sidefile):
-                    image = all_sides[key](vol)
+                    image = np.uint8(all_sides[key](vol))
                     colorgrey = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
                     cv2.imwrite(sidefile, colorgrey)
                     print 'wrote', sidefile
