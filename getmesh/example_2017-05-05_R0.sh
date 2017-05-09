@@ -2,9 +2,9 @@
 
 # Starting from step 0
 export WORKING_DIR="/n/coxfs01/thejohnhoffer/2017/3dxp/getmesh"
-ROOT_IN="/n/coxfs01/thejohnhoffer/tiff_lists/2017-04-19_R2B1V3"
-IDS_JSON="/n/coxfs01/leek/results/2017-04-19_R2B1V3/boss/boss.json"
-RAW_JSON="/n/coxfs01/leek/results/2017-04-19_R2B1V3/boss/boss.json"
+ROOT_IN="/n/coxfs01/thejohnhoffer/R0/2017_05_09/pngs/"
+IDS_JSON="/n/coxfs01/leek/results/2017-05-05_R0/boss/boss.json"
+RAW_JSON="/n/coxfs01/leek/dropbox/25k_201610_dataset_em.json"
 IDS_PNG=$ROOT_IN"/3x"
 RAW_PNG=$ROOT_IN"/3x"
 export N_DOWNSAMPLE=3
@@ -17,7 +17,7 @@ RAW_H5=$ROOT_IN"/3x_gray.h5"
 # Starting from step 2
 export BLOCK_COUNTS="10"
 BLOCK_RUNS=$((BLOCK_COUNTS**3))
-ROOT_OUT="/n/coxfs01/thejohnhoffer/2017/3dxp/X3DOM/2017-04-19_R2B1V3"
+ROOT_OUT="/n/coxfs01/thejohnhoffer/R0/2017_05_09/meshes/"
 
 # Starting from step 3
 export NUMBER_TOP="20"
@@ -50,7 +50,7 @@ mkdir -p $ROOT_OUT
 case "$1" in
 
 0) sbatch --export=WORKING_DIR=$WORKING_DIR,N_DOWNSAMPLE=$N_DOWNSAMPLE,PNG_RUNS=$PNG_RUNS,IN_JSON=$IDS_JSON,OUT_PNG=$IDS_PNG --array=0-$((PNG_RUNS - 1)) scale_png.sbatch
-   #sbatch --export=WORKING_DIR=$WORKING_DIR,N_DOWNSAMPLE=$N_DOWNSAMPLE,PNG_RUNS=$PNG_RUNS,IN_JSON=$RAW_JSON,OUT_PNG=$RAW_PNG --array=0-$((PNG_RUNS - 1)) scale_png.sbatch
+   sbatch --export=WORKING_DIR=$WORKING_DIR,N_DOWNSAMPLE=$N_DOWNSAMPLE,PNG_RUNS=$PNG_RUNS,IN_JSON=$RAW_JSON,OUT_PNG=$RAW_PNG --array=0-$((PNG_RUNS - 1)) scale_png.sbatch
    ;;
 
 1) python png2hd.py $RAW_PNG $RAW_H5
