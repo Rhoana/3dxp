@@ -38,7 +38,7 @@ class TiffMGMT():
             self.size_xy = np.uint32(self.size[1:])
             self.n_xy = np.prod(self.size_xy)
             # Get the tile size from first tile
-            tile0 = tiff.imread(all_path[0])
+            tile0 = self.imread(all_path[0])
             self.tile_shape = np.uint32((1,) + tile0.shape)
             # The size and datatype of the full volume
             self.full_shape = self.tile_shape * self.size
@@ -51,69 +51,6 @@ class TiffMGMT():
             pairs = sorted(zip(all_off, all_path), key=make_flat)
             self.all_off, self.all_path = zip(*pairs)
             self.all_off = np.uint32(self.all_off)
-
-    def scale_h5(self, _bounds, _path, _res):
-        """ Downsample the tiffs to a h5 file
-        
-        Arguments
-        ----------
-        _bounds : numpy.ndarray
-            2x1 array of scaled z_arg bounds
-        _path : str
-            The path to the output h5 file
-        _res : int
-            Number of times to downsample by 2
-        """
-        # Downsampling constant
-        scale = 2 ** _res
-        # Get the downsampled full / tile shape
-        scale_bounds = _bounds // scale
-        scale_full = self.full_shape // scale
-        scale_tile = self.tile_shape // scale
-        scale_tile = np.clip(scale_tile, 1, scale_full)
-        # Prepare the downsampled h5 file
-        all_keys = {
-            'shape': scale_full,
-            'dtype': self.dtype,
-            'chunks': tuple(scale_tile),
-        }
-        print("""
-Writing {} volume to {}
-""".format(scale_full, _path))
-        # Start timing the h5 file writing
-        sec_start = time.time()
-        # Create the file from a path
-        with h5py.File(_path, 'w') as fd:
-            # Make the output dataset 
-            a = fd.create_dataset('all', **all_keys)
-            # Add to the h5 file for the given stack
-            for s_z in range(*scale_bounds):
-                # Scale the z bound
-                z = s_z * scale
-                # Open all tiff files in the stack
-                for f in range(self.n_xy):
-                    # Get tiff file path and offset
-                    f_id = int(z * self.n_xy + f)
-                    f_path = self.all_path[f_id]
-                    f_offset = self.all_off[f_id]
-                    # Read the file to a numpy volume
-                    f_vol = tiff.imread(f_path)
-                    scale_vol = f_vol[::scale,::scale]
-                    # Get coordinates to fill the tile
-                    y0, x0 = scale_tile[1:] * f_offset[1:]
-                    y1, x1 = [y0, x0] + np.uint32(scale_vol.shape)
-                    # Fill the tile with scaled volume
-                    a[s_z, y0:y1, x0:x1] = scale_vol
-
-                print("""
-            Added layer {} to h5 file
-            """.format(z))
-        # Record total writing time
-        sec_diff = time.time() - sec_start
-        print("""
-Wrote {} layers to {} in {} seconds
-""".format(len(scale_bounds), _path, sec_diff))
-
 
     def scale_png(self, _bounds, _path, _res):
         """ Downsample the tiffs to a png stack
@@ -154,7 +91,7 @@ Writing {} volume to {}
                 f_path = self.all_path[f_id]
                 f_offset = self.all_off[f_id]
                 # Read the file to a numpy volume
-                f_vol = tiff.imread(f_path)
+                f_vol = self.imread(f_path)
                 scale_vol = f_vol[::scale,::scale]
                 # Get coordinates to fill the tile
                 y0, x0 = scale_tile * f_offset[1:]
@@ -174,12 +111,10 @@ Writing {} volume to {}
 Wrote {} layers to {} in {} seconds
 """.format(len(scale_bounds), _path, sec_diff))
 
+    @staticmethod
+    def imread(_path):
+        if os.path.splitext(_path)[1] in ['tiff', 'tif']:
+            return tiff.imread(_path)
+        else:
+            return cv2.imread(_path)
 
-    def bound_set(self, bounds):
-        """ Return a list of unique ids in a bounding box
-        
-        Arguments
-        ----------
-        bounds : numpy.ndarray
-            3x2 array of z_arg, y_arg, and x_arg bounds
-        """
