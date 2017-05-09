@@ -36,7 +36,8 @@ def start(_argv):
     if os.path.exists(DATA):
 
         with h5py.File(DATA, 'r') as df:
-            full_shape = df[df.keys()[0]].shape
+            vol = df[df.keys()[0]]
+            full_shape = np.array(vol.shape)
             # Get number of blocks and block size
             block_size = np.uint32(np.ceil(full_shape/BLOCK))
             ntiles = np.uint32([BLOCK]*3)

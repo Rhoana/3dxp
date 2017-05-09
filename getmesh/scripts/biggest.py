@@ -55,7 +55,7 @@ def main(_data, _out, _block):
             y_base = z_base/ntiles[1]
             x_base = y_base/ntiles[2]
             z_done = z*z_base + y*y_base + x*x_base
-            print("{:.1f}% done with counting".format(100*z_done))
+            print("Found {:.1f}% biggest ids".format(100*z_done))
 
         np.savetxt(_out, COUNTS, fmt='%i')
         return sort(COUNTS)

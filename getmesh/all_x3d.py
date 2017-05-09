@@ -16,6 +16,7 @@ def start(_argv):
     sharepath = lambda share,pathy: os.path.join(share, homepath(pathy))
 
     INDEX = args['index']
+    WHICH_ID = args['top']
     TOP_DEEP = args['deep']
     N_TOP_IDS = args['number'] + 1
     WWW = realpath(args['www'])
@@ -31,9 +32,14 @@ def start(_argv):
     top_ids = [BIG_IDS, DEEP_IDS][TOP_DEEP][-N_TOP_IDS:-1]
 
     # Load ids and make x3d files
-    if os.path.exists(DATA):
-        with h5py.File(DATA, 'r') as df:
+    if os.path.exists(IMAGE):
+        with h5py.File(IMAGE, 'r') as df:
             full_shape = df[df.keys()[0]].shape
+
+    # Run conversion on only one particular ID
+    if WHICH_ID >= 0:
+        top_ids = [top_ids[WHICH_ID]]
+        INDEX = '{}_{}'.format(top_ids[0], INDEX)
 
     # Load stl (and cached x3d) to make x3dom html
     ThreeD.create_website(STLFOLDER, X3DFOLDER, top_ids, INDEX, *full_shape, www=WWW)
@@ -51,6 +57,7 @@ def parseArgv(argv):
         'f': 'output filename (default index.html)',
         'w': 'folder containing js/css (default www)',
         'n': 'make meshes for the top n ids (default 1)',
+        't': 'make for only the top id (default make all)',
         'help': 'Make an hdf5 file into html meshes!'
     }
 
@@ -60,6 +67,7 @@ def parseArgv(argv):
     parser.add_argument('out', default='.', nargs='?', help=help['out'])
     parser.add_argument('-f','--index', default='index.html', help=help['f'])
     parser.add_argument('-n','--number', type=int, default=1, help=help['n'])
+    parser.add_argument('-t','--top', type=int, default=-1, help=help['t'])
     parser.add_argument('-d','--deep',type=int, default=0, help=help['d'])
     parser.add_argument('-w','--www', default='www', help=help['w'])
 
