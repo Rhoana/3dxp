@@ -356,7 +356,7 @@ class ThreeD:
             f.write(html_header + all_html + html_footer)
 
         with open(os.path.join(outputfolder, 'null.html'), 'w') as f:
-            f.write(html_header + html_footer)
+            f.write(html_header + '<!-- {MESHES} -->' + html_footer)
 
         print 'Stored ' + outfile
 
