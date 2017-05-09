@@ -113,7 +113,7 @@ Wrote {} layers to {} in {} seconds
 
     @staticmethod
     def imread(_path):
-        if os.path.splitext(_path)[1] in ['tiff', 'tif']:
+        if os.path.splitext(_path)[1] in ['.tiff', '.tif']:
             return tiff.imread(_path)
         else:
             return cv2.imread(_path,0)
