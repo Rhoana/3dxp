@@ -5,14 +5,14 @@ export WORKING_DIR="/n/coxfs01/thejohnhoffer/2017/3dxp/getmesh"
 ROOT_IN="/n/coxfs01/thejohnhoffer/R0/2017_05_09/pngs/"
 IDS_JSON="/n/coxfs01/leek/results/2017-05-05_R0/boss/boss.json"
 RAW_JSON="/n/coxfs01/leek/dropbox/25k_201610_dataset_em.json"
-IDS_PNG=$ROOT_IN"/3x"
-RAW_PNG=$ROOT_IN"/3x"
+IDS_PNG=$ROOT_IN"/3x_ids"
+RAW_PNG=$ROOT_IN"/3x_raw"
 export N_DOWNSAMPLE=3
 export PNG_RUNS=80
 
 # Starting from step 1
-IDS_H5=$ROOT_IN"/3x_color.h5"
-RAW_H5=$ROOT_IN"/3x_gray.h5"
+IDS_H5=$ROOT_IN"/3x_ids.h5"
+RAW_H5=$ROOT_IN"/3x_raw.h5"
 
 # Starting from step 2
 export BLOCK_COUNTS="10"
