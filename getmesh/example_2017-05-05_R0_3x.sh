@@ -49,8 +49,8 @@ mkdir -p $ROOT_OUT
 # Run one of the steps
 case "$1" in
 
-0) sbatch --export=WORKING_DIR=$WORKING_DIR,N_DOWNSAMPLE=$N_DOWNSAMPLE,PNG_RUNS=$PNG_RUNS,IN_JSON=$IDS_JSON,OUT_PNG=$IDS_PNG --array=0-$((PNG_RUNS - 1)) scale_png.sbatch
-   sbatch --export=WORKING_DIR=$WORKING_DIR,N_DOWNSAMPLE=$N_DOWNSAMPLE,PNG_RUNS=$PNG_RUNS,IN_JSON=$RAW_JSON,OUT_PNG=$RAW_PNG --array=0-$((PNG_RUNS - 1)) scale_png.sbatch
+0) #sbatch -o /n/coxfs01/thejohnhoffer/tiff_lists/ids_%a.out -e /n/coxfs01/thejohnhoffer/tiff_lists/ids_%a.err --export=WORKING_DIR=$WORKING_DIR,N_DOWNSAMPLE=$N_DOWNSAMPLE,PNG_RUNS=$PNG_RUNS,IN_JSON=$IDS_JSON,OUT_PNG=$IDS_PNG --array=0-$((PNG_RUNS - 1)) scale_png.sbatch
+   sbatch -o /n/coxfs01/thejohnhoffer/tiff_lists/raw_%a.out -e /n/coxfs01/thejohnhoffer/tiff_lists/raw_%a.err --export=WORKING_DIR=$WORKING_DIR,N_DOWNSAMPLE=$N_DOWNSAMPLE,PNG_RUNS=$PNG_RUNS,IN_JSON=$RAW_JSON,OUT_PNG=$RAW_PNG --array=0-$((PNG_RUNS - 1)) scale_png.sbatch
    ;;
 
 1) python png2hd.py $RAW_PNG $RAW_H5
