@@ -50,7 +50,7 @@ mkdir -p $ROOT_OUT
 case "$1" in
 
 0) sbatch --export=WORKING_DIR=$WORKING_DIR,N_DOWNSAMPLE=$N_DOWNSAMPLE,PNG_RUNS=$PNG_RUNS,IN_JSON=$IDS_JSON,OUT_PNG=$IDS_PNG --array=0-$((PNG_RUNS - 1)) scale_png.sbatch
-   sbatch --export=WORKING_DIR=$WORKING_DIR,N_DOWNSAMPLE=$N_DOWNSAMPLE,PNG_RUNS=$PNG_RUNS,IN_JSON=$RAW_JSON,OUT_PNG=$RAW_PNG --array=0-$((PNG_RUNS - 1)) scale_png.sbatch
+   #sbatch --export=WORKING_DIR=$WORKING_DIR,N_DOWNSAMPLE=$N_DOWNSAMPLE,PNG_RUNS=$PNG_RUNS,IN_JSON=$RAW_JSON,OUT_PNG=$RAW_PNG --array=0-$((PNG_RUNS - 1)) scale_png.sbatch
    ;;
 
 1) python png2hd.py $RAW_PNG $RAW_H5
@@ -63,7 +63,10 @@ case "$1" in
 3) sbatch --export=WORKING_DIR=$WORKING_DIR,RANK_Z=$RANK_Z,NUMBER_TOP=$NUMBER_TOP,BLOCK_COUNTS=$BLOCK_COUNTS,IDS_H5=$IDS_H5,ROOT_OUT=$ROOT_OUT --array=0-$((BLOCK_RUNS - 1)) all_stl.sbatch
    ;;
 
-*) sbatch --export=WORKING_DIR=$WORKING_DIR,RANK_Z=$RANK_Z,NUMBER_TOP=$NUMBER_TOP,WWW_IN=$WWW_IN,RAW_H5=$RAW_H5,RAW_PNG=$RAW_PNG,ROOT_OUT=$ROOT_OUT --array=0-$((NUMBER_TOP - 1)) all_x3d.sbatch
+4) sbatch --export=WORKING_DIR=$WORKING_DIR,RANK_Z=$RANK_Z,NUMBER_TOP=$NUMBER_TOP,WWW_IN=$WWW_IN,RAW_H5=$RAW_H5,RAW_PNG=$RAW_PNG,ROOT_OUT=$ROOT_OUT --array=0-$((NUMBER_TOP - 1)) all_x3d.sbatch
+   ;;
+
+*) python all_index.py $ROOT_OUT
    ;;
 
 esac

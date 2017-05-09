@@ -143,7 +143,7 @@ Writing {} volume to {}
             # Scale the z bound
             z = s_z * scale
             # Create the png file path
-            png_path = '{:04d}.png'.format(z)
+            png_path = '{:05d}.png'.format(s_z)
             png_path = os.path.join(_path, png_path)
             # Create the slice image
             a = np.zeros(scale_slice, dtype=self.dtype)

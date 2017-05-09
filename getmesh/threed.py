@@ -13,6 +13,7 @@ from xml.etree import ElementTree
 
 class ThreeD:
 
+    pattern = '<!-- {MESHES} -->'
     html_header = '''
 <html>
 <head>
@@ -356,7 +357,7 @@ class ThreeD:
             f.write(html_header + all_html + html_footer)
 
         with open(os.path.join(outputfolder, 'null.html'), 'w') as f:
-            f.write(html_header + html_footer)
+            f.write(html_header + ThreeD.pattern + html_footer)
 
         print 'Stored ' + outfile
 
@@ -370,6 +371,35 @@ class ThreeD:
                 if os.path.exists(in_link) and not os.path.exists(out_link):
                     os.symlink(in_link, out_link)
 
+    @staticmethod
+    def merge_website(out_root, outfile='index.html'):
+
+        # Format all the file paths
+        input_format = os.path.join(out_root, '*_{}'.format(outfile))
+        null_path = os.path.join(out_root, 'null.html')
+        out_path = os.path.join(out_root, outfile)
+        # List all input file paths
+        files = glob.glob(input_format)
+
+        # Stringify html elements
+        html_string = lambda s: ElementTree.tostring(s, method='html')
+
+        # Open the null file with the replaceable comment
+        with open(null_path,'r') as nf:
+            null = nf.read()
+
+        shapes = []
+
+        for f in files:
+            shapes += ElementTree.parse(f).getroot().findall('.//group/transform/*')
+        
+        # Convert all the shapes to strings 
+        grouptext = [html_string(shape) for shape in shapes]
+        null = null.replace(ThreeD.pattern, ''.join(grouptext))
+
+        # Write all the shapes to an output
+        with open(out_path, 'w') as nf:
+            nf.write(null)
 #
 #
 # EXAMPLE USAGE FROM PYTHON (FOR THE TOP 750x400x400 VOXELS)
