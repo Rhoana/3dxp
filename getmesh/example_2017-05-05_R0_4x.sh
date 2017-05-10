@@ -7,7 +7,10 @@ IDS_JSON="/n/coxfs01/leek/results/2017-05-05_R0/boss/boss.json"
 RAW_JSON="/n/coxfs01/leek/dropbox/25k_201610_dataset_em.json"
 IDS_PNG=$ROOT_IN"/4x_ids"
 RAW_PNG=$ROOT_IN"/4x_raw"
-export N_DOWNSAMPLE=4
+export IDS_DOWNSAMPLE_XY=3
+export IDS_DOWNSAMPLE_Z=2
+export RAW_DOWNSAMPLE_XY=4
+export RAW_DOWNSAMPLE_Z=2
 export PNG_RUNS=80
 
 # Starting from step 1
@@ -49,8 +52,8 @@ mkdir -p $ROOT_OUT
 # Run one of the steps
 case "$1" in
 
-0) sbatch -o /n/coxfs01/thejohnhoffer/tiff_lists/ids_%a.out -e /n/coxfs01/thejohnhoffer/tiff_lists/ids_%a.err --export=WORKING_DIR=$WORKING_DIR,N_DOWNSAMPLE=$N_DOWNSAMPLE,PNG_RUNS=$PNG_RUNS,IN_JSON=$IDS_JSON,OUT_PNG=$IDS_PNG --array=0-$((PNG_RUNS - 1)) scale_png.sbatch
-   sbatch -o /n/coxfs01/thejohnhoffer/tiff_lists/raw_%a.out -e /n/coxfs01/thejohnhoffer/tiff_lists/raw_%a.err --export=WORKING_DIR=$WORKING_DIR,N_DOWNSAMPLE=$N_DOWNSAMPLE,PNG_RUNS=$PNG_RUNS,IN_JSON=$RAW_JSON,OUT_PNG=$RAW_PNG --array=0-$((PNG_RUNS - 1)) scale_png.sbatch
+0) sbatch -o /n/coxfs01/thejohnhoffer/tiff_lists/ids_%a.out -e /n/coxfs01/thejohnhoffer/tiff_lists/ids_%a.err --export=WORKING_DIR=$WORKING_DIR,N_DOWNSAMPLE_XY=$IDS_DOWNSAMPLE_XY,N_DOWNSAMPLE_Z=$IDS_DOWNSAMPLE_Z,PNG_RUNS=$PNG_RUNS,IN_JSON=$IDS_JSON,OUT_PNG=$IDS_PNG --array=0-$((PNG_RUNS - 1)) scale_png.sbatch
+   sbatch -o /n/coxfs01/thejohnhoffer/tiff_lists/raw_%a.out -e /n/coxfs01/thejohnhoffer/tiff_lists/raw_%a.err --export=WORKING_DIR=$WORKING_DIR,N_DOWNSAMPLE_XY=$RAW_DOWNSAMPLE_XY,N_DOWNSAMPLE_Z=$RAW_DOWNSAMPLE_Z,PNG_RUNS=$PNG_RUNS,IN_JSON=$RAW_JSON,OUT_PNG=$RAW_PNG --array=0-$((PNG_RUNS - 1)) scale_png.sbatch
    ;;
 
 1) python png2hd.py $RAW_PNG $RAW_H5

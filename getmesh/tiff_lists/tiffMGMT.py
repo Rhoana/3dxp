@@ -61,15 +61,15 @@ class TiffMGMT():
             2x1 array of scaled z_arg bounds
         _path : str
             The path to the output h5 file
-        _res : int
-            Number of times to downsample by 2
+        _res : (int,int,int)
+            Number of times to downsample by _res in Z,Y,X
         """
         # Downsampling constant
-        scale = 2 ** _res
+        scale = 2 ** np.uint32(_res)
         # Get the downsampled full / tile shape
-        scale_bounds = _bounds // scale
-        scale_slice = self.slice_shape[1:] // scale
-        scale_tile = self.tile_shape[1:] // scale
+        scale_bounds = _bounds // scale[0] # only for Z
+        scale_slice = self.slice_shape[1:] // scale[1:] # per slice
+        scale_tile = self.tile_shape[1:] // scale[1:] # for 1 file
         print("""
 Writing {} volume to {}
 """.format(scale_slice, _path))
@@ -78,7 +78,7 @@ Writing {} volume to {}
         # Add to the h5 file for the given stack
         for s_z in range(*scale_bounds):
             # Scale the z bound
-            z = s_z * scale
+            z = s_z * scale[0]
             # Create the png file path
             png_path = '{:05d}.png'.format(s_z)
             png_path = os.path.join(_path, png_path)
@@ -92,7 +92,7 @@ Writing {} volume to {}
                 f_offset = self.all_off[f_id]
                 # Read the file to a numpy volume
                 f_vol = self.imread(f_path)
-                scale_vol = f_vol[::scale,::scale]
+                scale_vol = f_vol[::scale[1],::scale[2]]
                 # Get coordinates to fill the tile
                 y0, x0 = scale_tile * f_offset[1:]
                 y1, x1 = [y0, x0] + np.uint32(scale_vol.shape)

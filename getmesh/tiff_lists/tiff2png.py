@@ -12,7 +12,8 @@ if __name__ == '__main__':
         'out': 'The directory to save the output pngs (./out)',
         'runs': 'The number of runs for all slices (1)',
         'z0': 'The order of this run (0)',
-        'num': 'Downsampling times (4)',
+        'num': 'Downsampling times in XY (4)',
+        'numz': 'Downsampling times in Z (2)'
     }
     # Read the arguments correctly
     parser = argparse.ArgumentParser(description=help['tiff2h5'])
@@ -21,6 +22,7 @@ if __name__ == '__main__':
     parser.add_argument('z0', default=0, type=int, nargs='?', help=help['z0'])
     parser.add_argument('--runs', '-r', default=1, type=int, help=help['runs'])
     parser.add_argument('--num', '-n', default=4, type=int, help=help['num'])
+    parser.add_argument('--numz', '-z', default=2, type=int, help=help['numz'])
     parser.add_argument('--out', '-o', default='out', help=help['out'])
     # Read the argumentss into a dictionary
     argd = vars(parser.parse_args())
@@ -43,6 +45,7 @@ if __name__ == '__main__':
     # Get the bounds over z
     tiles = np.linspace(0, mgmt.size[0], argd['runs'] + 1)
     z_bounds = np.uint32(tiles[argd['z0']:][:2])
-    resolution = argd['num']
+    resolution = (argd['numz'], argd['num'], argd['num'])
+
     # Write the downsampled volume to a tiff stack
     mgmt.scale_png(z_bounds, out_folder, resolution)
