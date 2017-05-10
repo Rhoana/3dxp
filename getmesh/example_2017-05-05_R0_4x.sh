@@ -2,11 +2,11 @@
 
 # Starting from step 0
 export WORKING_DIR="/n/coxfs01/thejohnhoffer/2017/3dxp/getmesh"
-ROOT_IN="/n/coxfs01/thejohnhoffer/R0/2017_05_09/pngs/"
+ROOT_IN="/n/coxfs01/thejohnhoffer/R0/2017_05_10_844z/pngs/"
 IDS_JSON="/n/coxfs01/leek/results/2017-05-05_R0/boss/boss.json"
 RAW_JSON="/n/coxfs01/leek/dropbox/25k_201610_dataset_em.json"
-IDS_PNG=$ROOT_IN"/4x_ids"
-RAW_PNG=$ROOT_IN"/4x_raw"
+IDS_PNG=$ROOT_IN"/3200_3200_ids"
+RAW_PNG=$ROOT_IN"/1600_1600_raw"
 export IDS_DOWNSAMPLE_XY=3
 export IDS_DOWNSAMPLE_Z=2
 export RAW_DOWNSAMPLE_XY=4
@@ -14,13 +14,13 @@ export RAW_DOWNSAMPLE_Z=2
 export PNG_RUNS=80
 
 # Starting from step 1
-IDS_H5=$ROOT_IN"/4x_ids.h5"
-RAW_H5=$ROOT_IN"/4x_raw.h5"
+IDS_H5=$ROOT_IN"/3200_3200_ids.h5"
+RAW_H5=$ROOT_IN"/1600_1600_raw.h5"
 
 # Starting from step 2
-export BLOCK_COUNTS="10"
+export BLOCK_COUNTS="8"
 BLOCK_RUNS=$((BLOCK_COUNTS**3))
-ROOT_OUT="/n/coxfs01/thejohnhoffer/R0/2017_05_09/meshes/"
+ROOT_OUT="/n/coxfs01/thejohnhoffer/R0/2017_05_10_844z/meshes/"
 
 # Starting from step 3
 export NUMBER_TOP="20"
