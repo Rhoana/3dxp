@@ -23,6 +23,38 @@ def start(_argv):
     ROOTOUT = realpath(args['out'])
     STLFOLDER = sharepath(ROOTOUT, 'stl')
 
+    #
+    # IF A LIST OF IDS IS PASSED
+    #
+    if LIST != '':
+        LIST = [int(v) for v in args['list'].split(',')]
+
+        # Load ids and make stl files
+        if os.path.exists(DATA):
+
+            with h5py.File(DATA, 'r') as df:
+                vol = df[df.keys()[0]]
+                full_shape = np.array(vol.shape)
+                # Get number of blocks and block size
+                block_size = np.uint32(np.ceil(full_shape/BLOCK))
+                ntiles = np.uint32([BLOCK]*3)
+
+
+        # Get all possible tile offsets
+        subvols = zip(*np.where(np.ones(ntiles)))
+
+        z,y,x = subvols[TRIAL]
+
+
+        ThreeD.run(DATA, z, y, x, STLFOLDER, block_size, LIST)
+
+        print('All done with stl block {},{},{}'.format(z,y,x))
+
+        return
+
+
+
+
     # Count the biggest and the deepest ids 
     BIG_IDS, BIG_COUNTS = biggest(DATA, sharepath(ROOTOUT, 'spread_count.txt'), BLOCK)
     DEEP_IDS, DEEP_COUNTS = deepest(DATA, sharepath(ROOTOUT, 'deep_count.txt'), BLOCK)
@@ -67,6 +99,7 @@ def parseArgv(argv):
         'b': 'Number of blocks in each dimension (default 10)',
         't': 'Which of the b*b*b tiles to generate (default 0)',
         'n': 'make meshes for the top n ids (default 1)',
+        'l': 'make meshes for specific ids',
         'help': 'Make an hdf5 file into stl meshes!'
     }
 
@@ -77,6 +110,7 @@ def parseArgv(argv):
     parser.add_argument('-t','--trial', type=int, default=0, help=help['t'])
     parser.add_argument('-b','--block', type=int, default=10, help=help['b'])
     parser.add_argument('-n','--number', type=int, default=1, help=help['n'])
+    parser.add_argument('-l','--list', default='', help=help['l'])
 
     # attain all arguments
     return vars(parser.parse_args())
