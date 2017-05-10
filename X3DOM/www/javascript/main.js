@@ -1,13 +1,12 @@
-RATE = 20;
-INTERV = 800;
+RATE = 1;
+INTERV = 600;
+slice = 211;
 NEWEVENT = false;
-//ALLSLICE = Math.min(ALLFRAMES.length, 3282);
-ALLSLICE = Math.min(3282+1, 3282+1);
+ALLSLICE = slice+1;
 allstates = {allslices:[]};
-allstates.allframes =[];
+allstates.allframes = [];
 animation = false;
 loading = false;
-slice = 3282;
 buffer = 0;
 
 function slice_mover(zed, delta=false){
@@ -36,7 +35,6 @@ function slice_mover(zed, delta=false){
   }
   loading = true
   slice = z_new
- 
  
   // get texture inforrmation
   var now_hide = move_now.children[0]
@@ -163,16 +161,16 @@ function save_states(){
 }
 
 function user_down(){
-  animate = false;
+  animation = false;
   slice_mover(RATE,true);
 }
 function user_up(){
-  animate = false;
+  animation = false;
   slice_mover(-1*RATE,true);
 }
 
 var actions = {
-  // 32: animate,
+  32: animate,
   38: user_down,
   40: user_up,
   37: pop_state,
