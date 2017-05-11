@@ -269,6 +269,10 @@ class ThreeD:
 
         html_string = lambda s: ElementTree.tostring(s, method='html')
 
+        # create output folder
+        if not os.path.exists(outputfolder):
+            os.makedirs(outputfolder)
+
         for f in stl_files:
 
             STRID = f.split('_')[0]
