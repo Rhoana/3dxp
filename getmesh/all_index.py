@@ -34,6 +34,7 @@ def parseArgv(argv):
     parser = argparse.ArgumentParser(description=help['help'])
     parser.add_argument('out', default='.', nargs='?', help=help['out'])
     parser.add_argument('-f','--index', default='index.html', help=help['f'])
+    parser.add_argument('-l','--list', default='', help=help['l'])    
 
     # attain all arguments
     return vars(parser.parse_args())
