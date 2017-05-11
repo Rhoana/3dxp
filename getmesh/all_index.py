@@ -16,7 +16,10 @@ def start(_argv):
     ROOTOUT = realpath(args['out'])
     X3DFOLDER = sharepath(ROOTOUT, 'x3d')
     # Join only specific indexes
-    LIST = map(int, args['list'].split(','))
+    LIST = []
+    if args['list'] != '':
+        LIST = args['list'].split(',')
+        LIST = map(int, LIST)
 
     # Load stl (and cached x3d) to make x3dom html
     ThreeD.merge_website(X3DFOLDER, INDEX, LIST)
