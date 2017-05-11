@@ -2,7 +2,7 @@
 
 # Starting from step 0
 EXAMPLE="2017_05_10_844z"
-ROOT_IN="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/pngs/"
+ROOT_IN="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/pngs"
 WORKING_DIR="/n/coxfs01/thejohnhoffer/2017/3dxp/getmesh"
 IDS_JSON="/n/coxfs01/leek/results/2017-05-05_R0/boss/boss.json"
 RAW_JSON="/n/coxfs01/leek/dropbox/25k_201610_dataset_em.json"
@@ -21,7 +21,7 @@ RAW_H5=$ROOT_IN"/1600_1600_raw.h5"
 # Starting from step 2
 BLOCK_COUNTS="8"
 BLOCK_RUNS=$((BLOCK_COUNTS**3))
-ROOT_OUT="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/meshes/"
+ROOT_OUT="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/meshes"
 
 # Starting from step 3
 NUMBER_TOP="20"
