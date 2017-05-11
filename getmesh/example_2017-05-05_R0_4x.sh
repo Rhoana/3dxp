@@ -2,7 +2,7 @@
 
 # Starting from step 0
 EXAMPLE="2017_05_10_844z"
-ROOT_IN="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/pngs"
+ROOT_IN="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/images"
 WORKING_DIR="/n/coxfs01/thejohnhoffer/2017/3dxp/getmesh"
 IDS_JSON="/n/coxfs01/leek/results/2017-05-05_R0/boss/boss.json"
 RAW_JSON="/n/coxfs01/leek/dropbox/25k_201610_dataset_em.json"
