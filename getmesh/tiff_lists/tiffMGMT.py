@@ -52,7 +52,7 @@ class TiffMGMT():
             self.all_off, self.all_path = zip(*pairs)
             self.all_off = np.uint32(self.all_off)
 
-    def scale_png(self, _bounds, _path, _res):
+    def scale_images(self, _bounds, _path, _res, _format='png'):
         """ Downsample the tiffs to a png stack
         
         Arguments
@@ -98,13 +98,25 @@ Writing {} volume to {}
                 y1, x1 = [y0, x0] + np.uint32(scale_vol.shape)
                 # Fill the tile with scaled volume
                 a[y0:y1, x0:x1] = scale_vol
-            # Write the layer to a color or grayscale png file
-            color_shape = a.shape + (-1,)
-            a = a.view(np.uint8).reshape(color_shape)
-            cv2.imwrite(png_path, a[:,:,:3])
-            print("""
-        Wrote layer {} to a png file
-        """.format(z))
+
+
+            if _format == 'png':
+                # Write the layer to a color or grayscale png file
+                color_shape = a.shape + (-1,)
+                a = a.view(np.uint8).reshape(color_shape)
+                cv2.imwrite(png_path, a[:,:,:3])
+                print("""
+            Wrote layer {} to a png file
+            """.format(z))
+
+            else:
+
+                tiff.imsave(png_path, a)
+                print("""
+            Wrote layer {} to a tif ({}) file
+            """.format(z, self.dtype))
+
+
         # Record total writing time
         sec_diff = time.time() - sec_start
         print("""

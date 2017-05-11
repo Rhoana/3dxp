@@ -7,7 +7,7 @@ from tiffMGMT import TiffMGMT
 if __name__ == '__main__':
 
     help = {
-        'tiff2h5': 'Rescale a list of tiff files to one h5 file',
+        'tiff2tiff': 'Rescale a list of tiff files to tiff files',
         'files': 'The path to a json file listing all tiff files',
         'out': 'The directory to save the output pngs (./out)',
         'runs': 'The number of runs for all slices (1)',
@@ -16,7 +16,7 @@ if __name__ == '__main__':
         'numz': 'Downsampling times in Z (2)'
     }
     # Read the arguments correctly
-    parser = argparse.ArgumentParser(description=help['tiff2h5'])
+    parser = argparse.ArgumentParser(description=help['tiff2tiff'])
     # Define all the arguments
     parser.add_argument('files', help=help['files'])
     parser.add_argument('z0', default=0, type=int, nargs='?', help=help['z0'])
@@ -48,4 +48,4 @@ if __name__ == '__main__':
     resolution = (argd['numz'], argd['num'], argd['num'])
 
     # Write the downsampled volume to a tiff stack
-    mgmt.scale_images(z_bounds, out_folder, resolution)
+    mgmt.scale_images(z_bounds, out_folder, resolution, 'tif')
