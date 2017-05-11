@@ -49,9 +49,6 @@ def start(_argv):
         return
 
 
-
-        
-
     # Count the biggest and the deepest ids 
     BIG_IDS, BIG_COUNTS = biggest('', sharepath(ROOTOUT, 'spread_count.txt'), 1)
     DEEP_IDS, DEEP_COUNTS = deepest('', sharepath(ROOTOUT, 'deep_count.txt'), 1)
@@ -66,10 +63,9 @@ def start(_argv):
     # Run conversion on only one particular ID
     if WHICH_ID >= 0:
         top_ids = [top_ids[WHICH_ID]]
-        INDEX = '{}_{}'.format(top_ids[0], INDEX)
 
     # Load stl (and cached x3d) to make x3dom html
-    ThreeD.create_website(STLFOLDER, X3DFOLDER, top_ids, INDEX, *full_shape, www=WWW)
+    ThreeD.create_website(STLFOLDER, X3DFOLDER, top_ids, *full_shape, www=WWW)
     # Link full image stack and create cube sides
     sides(X3DFOLDER, IMAGE, PNGS)
 
