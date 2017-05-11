@@ -18,7 +18,7 @@ def start(_argv):
     # Join only specific indexes
     LIST = []
     if args['list'] != '':
-        LIST = args['list'].split(',')
+        LIST = args['list'].split(':')
         LIST = map(int, LIST)
 
     # Load stl (and cached x3d) to make x3dom html
@@ -31,7 +31,7 @@ def parseArgv(argv):
         'out': 'output web directory (default .)',
         'f': 'output filename (default index.html)',
         'help': 'Make an hdf5 file into html meshes!',
-        'l': 'make meshes for specific ids',        
+        'l': 'make meshes for : separated list of ids',
     }
 
     parser = argparse.ArgumentParser(description=help['help'])

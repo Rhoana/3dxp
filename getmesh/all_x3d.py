@@ -30,7 +30,7 @@ def start(_argv):
     # IF A LIST OF IDS IS PASSED
     #
     if args['list'] != '':
-        LIST = [int(v) for v in args['list'].split(',')]
+        LIST = [int(v) for v in args['list'].split(':')]
 
         # Load ids and make x3d files
         if os.path.exists(IMAGE):
@@ -79,7 +79,7 @@ def parseArgv(argv):
         'd': 'rank top ids by depth (default 0)',
         'w': 'folder containing js/css (default www)',
         'n': 'make meshes for the top n ids (default 1)',
-        'l': 'make meshes for specific ids',        
+        'l': 'make meshes for : separated list of ids',
         't': 'make for only the top id (default make all)',
         'help': 'Make an hdf5 file into html meshes!'
     }

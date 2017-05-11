@@ -206,11 +206,17 @@ class ThreeD:
         all_ids = np.unique(vol)
         if len(idlist) == 0:
             idlist = all_ids
-        print 'ID List', idlist
 
-        print 'Loaded data..'
+        # Check for ids not in data 
+        missing_ids = np.setdiff1d(idlist, all_ids)
+        if len(missing_ids):
+            print 'Cannot find {}'.format(missing_ids)
 
-        for id in np.intersect1d(all_ids,idlist):
+        # Check for ids in data
+        using_ids = np.intersect1d(idlist, all_ids)
+        print 'Using Loaded IDs: {}'.format(using_ids)
+
+        for id in missing_ids:
 
             # skip 0
             outfile = str(id) + '_' + str(Z) + '_' + str(Y) + '_' + str(X) +'.stl'
@@ -241,8 +247,6 @@ class ThreeD:
 
                 print 'Skipped', id
                 continue
-
-        print 'All done.'
 
     @staticmethod
     def start_website(stldir, ids=None):

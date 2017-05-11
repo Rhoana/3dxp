@@ -27,7 +27,9 @@ def start(_argv):
     # IF A LIST OF IDS IS PASSED
     #
     if args['list'] != '':
-        LIST = [int(v) for v in args['list'].split(',')]
+        LIST = [int(v) for v in args['list'].split(':')]
+
+        print args['list']
 
         # Load ids and make stl files
         if os.path.exists(DATA):
@@ -44,7 +46,6 @@ def start(_argv):
         subvols = zip(*np.where(np.ones(ntiles)))
 
         z,y,x = subvols[TRIAL]
-
 
         ThreeD.run(DATA, z, y, x, STLFOLDER, block_size, LIST)
 
@@ -99,7 +100,7 @@ def parseArgv(argv):
         'b': 'Number of blocks in each dimension (default 10)',
         't': 'Which of the b*b*b tiles to generate (default 0)',
         'n': 'make meshes for the top n ids (default 1)',
-        'l': 'make meshes for specific ids',
+        'l': 'make meshes for : separated list of ids',
         'help': 'Make an hdf5 file into stl meshes!'
     }
 
