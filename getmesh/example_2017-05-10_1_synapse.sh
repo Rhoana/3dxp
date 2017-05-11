@@ -3,30 +3,30 @@
 # Starting from step 0
 EXAMPLE="2017_05_10_844z"
 ROOT_IN="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/pngs/"
-export WORKING_DIR="/n/coxfs01/thejohnhoffer/2017/3dxp/getmesh"
+WORKING_DIR="/n/coxfs01/thejohnhoffer/2017/3dxp/getmesh"
 IDS_JSON="/n/coxfs01/leek/results/2017-05-05_R0/boss/boss.json"
 RAW_JSON="/n/coxfs01/leek/dropbox/25k_201610_dataset_em.json"
 IDS_PNG=$ROOT_IN"/3200_3200_ids"
 RAW_PNG=$ROOT_IN"/1600_1600_raw"
-export IDS_DOWNSAMPLE_XY=3
-export IDS_DOWNSAMPLE_Z=2
-export RAW_DOWNSAMPLE_XY=4
-export RAW_DOWNSAMPLE_Z=2
-export PNG_RUNS=80
+IDS_DOWNSAMPLE_XY=3
+IDS_DOWNSAMPLE_Z=2
+RAW_DOWNSAMPLE_XY=4
+RAW_DOWNSAMPLE_Z=2
+PNG_RUNS=80
 
 # Starting from step 1
 IDS_H5=$ROOT_IN"/3200_3200_ids.h5"
 RAW_H5=$ROOT_IN"/1600_1600_raw.h5"
 
 # Starting from step 2
-export BLOCK_COUNTS="8"
+BLOCK_COUNTS="8"
 BLOCK_RUNS=$((BLOCK_COUNTS**3))
 ROOT_OUT="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/meshes/"
 
 # Starting from step 3
-export ID_LIST="3497592 3497541"
+ID_LIST="3497592 3497541"
 # The number of the ids in the list
-export NUMBER_TOP=`wc -w <<< ${ID_LIST//,/ }`
+NUMBER_TOP=`wc -w <<< ${ID_LIST//,/ }`
 
 # Starting from step 4
 WWW_IN="/n/coxfs01/thejohnhoffer/2017/3dxp/X3DOM/www"
