@@ -350,13 +350,16 @@ class ThreeD:
             all_html += pop_html
 
             if pop_key in html_new_files:
-                with open(html_new_files[pop_key], 'w') as f:
+                new_file = html_new_files[pop_key]
+                # OUTPUT the HTML for the given ID
+                with open(new_file, 'w') as f:
                     f.write(html_header + pop_html + html_footer)
+
+                print 'Stored {}'.format(new_file)
 
         with open(os.path.join(outputfolder, 'null.html'), 'w') as f:
             f.write(html_header + ThreeD.pattern + html_footer)
 
-        print 'Stored ' + outfile
 
         # Link scripts
         WWW_IN = kwargs['www']
