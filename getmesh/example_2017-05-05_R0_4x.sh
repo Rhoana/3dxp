@@ -58,7 +58,7 @@ case "$1" in
    ;;
 
 1) python png2hd.py $RAW_PNG $RAW_H5
-   python png2hd.py -c $IDS_PNG $IDS_H5
+   python png2hd.py -c -o rgb $IDS_PNG $IDS_H5
    ;;
 
 2) python all_counts.py -b $BLOCK_COUNTS $IDS_H5 $ROOT_OUT
