@@ -18,7 +18,7 @@ class ThreeD:
 <html>
 <head>
   <script type='text/javascript' src='https://www.x3dom.org/x3dom/release/x3dom.js'></script>
-  <script type='text/javascript' src='javascript/frames.js'></script>
+  <script type='text/javascript' src='javascript/gl-matrix-min.js'></script>
   <script type='text/javascript' src='javascript/main.js'></script>
   <link rel="stylesheet" href="css/main.css" type="text/css"/>
 </head>

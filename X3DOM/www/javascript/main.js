@@ -9,6 +9,9 @@ animation = false;
 loading = false;
 buffer = 0;
 
+// Default frames
+ALLFRAMES = []
+
 function slice_mover(zed, delta=false){
 
   now = Number(buffer)
@@ -51,6 +54,7 @@ function slice_mover(zed, delta=false){
   now_hide.setAttribute('scale','0 0 0')
 
   buffer_img.onload = function() {
+
     buffer_texture.appendChild(buffer_img)
     buffer_parent.appendChild(buffer_texture)
 
@@ -93,12 +97,97 @@ function animate() {
   }, INTERV);
 };
 
+function parse_args() {
+  var args = document.location.search.substring(1).split('&');
+  argsParsed = {};
+  for (var i=0; i < args.length; i++) {
+      arg = unescape(args[i]);
+
+      if (arg.length == 0) {
+        continue;
+      }
+
+      if (arg.indexOf('=') == -1) {
+          argsParsed[arg.replace(new RegExp('/$'),'').trim()] = true;
+      }
+      else {
+          kvp = arg.split('=');
+          argsParsed[kvp[0].trim()] = kvp[1].replace(new RegExp('/$'),'').trim();
+      }
+  }
+	return argsParsed
+}
+
+interpolate = function(k_slices, k_frames) {
+  // Interpolation array
+  var output = [];
+  // Go through all slices
+	for ( var k = 1; k < k_slices.length; k++) {
+  	// Get starting and the ending slices
+    var z0 = k_slices[k-1];
+		var z1 = k_slices[k];
+		var z_diff = Math.abs(z1 - z0);
+    // Get starting and ending positions, rotations
+    var p0 = k_frames[k-1][0];
+    var r0 = k_frames[k-1][1];
+    var p1 = k_frames[k][0];
+    var r1 = k_frames[k][1];
+    // Now in the range between the slices
+		for (var offset=0; offset < z_diff; offset++) {
+			// Get the interpolation fraction
+      var fraction = offset / z_diff;
+
+      //////////////////////////
+      // Get the axis of rotation
+      var ax0 = vec3.fromValues(r0[0], r0[1], r0[2]);
+      var ax1 = vec3.fromValues(r1[0], r1[1], r1[2]);
+      // Convert the rotations to quaternions
+      var q0 = quat.setAxisAngle(quat.create(), ax0, r0[3]);
+      var q1 = quat.setAxisAngle(quat.create(), ax1, r1[3]);
+      // Interpolate the quaternions
+      var q_i = quat.slerp(quat.create(), q0, q1, fraction)
+      // Get the new axis and angle
+      var ax_i = vec3.create()
+      var rad_i = quat.getAxisAngle(ax_i, q_i)
+      // Get the interpolated rotation
+      var rot_i = [ax_i[0], ax_i[1], ax_i[2], rad_i]
+
+      //////////////////////////
+      // Get the translation position
+      var tran0 = vec3.fromValues(p0[0], p0[1], p0[2])
+      var tran1 = vec3.fromValues(p1[0], p1[1], p1[2])
+      // Linear interpolate the positions
+      var tran_i = vec3.lerp(vec3.create(), tran0, tran1, fraction)
+      // Get the interpolated position
+      var pos_i = [tran_i[0], tran_i[1], tran_i[2]]
+
+      /////////////////////////
+      // Push to the output array
+			var frame_i = [pos_i.join(' '), rot_i.join(' ')]
+      output.push(frame_i)
+		}
+  }
+  return output
+}
 
 window.onload = function() {
 
   runtime = document.getElementById("r").runtime;
   scene = document.getElementById( "scene" );
 
+	search_dict = parse_args()
+  // Get json from the url
+  if ('keyframes' in search_dict){
+		var loaded = search_dict.keyframes
+    var key_slices = JSON.parse(loaded).allslices
+    var key_frames = JSON.parse(loaded).allframes
+		// Crop slices and frames to the lower of the two lengths
+		var key_count = Math.min(key_slices.length, key_frames.length)
+		key_slices = key_slices.slice(0, key_count)
+		key_frames = key_frames.slice(0, key_count)
+    // Interpolate the keyframes
+		ALLFRAMES = interpolate(key_slices, key_frames)
+  }
   // two clipping planes
   clipScopeX = document.getElementById( "clipScopeX" );
   clipScopeY = document.getElementById( "clipScopeY" );
@@ -119,13 +208,11 @@ function viewFunc(evt) {
     var pos = evt.position;
     var rot = evt.orientation;
 
-    var camPos = [pos.x, pos.y, pos.z].join(' ')
-    var camRot = [rot[0].x, rot[0].y, rot[0].z, rot[1]].join(' ');
+    var camPos = [pos.x, pos.y, pos.z];
+    var camRot = [rot[0].x, rot[0].y, rot[0].z, rot[1]];
 
-    var frame = [camPos, camRot]
-    console.log(frame)
     allstates.allslices.push(slice);
-    allstates.allframes.push(frame);
+    allstates.allframes.push([camPos, camRot]);
   }
 }
 
@@ -153,11 +240,12 @@ function save_states(){
   document.body.className = 'green';
   setTimeout(function(){
     document.body.className = '';
-  },1000);
-  var sv_layers = 'LAYERS =' + JSON.stringify(allstates.allslices,null,'\t');
-  var sv_frames = 'FRAMES =' + JSON.stringify(allstates.allframes,null,'\t');
-  var saved = encodeURIComponent(sv_layers+'\n\n'+sv_frames);
-  window.location = 'data:Application/octet-stream,'+saved;
+  },1000)
+  // Get keyframe info
+  var sv_keyframes = JSON.stringify(allstates, null,'\t');
+  var saved = encodeURIComponent(sv_keyframes);
+  // Open this page with the keyframes in the URL
+  window.open(window.location.pathname+'?keyframes='+saved, '_self');
 }
 
 function user_down(){
