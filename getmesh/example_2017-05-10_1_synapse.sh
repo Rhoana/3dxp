@@ -24,7 +24,7 @@ BLOCK_RUNS=$((BLOCK_COUNTS**3))
 ROOT_OUT="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/meshes"
 
 # Starting from step 3
-ID_LIST="3497592 3497541"
+ID_LIST="3497592,3497541"
 # The number of the ids in the list
 NUMBER_TOP=`wc -w <<< ${ID_LIST//,/ }`
 
