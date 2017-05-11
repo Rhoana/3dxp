@@ -26,7 +26,7 @@ def start(_argv):
     #
     # IF A LIST OF IDS IS PASSED
     #
-    if LIST != '':
+    if args['list'] != '':
         LIST = [int(v) for v in args['list'].split(',')]
 
         # Load ids and make stl files

@@ -255,7 +255,7 @@ class ThreeD:
             return [os.path.basename(v) for id in ids for v in glob.glob(os.path.join(stldir, str(id)+'_*.stl'))]
 
     @staticmethod
-    def create_website(stldir, outputfolder, ids=None, outfile='index.html', dimz=1024, dimy=1024, dimx=1024,**kwargs):
+    def create_website(stldir, outputfolder, ids=None, dimz=1024, dimy=1024, dimx=1024,**kwargs):
 
         # Get all stl_files
         stl_files = ThreeD.start_website(stldir, ids)
@@ -353,9 +353,6 @@ class ThreeD:
                 with open(html_new_files[pop_key], 'w') as f:
                     f.write(html_header + pop_html + html_footer)
 
-        with open(os.path.join(outputfolder, outfile), 'w') as f:
-            f.write(html_header + all_html + html_footer)
-
         with open(os.path.join(outputfolder, 'null.html'), 'w') as f:
             f.write(html_header + ThreeD.pattern + html_footer)
 
@@ -372,14 +369,16 @@ class ThreeD:
                     os.symlink(in_link, out_link)
 
     @staticmethod
-    def merge_website(out_root, outfile='index.html'):
+    def merge_website(out_root, outfile='index.html', only_ids=[]):
 
+        # Get format for valid file names
+        index_format = '{}.html'
         # Format all the file paths
-        input_format = os.path.join(out_root, '*_{}'.format(outfile))
+        input_format = os.path.join(out_root, index_format)
         null_path = os.path.join(out_root, 'null.html')
         out_path = os.path.join(out_root, outfile)
-        # List all input file paths
-        files = glob.glob(input_format)
+        # List all input file paths matching the format
+        files = glob.glob(input_format.format('*'))
 
         # Stringify html elements
         html_string = lambda s: ElementTree.tostring(s, method='html')
@@ -390,7 +389,20 @@ class ThreeD:
 
         shapes = []
 
-        for f in files:
+        # Load all files if empty list
+        if not len(only_ids):
+            shape_ids = files
+        else:
+            # Load only files in list that exist
+            file_ids = map(input_format.format, only_ids)
+            shape_ids = list(set(files) & set(file_ids))
+
+        print """
+Merging all files:
+{}
+        """.format('\n'.join(shape_ids))
+        # Load requested ids that exist
+        for f in shape_ids:
             shapes += ElementTree.parse(f).getroot().findall('.//group/transform/*')
         
         # Convert all the shapes to strings 

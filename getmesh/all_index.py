@@ -15,9 +15,11 @@ def start(_argv):
     INDEX = args['index']
     ROOTOUT = realpath(args['out'])
     X3DFOLDER = sharepath(ROOTOUT, 'x3d')
+    # Join only specific indexes
+    LIST = map(int, args['list'].split(','))
 
     # Load stl (and cached x3d) to make x3dom html
-    ThreeD.merge_website(X3DFOLDER, INDEX)
+    ThreeD.merge_website(X3DFOLDER, INDEX, LIST)
 
 def parseArgv(argv):
     sys.argv = argv
@@ -25,7 +27,8 @@ def parseArgv(argv):
     help = {
         'out': 'output web directory (default .)',
         'f': 'output filename (default index.html)',
-        'help': 'Make an hdf5 file into html meshes!'
+        'help': 'Make an hdf5 file into html meshes!',
+        'l': 'make meshes for specific ids',        
     }
 
     parser = argparse.ArgumentParser(description=help['help'])

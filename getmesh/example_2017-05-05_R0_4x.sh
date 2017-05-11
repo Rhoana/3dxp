@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # Starting from step 0
+EXAMPLE="2017_05_10_844z"
+ROOT_IN="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/pngs/"
 export WORKING_DIR="/n/coxfs01/thejohnhoffer/2017/3dxp/getmesh"
-ROOT_IN="/n/coxfs01/thejohnhoffer/R0/2017_05_10_844z/pngs/"
 IDS_JSON="/n/coxfs01/leek/results/2017-05-05_R0/boss/boss.json"
 RAW_JSON="/n/coxfs01/leek/dropbox/25k_201610_dataset_em.json"
 IDS_PNG=$ROOT_IN"/3200_3200_ids"
@@ -20,7 +21,7 @@ RAW_H5=$ROOT_IN"/1600_1600_raw.h5"
 # Starting from step 2
 export BLOCK_COUNTS="8"
 BLOCK_RUNS=$((BLOCK_COUNTS**3))
-ROOT_OUT="/n/coxfs01/thejohnhoffer/R0/2017_05_10_844z/meshes/"
+ROOT_OUT="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/meshes/"
 
 # Starting from step 3
 export NUMBER_TOP="20"

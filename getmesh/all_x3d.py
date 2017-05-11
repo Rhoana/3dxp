@@ -15,7 +15,6 @@ def start(_argv):
     realpath = lambda pathy: os.path.realpath(homepath(pathy))
     sharepath = lambda share,pathy: os.path.join(share, homepath(pathy))
 
-    INDEX = args['index']
     WHICH_ID = args['top']
     TOP_DEEP = args['deep']
     N_TOP_IDS = args['number'] + 1
@@ -30,7 +29,7 @@ def start(_argv):
     #
     # IF A LIST OF IDS IS PASSED
     #
-    if LIST != '':
+    if args['list'] != '':
         LIST = [int(v) for v in args['list'].split(',')]
 
         # Load ids and make x3d files
@@ -41,10 +40,9 @@ def start(_argv):
         # Run conversion on only one particular ID
         if WHICH_ID >= 0:
             LIST = [LIST[WHICH_ID]]
-            INDEX = '{}_{}'.format(LIST[0], INDEX)
 
         # Load stl (and cached x3d) to make x3dom html
-        ThreeD.create_website(STLFOLDER, X3DFOLDER, LIST, INDEX, *full_shape, www=WWW)
+        ThreeD.create_website(STLFOLDER, X3DFOLDER, LIST, *full_shape, www=WWW)
         # Link full image stack and create cube sides
         sides(X3DFOLDER, IMAGE, PNGS)
 
@@ -83,7 +81,6 @@ def parseArgv(argv):
         'raw': 'input raw h5 volume (default raw.h5)',
         'png': 'input raw png folder (default pngs)',
         'd': 'rank top ids by depth (default 0)',
-        'f': 'output filename (default index.html)',
         'w': 'folder containing js/css (default www)',
         'n': 'make meshes for the top n ids (default 1)',
         'l': 'make meshes for specific ids',        
@@ -95,7 +92,6 @@ def parseArgv(argv):
     parser.add_argument('raw', default='raw.h5', help=help['raw'])
     parser.add_argument('png', default='pngs', help=help['png'])
     parser.add_argument('out', default='.', nargs='?', help=help['out'])
-    parser.add_argument('-f','--index', default='index.html', help=help['f'])
     parser.add_argument('-n','--number', type=int, default=1, help=help['n'])
     parser.add_argument('-l','--list', default='', help=help['l'])    
     parser.add_argument('-t','--top', type=int, default=-1, help=help['t'])
