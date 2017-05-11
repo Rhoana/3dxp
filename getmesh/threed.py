@@ -216,7 +216,7 @@ class ThreeD:
         using_ids = np.intersect1d(idlist, all_ids)
         print 'Using Loaded IDs: {}'.format(using_ids)
 
-        for id in missing_ids:
+        for id in using_ids:
 
             # skip 0
             outfile = str(id) + '_' + str(Z) + '_' + str(Y) + '_' + str(X) +'.stl'
