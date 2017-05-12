@@ -24,7 +24,7 @@ BLOCK_RUNS=$((BLOCK_COUNTS**3))
 ROOT_OUT="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/meshes"
 
 # Starting from step 3
-ID_LIST="3497592 3497541"
+ID_LIST="2 151"
 # The number of the ids in the list
 NUMBER_TOP=`wc -w <<< $ID_LIST`
 ID_LIST=${ID_LIST// /:}
@@ -33,7 +33,7 @@ ID_LIST=${ID_LIST// /:}
 WWW_IN="/n/coxfs01/thejohnhoffer/2017/3dxp/X3DOM/www"
 
 # Starting from step 5
-INDEX_NAME="1_synapse.html"
+INDEX_NAME="synapse_151-2.html"
 
 # Load the virtual environment
 source new-modules.sh
