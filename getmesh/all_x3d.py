@@ -19,13 +19,26 @@ def start(_argv):
     TOP_DEEP = args['deep']
     N_TOP_IDS = args['number'] + 1
     WWW = realpath(args['www'])
-    PNGS = realpath(args['png'])
+    IMGS = realpath(args['img'])
     IMAGE = realpath(args['raw'])
     ROOTOUT = realpath(args['out'])
     STLFOLDER = sharepath(ROOTOUT, 'stl')
     X3DFOLDER = sharepath(ROOTOUT, 'x3d')
 
-
+    # Calculate raw image and id mesh scales
+    V_SCALE = np.float64([args['Vratio'], 1, 1])
+    I_SCALE = 2**np.float64(args['Iratio'].split(':'))
+    R_SCALE = 2**np.float64(args['Rratio'].split(':'))
+    # Store the 3 element scales as strings
+    i_scale = V_SCALE / I_SCALE[[(0,1,1)]]
+    r_scale = V_SCALE / R_SCALE[[(0,1,1)]]
+    # Get keywords for making website
+    www_keys = {
+        'www': WWW,
+        'i_scale': ' '.join(i_scale.astype(str)),
+        'r_scale': ' '.join(r_scale.astype(str)),
+    }
+    print www_keys
     #
     # IF A LIST OF IDS IS PASSED
     #
@@ -42,9 +55,9 @@ def start(_argv):
             LIST = [LIST[WHICH_ID]]
 
         # Load stl (and cached x3d) to make x3dom html
-        ThreeD.create_website(STLFOLDER, X3DFOLDER, LIST, *full_shape, www=WWW)
+        ThreeD.create_website(STLFOLDER, X3DFOLDER, LIST, *full_shape, **www_keys)
         # Link full image stack and create cube sides
-        sides(X3DFOLDER, IMAGE, PNGS)
+        sides(X3DFOLDER, IMAGE, IMGS)
 
         return
 
@@ -65,9 +78,9 @@ def start(_argv):
         top_ids = [top_ids[WHICH_ID]]
 
     # Load stl (and cached x3d) to make x3dom html
-    ThreeD.create_website(STLFOLDER, X3DFOLDER, top_ids, *full_shape, www=WWW)
+    ThreeD.create_website(STLFOLDER, X3DFOLDER, top_ids, *full_shape, **www_keys)
     # Link full image stack and create cube sides
-    sides(X3DFOLDER, IMAGE, PNGS)
+    sides(X3DFOLDER, IMAGE, IMGS)
 
 def parseArgv(argv):
     sys.argv = argv
@@ -75,24 +88,30 @@ def parseArgv(argv):
     help = {
         'out': 'output web directory (default .)',
         'raw': 'input raw h5 volume (default raw.h5)',
-        'png': 'input raw png folder (default pngs)',
+        'img': 'input raw img folder (default imgs)',
         'd': 'rank top ids by depth (default 0)',
         'w': 'folder containing js/css (default www)',
         'n': 'make meshes for the top n ids (default 1)',
         'l': 'make meshes for : separated list of ids',
         't': 'make for only the top id (default make all)',
+        'V': 'Original voxel physical z size over xy size  (default 10.0)',
+        'R': 'Number of downsamplings in z:xy of raw img data (default 0:3)',
+        'I': 'Number of downsamplings in z:xy of ID mesh data (default 0:3)',
         'help': 'Make an hdf5 file into html meshes!'
     }
 
     parser = argparse.ArgumentParser(description=help['help'])
     parser.add_argument('raw', default='raw.h5', help=help['raw'])
-    parser.add_argument('png', default='pngs', help=help['png'])
+    parser.add_argument('img', default='imgs', help=help['img'])
     parser.add_argument('out', default='.', nargs='?', help=help['out'])
     parser.add_argument('-n','--number', type=int, default=1, help=help['n'])
     parser.add_argument('-l','--list', default='', help=help['l'])    
     parser.add_argument('-t','--top', type=int, default=-1, help=help['t'])
     parser.add_argument('-d','--deep',type=int, default=0, help=help['d'])
     parser.add_argument('-w','--www', default='www', help=help['w'])
+    parser.add_argument('-V','--Vratio', default=10.0, type=float, help=help['V'])
+    parser.add_argument('-R','--Rratio', default='0:3', help=help['R'])
+    parser.add_argument('-I','--Iratio', default='0:3', help=help['I'])
 
     # attain all arguments
     return vars(parser.parse_args())

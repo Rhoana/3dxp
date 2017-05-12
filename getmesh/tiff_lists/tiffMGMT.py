@@ -79,11 +79,13 @@ Writing {} volume to {}
         for s_z in range(*scale_bounds):
             # Scale the z bound
             z = s_z * scale[0]
-            # Create the png file path
-            png_path = '{:05d}.png'.format(s_z)
-            png_path = os.path.join(_path, png_path)
             # Create the slice image
             a = np.zeros(scale_slice, dtype=self.dtype)
+            # Create the png file path
+            image_path = '{:05d}.{}'.format(s_z, _format)
+            image_path = os.path.join(_path, image_path)
+
+
             # Open all tiff files in the stack
             for f in range(self.n_xy):
                 # Get tiff file path and offset
@@ -99,23 +101,25 @@ Writing {} volume to {}
                 # Fill the tile with scaled volume
                 a[y0:y1, x0:x1] = scale_vol
 
-
+            # Handle each format
             if _format == 'png':
                 # Write the layer to a color or grayscale png file
                 color_shape = a.shape + (-1,)
                 a = a.view(np.uint8).reshape(color_shape)
-                cv2.imwrite(png_path, a[:,:,:3])
-                print("""
-            Wrote layer {} to a png file
-            """.format(z))
-
+                cv2.imwrite(image_path, a[:,:,:3])
+            elif _format in ['jpeg','jpg']:
+                # Write the layer to a color or grayscale png file
+                color_shape = a.shape + (-1,)
+                a = a.view(np.uint8).reshape(color_shape)
+                # Write to a jpeg with a given image quality
+                jpeg_qual = [int(cv2.IMWRITE_JPEG_QUALITY), 80]
+                cv2.imwrite(image_path, a[:,:,:3], jpeg_qual)
             else:
+                tiff.imsave(image_path, a)
 
-                tiff.imsave(png_path, a)
-                print("""
-            Wrote layer {} to a tif ({}) file
-            """.format(z, self.dtype))
-
+            print("""
+            Wrote layer {} to a {} file
+            """.format(z, _format))
 
         # Record total writing time
         sec_diff = time.time() - sec_start

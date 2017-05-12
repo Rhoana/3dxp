@@ -22,20 +22,20 @@ class ThreeD:
   <script type='text/javascript' src='javascript/main.js'></script>
   <link rel="stylesheet" href="css/main.css" type="text/css"/>
 </head>
-<body>
+<body onload="window.startup({DIMZ})">
   <x3d id='r' width='100%' height='100%'>
 
     <scene id='scene'>
       <viewpoint id="view" bind="true" position="-3907.452893023825 3412.645607228069 1698.6871532265088" orientation="-0.38641924151512014 0.5710252704568496 0.7242998759399042 4.044510548789248" description="camera"></viewpoint>
 
-            <transform bboxCenter='0 0 0' scale='10 1 1'>
+            <transform bboxCenter='0 0 0' scale='{R_SCALE}'>
             <transform bboxCenter='0,0,0' rotation='0 1 0 -1.5708'>
             <transform id='move0' bboxCenter='0,0,0' translation='{HALFDIMX} {HALFDIMY} -{DIMZ}'>
             <transform bboxCenter='0,0,0' scale='1 -1 1'>
             <shape>
               <appearance>
                   <Texture>
-                    <img style="display: none" src='images/{LASTIMAGE}.png'></img>
+                    <img style="display: none" src='images/{LASTIMAGE}.jpg'></img>
                   </Texture>
               </appearance>
               <plane primType='TRIANGLES' size='{DIMX} {DIMY}' solid='false'></plane>
@@ -45,14 +45,14 @@ class ThreeD:
             </transform>
             </transform>
 
-            <transform bboxCenter='0 0 0' scale='10 1 1'>
+            <transform bboxCenter='0 0 0' scale='{R_SCALE}'>
             <transform bboxCenter='0,0,0' rotation='0 1 0 -1.5708'>
             <transform id='move1' bboxCenter='0,0,0' translation='{HALFDIMX} {HALFDIMY} -{DIMZ}'>
             <transform bboxCenter='0,0,0' scale='1 -1 1'>
             <shape>
               <appearance>
                   <Texture>
-                    <img style="display: none" src='images/{LASTIMAGE}.png'></img>
+                    <img style="display: none" src='images/{LASTIMAGE}.jpg'></img>
                   </Texture>
               </appearance>
               <plane primType='TRIANGLES' size='{DIMX} {DIMY}' solid='false'></plane>
@@ -64,7 +64,7 @@ class ThreeD:
 
 
         <!-- SHOULD BE IN X -->
-        <transform bboxCenter='0 0 0' scale='10 1 1'>
+        <transform bboxCenter='0 0 0' scale='{R_SCALE}'>
         <transform id='clipScopeX'>
         <transform bboxCenter='0,0,0' rotation='0 0 1 -1.5708'>
         <transform id='move_slice' bboxCenter='0,0,0' translation='-{HALFDIMY} {HALFDIMZ} 0'>
@@ -85,7 +85,7 @@ class ThreeD:
 
 
         <!-- SHOULD BE IN Y -->
-        <transform bboxCenter='0 0 0' scale='10 1 1'>
+        <transform bboxCenter='0 0 0' scale='{R_SCALE}'>
         <transform id='clipScopeY'>
         <transform bboxCenter='0,0,0' rotation='0 0 1 -1.5708'>
         <transform bboxCenter='0,0,0' rotation='0 1 0 -1.5708'>
@@ -107,7 +107,7 @@ class ThreeD:
         </transform>
 
     <group>
-    <transform bboxCenter='0 0 0' scale='10 1 1'>
+    <transform bboxCenter='0 0 0' scale='{I_SCALE}'>
     '''
     
     html_footer = '''
@@ -259,7 +259,7 @@ class ThreeD:
             return [os.path.basename(v) for id in ids for v in glob.glob(os.path.join(stldir, str(id)+'_*.stl'))]
 
     @staticmethod
-    def create_website(stldir, outputfolder, ids=None, dimz=1024, dimy=1024, dimx=1024,**kwargs):
+    def create_website(stldir, outputfolder, ids=None, dimz=1024, dimy=1024, dimx=1024,**keywords):
 
         # Get all stl_files
         stl_files = ThreeD.start_website(stldir, ids)
@@ -348,6 +348,13 @@ class ThreeD:
         html_header = html_header.replace('{HALFDIMY}', str(int(dimy/2.)))
         html_header = html_header.replace('{HALFDIMZ}', str(int(dimz/2.)))
         html_header = html_header.replace('{LASTIMAGE}', str(int(dimz-1)).zfill(string_pad))
+        # Get scales for raw images and id meshes
+        r_scale = keywords.get('r_scale', '10 1 1')
+        i_scale = keywords.get('i_scale', '10 1 1')
+        # replace both raw and id scale in the header
+        html_header = html_header.replace('{R_SCALE}', r_scale)
+        html_header = html_header.replace('{I_SCALE}', i_scale)
+
 
         html_footer = ThreeD.html_footer
 
@@ -368,9 +375,8 @@ class ThreeD:
         with open(os.path.join(outputfolder, 'null.html'), 'w') as f:
             f.write(html_header + ThreeD.pattern + html_footer)
 
-
         # Link scripts
-        WWW_IN = kwargs['www']
+        WWW_IN = keywords.get('www','www')
 
         if os.path.exists(WWW_IN):
             for lang in ['css', 'javascript']:

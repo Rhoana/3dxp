@@ -23,7 +23,7 @@ source /n/coxfs01/apps/instantreality/setup.sh
 cd $WORKING_DIR
 echo "Working ${WORKING_DIR}"
 echo "From ${RAW_H5} to ${ROOT_OUT}"
-python -u all_x3d.py -t $SLURM_ARRAY_TASK_ID -d $RANK_Z -n $NUMBER_TOP -w $WWW_IN $RAW_H5 $RAW_PNG $ROOT_OUT
+python -u all_x3d.py -t $SLURM_ARRAY_TASK_ID -V $VOXEL_RATIO -R $RAW_RATIO -I $IDS_RATIO -d $RANK_Z -n $NUMBER_TOP -w $WWW_IN $RAW_H5 $RAW_JPG $ROOT_OUT
 
 # end of program
 exit 0;

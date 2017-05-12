@@ -9,8 +9,8 @@
 #SBATCH -t 1-12:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=john@hoff.in
-#SBATCH -o /n/coxfs01/thejohnhoffer/all_x3d/multi_x3d_%a.out
-#SBATCH -e /n/coxfs01/thejohnhoffer/all_x3d/multi_x3d_%a.err
+#SBATCH -o /n/coxfs01/thejohnhoffer/all_x3d/n67_x3d_%a.out
+#SBATCH -e /n/coxfs01/thejohnhoffer/all_x3d/n67_x3d_%a.err
 
 source new-modules.sh
 module load python/2.7.11-fasrc01
@@ -23,7 +23,7 @@ source /n/coxfs01/apps/instantreality/setup.sh
 cd $WORKING_DIR
 echo "Working ${WORKING_DIR}"
 echo "From ${RAW_H5} to ${ROOT_OUT}"
-python -u all_x3d.py -t $SLURM_ARRAY_TASK_ID -l $ID_LIST -w $WWW_IN $RAW_H5 $RAW_PNG $ROOT_OUT
+python -u all_x3d.py -t $SLURM_ARRAY_TASK_ID -V $VOXEL_RATIO -R $RAW_RATIO -I $IDS_RATIO -l $IDS_LIST -w $WWW_IN $RAW_H5 $RAW_JPG $ROOT_OUT
 
 # end of program
 exit 0;

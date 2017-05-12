@@ -16,7 +16,7 @@ source activate h5_tile
 
 # we are working
 cd $WORKING_DIR
-python -u tiff_lists/tiff2tiff.py ${IN_JSON} ${SLURM_ARRAY_TASK_ID} -r ${RUNS} -o ${OUT_TIF} -n ${N_DOWNSAMPLE_XY} -z ${N_DOWNSAMPLE_Z}
+python -u tiff_lists/tiffScale.py -f tif ${IN_JSON} ${SLURM_ARRAY_TASK_ID} -r ${RUNS} -o ${OUT_TIF} -n ${N_DOWNSAMPLE_XY} -z ${N_DOWNSAMPLE_Z}
 
 # end of program
 exit 0;
