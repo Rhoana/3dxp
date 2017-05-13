@@ -1,6 +1,5 @@
 RATE = 1;
 INTERV = 600;
-slice = 211;
 NEWEVENT = false;
 ALLSLICE = slice+1;
 allstates = {allslices:[]};
@@ -11,6 +10,9 @@ buffer = 0;
 
 // Default frames
 ALLFRAMES = []
+// Declare depth and slice
+ALLSLICE = 0
+slice = 0;
 
 function slice_mover(zed, delta=false){
 
@@ -77,10 +79,10 @@ function slice_mover(zed, delta=false){
   var pad = "00000";
   if (pad.length){
     var sli = (pad+slice).slice(-pad.length)
-    buffer_img.src = 'images/'+ sli +'.png'
+    buffer_img.src = 'images/'+ sli +'.jpg'
   }
   else{
-    buffer_img.src = 'images/'+ slice +'.png'
+    buffer_img.src = 'images/'+ slice +'.jpg'
   }
   buffer_img.style.display = "none" 
 
@@ -115,26 +117,26 @@ function parse_args() {
           argsParsed[kvp[0].trim()] = kvp[1].replace(new RegExp('/$'),'').trim();
       }
   }
-	return argsParsed
+  return argsParsed
 }
 
 interpolate = function(k_slices, k_frames) {
   // Interpolation array
   var output = [];
   // Go through all slices
-	for ( var k = 1; k < k_slices.length; k++) {
-  	// Get starting and the ending slices
+  for ( var k = 1; k < k_slices.length; k++) {
+    // Get starting and the ending slices
     var z0 = k_slices[k-1];
-		var z1 = k_slices[k];
-		var z_diff = Math.abs(z1 - z0);
+    var z1 = k_slices[k];
+    var z_diff = Math.abs(z1 - z0);
     // Get starting and ending positions, rotations
     var p0 = k_frames[k-1][0];
     var r0 = k_frames[k-1][1];
     var p1 = k_frames[k][0];
     var r1 = k_frames[k][1];
     // Now in the range between the slices
-		for (var offset=0; offset < z_diff; offset++) {
-			// Get the interpolation fraction
+    for (var offset=0; offset < z_diff; offset++) {
+      // Get the interpolation fraction
       var fraction = offset / z_diff;
 
       //////////////////////////
@@ -163,30 +165,34 @@ interpolate = function(k_slices, k_frames) {
 
       /////////////////////////
       // Push to the output array
-			var frame_i = [pos_i.join(' '), rot_i.join(' ')]
+      var frame_i = [pos_i.join(' '), rot_i.join(' ')]
       output.push(frame_i)
-		}
+    }
   }
   return output
 }
 
-window.onload = function() {
+window.startup = function(_depth) {
+
+  // Get the depth and first slice from the html
+  ALLSLICE = _depth;
+  slice = _depth - 1;
 
   runtime = document.getElementById("r").runtime;
   scene = document.getElementById( "scene" );
 
-	search_dict = parse_args()
+  search_dict = parse_args()
   // Get json from the url
   if ('keyframes' in search_dict){
-		var loaded = search_dict.keyframes
+    var loaded = search_dict.keyframes
     var key_slices = JSON.parse(loaded).allslices
     var key_frames = JSON.parse(loaded).allframes
-		// Crop slices and frames to the lower of the two lengths
-		var key_count = Math.min(key_slices.length, key_frames.length)
-		key_slices = key_slices.slice(0, key_count)
-		key_frames = key_frames.slice(0, key_count)
+    // Crop slices and frames to the lower of the two lengths
+    var key_count = Math.min(key_slices.length, key_frames.length)
+    key_slices = key_slices.slice(0, key_count)
+    key_frames = key_frames.slice(0, key_count)
     // Interpolate the keyframes
-		ALLFRAMES = interpolate(key_slices, key_frames)
+    ALLFRAMES = interpolate(key_slices, key_frames)
   }
   // two clipping planes
   clipScopeX = document.getElementById( "clipScopeX" );
@@ -291,11 +297,11 @@ var ClipPlane = function ( scope, proxyParent, runtime )
 
     var _clipping = -1;
   
-  var _normal = new x3dom.fields.SFVec3f(_clipping, 0, 0);
+    var _normal = new x3dom.fields.SFVec3f(_clipping, 0, 0);
   
-  var _angle = 0;
+    var _angle = 0;
   
-  var _distance = 0;
+    var _distance = 0;
 
     var _proxyTransform = null;
 
