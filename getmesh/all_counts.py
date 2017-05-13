@@ -15,11 +15,14 @@ def start(_argv):
     sharepath = lambda share,pathy: os.path.join(share, homepath(pathy))
 
     BLOCK = args['block']
+    SAVE_DEEP = args['deep']
     ROOTOUT = realpath(args['out'])
     DATA = realpath(args['ids'])
     # Count most spread or deep ids 
-    biggest(DATA, sharepath(ROOTOUT,'spread_count.txt'), BLOCK)
-    deepest(DATA, sharepath(ROOTOUT,'deep_count.txt'), BLOCK)
+    if SAVE_DEEP > 0 :
+        deepest(DATA, sharepath(ROOTOUT,'deep_count.txt'), BLOCK)
+    else:
+        biggest(DATA, sharepath(ROOTOUT,'spread_count.txt'), BLOCK)
 
 def parseArgv(argv):
     sys.argv = argv
@@ -28,11 +31,13 @@ def parseArgv(argv):
         'ids': 'input hd5 id volume (default in.h5)',
         'out': 'output text list directory (default .)',
         'b': 'Number of blocks in each dimension (default 10)',
-        'help': 'Save the deepest and biggest cells'
+        'help': 'Save the deepest or the biggest cells',
+        'd': 'save top ids by depth (default 0)',
     }
 
     parser = argparse.ArgumentParser(description=help['help'])
     parser.add_argument('-b','--block', type=int, default=10, help=help['b'])
+    parser.add_argument('-d','--deep',type=int, default=0, help=help['d'])
     parser.add_argument('ids', help=help['ids'])
     parser.add_argument('out', help=help['out'])
 

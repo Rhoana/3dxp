@@ -15,8 +15,8 @@ module load python/2.7.11-fasrc01
 source activate h5_tile
 
 # we are working
-cd $WORKING_DIR
-python -u tiff_lists/tiffScale.py -f jpg ${IN_JSON} ${SLURM_ARRAY_TASK_ID} -r ${RUNS} -o ${OUT_JPG} -n ${N_DOWNSAMPLE_XY} -z ${N_DOWNSAMPLE_Z}
+echo "python -u tiff_lists/tiffScale.py -t $SLURM_ARRAY_TASK_ID $ARGUMENTS"
+python -u tiff_lists/tiffScale.py -t $SLURM_ARRAY_TASK_ID $ARGUMENTS
 
 # end of program
 exit 0;

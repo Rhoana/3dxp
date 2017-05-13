@@ -12,7 +12,7 @@ if __name__ == '__main__':
         'out': 'The directory to save the output images (./out)',
         'fmt': 'The output format as jpg, tif, or png (png)',
         'runs': 'The number of runs for all slices (1)',
-        'z0': 'The order of this run (0)',
+        'trial': 'The trial number for this run (0)',
         'num': 'Downsampling times in XY (4)',
         'numz': 'Downsampling times in Z (2)'
     }
@@ -20,7 +20,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=help['tiffScale'])
     # Define all the arguments
     parser.add_argument('files', help=help['files'])
-    parser.add_argument('z0', default=0, type=int, nargs='?', help=help['z0'])
+    parser.add_argument('--trial','-t', default=0, type=int, help=help['trial'])
     parser.add_argument('--runs', '-r', default=1, type=int, help=help['runs'])
     parser.add_argument('--num', '-n', default=4, type=int, help=help['num'])
     parser.add_argument('--numz', '-z', default=2, type=int, help=help['numz'])
@@ -46,7 +46,7 @@ if __name__ == '__main__':
     mgmt = TiffMGMT(in_file)
     # Get the bounds over z
     tiles = np.linspace(0, mgmt.size[0], argd['runs'] + 1)
-    z_bounds = np.uint32(tiles[argd['z0']:][:2])
+    z_bounds = np.uint32(tiles[argd['trial']:][:2])
     resolution = (argd['numz'], argd['num'], argd['num'])
 
     # Write the downsampled volume to a tiff stack

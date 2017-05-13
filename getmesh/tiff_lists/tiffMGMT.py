@@ -123,9 +123,11 @@ Writing {} volume to {}
 
         # Record total writing time
         sec_diff = time.time() - sec_start
+        # Record total slices written
+        z_count = scale_bounds[1] - scale_bounds[0]
         print("""
 Wrote {} layers to {} in {} seconds
-""".format(len(scale_bounds), _path, sec_diff))
+""".format(z_count, _path, sec_diff))
 
     @staticmethod
     def imread(_path):
