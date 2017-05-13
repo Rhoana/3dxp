@@ -74,8 +74,8 @@ for STEP in $(seq $START $STOP); do
     case "$STEP" in
 
     0) 
-        echo "0A) Will downsample original tiff ids to a tiff stack." 
-        echo "0B) Will downsample original png raw images to a jpg stack." 
+        echo "0A) Will downsample original tiff ids to a tiff stack..." 
+        echo "0B) Will downsample original png raw images to a jpg stack..." 
 
         LOGS_0A="-o $LOG_OUT/scale_img/ids_%a.out -e $LOG_OUT/scale_img/ids_%a.err"
         ARGS_0A="-f tif -r $RUNS -n $IDS_DOWNSAMPLE_XY -z $IDS_DOWNSAMPLE_Z -o $IDS_TIF $IDS_JSON"
@@ -86,13 +86,16 @@ for STEP in $(seq $START $STOP); do
         J0B=$(sbatch $LOGS_0B -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0B" --array=0-$((RUNS - 1)) scale_img.sbatch)
         
         echo "... $J0A and $J0B ..."
+        J0A=${J0A//[^0-9]}
+        J0B=${J0B//[^0-9]}
         ;;
 
     1)  
-        echo "1A) Will convert ids tiff stack to an hdf5 file."
-        echo "1B) Will convert raw jpg stack to an hdf5 file."
+        echo "1A) Will convert ids tiff stack to an hdf5 file..."
+        echo "1B) Will convert raw jpg stack to an hdf5 file..."
         # Calculate dependencies if needed
         if [ "$START" -lt "1" ]; then
+            echo "... both after 0A) and 0B) finish."
             DEP_1A="--dependency=afterok:$J0A"
             DEP_1B="--dependency=afterok:$J0B"
         fi
@@ -103,16 +106,19 @@ for STEP in $(seq $START $STOP); do
 
         CALL_1B="python -u h5_writers/jpg2hd.py $RAW_JPG $RAW_H5"
         LOGS_1B="-o $LOG_OUT/simple/raw_0.out -e $LOG_OUT/simple/raw_0.err"
-        J1B=$(sbatch $LOGS_1B $DEP_1B -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1A" simple.sbatch)
+        J1B=$(sbatch $LOGS_1B $DEP_1B -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1B" simple.sbatch)
 
         echo "... $J1A and $J1B ..."
+        J1A=${J1A//[^0-9]}
+        J1B=${J1B//[^0-9]}
         ;;
 
     2) 
-        echo "2A) Will count the biggest in the ids hdf5 file."
-        echo "2B) Will count the deepest in the ids hdf5 file."
+        echo "2A) Will count the biggest in the ids hdf5 file..."
+        echo "2B) Will count the deepest in the ids hdf5 file..."
         # Calculate dependencies if needed
         if [ "$START" -lt "2" ]; then
+            echo "... both after 1A) finishes."
             DEP_2A="--dependency=afterok:$J1A"
             DEP_2B="--dependency=afterok:$J1A"
         fi
@@ -126,42 +132,50 @@ for STEP in $(seq $START $STOP); do
         J2B=$(sbatch $LOGS_2B $DEP_2B -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_2B" simple.sbatch)
 
         echo "... $J2A and $J2B..."
+        J2A=${J2A//[^0-9]}
+        J2B=${J2B//[^0-9]}
         ;;
 
     3) 
-        echo "3A) Will convert all top $NUMBER_TOP ids to stl mesh files."
+        echo "3A) Will convert all top $NUMBER_TOP ids to stl mesh files..."
         # Calculate dependencies if needed
         if [ "$START" -lt "3" ]; then
+            echo "... after 2A) and 2B) finish."
             DEP_3A="--dependency=afterok:$J2A:$J2B"
         fi
 
         ARGS_3A="-d $RANK_Z -b $BLOCK_COUNTS -n $NUMBER_TOP $IDS_H5 $ROOT_OUT"
         LOGS_3A="-o $LOG_OUT/all_stl/top_%a.out -e $LOG_OUT/all_stl/top_%a.err"
-        J3A=$(sbatch $LOGS_3A -D $WORKING_DIR --export="ARGUMENTS=ARGS_3A" --array=0-$((BLOCK_RUNS - 1)) all_stl.sbatch)
+        J3A=$(sbatch $LOGS_3A $DEP_3A -D $WORKING_DIR --export="ARGUMENTS=$ARGS_3A" --array=0-$((BLOCK_RUNS - 1)) all_stl.sbatch)
 
         echo "... $J3A ..."
+        J3A=${J3A//[^0-9]}
         ;;
 
     4) 
-        echo "4A) Will convert all top $NUMBER_TOP ids to x3d HTML files."
+        echo "4A) Will convert all top $NUMBER_TOP ids to x3d HTML files..."
         # Calculate dependencies if needed
         if [ "$START" -lt "2" ]; then
+            echo "... after 1B) and 3A) finish."
             DEP_4A="--dependency=afterok:$J1B:$J3A"
         elif [ "$START" -lt "4" ]; then
+            echo "... after 3A) finishes."
             DEP_4A="--dependency=afterok:$J3A"
         fi
 
         LOGS_4A="-o $LOG_OUT/all_x3d/top_%a.out -e $LOG_OUT/all_x3d/top_%a.err"
         ARGS_4A="-V $VOXEL_RATIO -R $RAW_RATIO -I $IDS_RATIO -d $RANK_Z -n $NUMBER_TOP -w $WWW_IN $RAW_H5 $RAW_JPG $ROOT_OUT"
-        J4A=$(sbatch $LOGS_4A -D $WORKING_DIR --export="ARGUMENTS=$ARGS_4A" --array=0-$((NUMBER_TOP - 1)) all_x3d.sbatch)
+        J4A=$(sbatch $LOGS_4A $DEP_4A -D $WORKING_DIR --export="ARGUMENTS=$ARGS_4A" --array=0-$((NUMBER_TOP - 1)) all_x3d.sbatch)
 
         echo "... $J4A ..."
+        J4A=${J4A//[^0-9]}
         ;;
 
     5) 
-        echo "5A) Will merge all top $NUMBER_TOP x3d HTML files."
+        echo "5A) Will merge all top $NUMBER_TOP x3d HTML files..."
         # Calculate dependencies if needed
         if [ "$START" -lt "5" ]; then
+            echo "... after 4A) finishes."
             DEP_5A="--dependency=afterok:$J4A"
         fi
 
@@ -170,6 +184,7 @@ for STEP in $(seq $START $STOP); do
         J5A=$(sbatch $LOGS_5A $DEP_5A -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_5A" simple.sbatch)
 
         echo "... $J5A ..."
+        J5A=${J5A//[^0-9]}
         ;;
 
     0) echo ""

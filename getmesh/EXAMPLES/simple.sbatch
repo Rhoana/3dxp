@@ -9,17 +9,14 @@
 #SBATCH -t 1-12:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=john@hoff.in
-#SBATCH -o /n/coxfs01/thejohnhoffer/all_stl/multi_stl_%a.out
-#SBATCH -e /n/coxfs01/thejohnhoffer/all_stl/multi_stl_%a.err
 
 source new-modules.sh
 module load python/2.7.11-fasrc01
 source activate h5_tile
 
 # we are working
-cd $WORKING_DIR
-echo "Working ${WORKING_DIR}"
-echo "From ${IDS_H5} to ${ROOT_OUT}"
-python -u all_stl.py -t $SLURM_ARRAY_TASK_ID -b $BLOCK_COUNTS -l $ID_LIST $IDS_H5 $ROOT_OUT
+echo $FUNCTION_CALL
+$FUNCTION_CALL
 
-# end of prog
+# end of program
+exit 0;
