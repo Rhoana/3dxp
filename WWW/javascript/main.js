@@ -1,7 +1,6 @@
 RATE = 1;
 INTERV = 600;
 NEWEVENT = false;
-ALLSLICE = slice+1;
 allstates = {allslices:[]};
 allstates.allframes = [];
 animation = false;
@@ -172,7 +171,7 @@ interpolate = function(k_slices, k_frames) {
   return output
 }
 
-window.startup = function(_depth) {
+function startup(_depth) {
 
   // Get the depth and first slice from the html
   ALLSLICE = _depth;

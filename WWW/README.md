@@ -1,13 +1,8 @@
 # Making an animation
 
-## Preparation
-
-Set the `slice` in `javascript/main.js` to the total number of slices.
-
-
 ## Recording keyframes
 
-Open `index.html` as output by `example_*.sh`  
+Open `index.html` as output by the `./EXAMPLES` shell scripts  
 Use the down arrow key to move down the stack in even intervals.  
 Along the way, press the right arrow key to record your current keyframes.  
 When you have recorded many keyframes, export them with the shift key.  

@@ -22,7 +22,7 @@ class ThreeD:
   <script type='text/javascript' src='javascript/main.js'></script>
   <link rel="stylesheet" href="css/main.css" type="text/css"/>
 </head>
-<body onload="window.startup({DIMZ})">
+<body onload="startup({DIMZ})">
   <x3d id='r' width='100%' height='100%'>
 
     <scene id='scene'>
