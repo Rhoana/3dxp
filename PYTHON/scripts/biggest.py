@@ -40,7 +40,9 @@ def main(_data, _out, _block):
             xo,xe = np.array([x,x+1])*block_size[2]
             in_block = np.unique(vol[zo:ze, yo:ye, xo:xe])
 
-            new_count = np.zeros(max(in_block)+1)
+            # Get the max number of ids
+            max_ids = int(max(in_block) + 1)
+            new_count = np.zeros(max_ids)
             new_count[in_block] = 1
             diff_count = len(new_count) - len(COUNTS)
             if diff_count > 0:

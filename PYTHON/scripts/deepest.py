@@ -52,7 +52,10 @@ def main(_data, _out, _block):
                 yo,ye = np.array([y,y+1])*block_size[1]
                 xo,xe = np.array([x,x+1])*block_size[2]
                 in_block = np.unique(vol[zo:ze, yo:ye, xo:xe])
-                new_count = np.zeros(max(in_block)+1, dtype=np.bool)
+
+                # Get the max number of ids
+                max_ids = int(max(in_block) + 1)
+                new_count = np.zeros(max_ids, dtype=np.bool)
                 new_count[in_block] = True
 
                 z_count, new_count = even_count(z_count, new_count)
