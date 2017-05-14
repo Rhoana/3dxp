@@ -10,6 +10,7 @@ import tifffile as tiff
 help = {
     'out': 'output file (default out.h5)',
     'tif2hd': 'Stack all tifs into a hdf5 file!',
+    'd': 'force specific datatype for output file (e.g. uint8, uint32)',
     'tifs': 'input folder with all tifs (default tifs)',
 }
 paths = {}
@@ -17,6 +18,7 @@ paths = {}
 parser = argparse.ArgumentParser(description=help['tif2hd'])
 parser.add_argument('tifs', default='tifs', nargs='?', help=help['tifs'])
 parser.add_argument('out', default='out.h5', nargs='?', help=help['out'])
+parser.add_argument('-d', metavar='string', default='', help=help['d'])
 
 # attain all arguments 
 args = vars(parser.parse_args())
@@ -30,8 +32,15 @@ stack = sorted(glob.glob(search))
 # Size input files
 ex_img = tiff.imread(stack[0])
 sliceShape = ex_img.shape
-dtype = ex_img.dtype
+
+# Get info from the tif file
 shape = (len(stack),) + sliceShape
+dtype = ex_img.dtype
+# Use specific dtype if given
+force_dtype = args['d']
+if force_dtype != '':
+    # Read dtype from d argument or np.uint32
+    dtype = getattr(np, force_dtype, np.uint32)
 
 # open an output file
 with h5py.File(paths['out'], 'w') as hf:
