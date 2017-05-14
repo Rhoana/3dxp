@@ -203,6 +203,8 @@ class ThreeD:
             vol = f[f.keys()[0]][zo:ze, yo:ye, xo:xe]
 
         # grab all IDs
+        # TODO: This returns `np.float64` for `np.uint32`
+        # This causes big problems and should be fixed.
         all_ids = np.unique(vol)
         if len(idlist) == 0:
             idlist = all_ids
