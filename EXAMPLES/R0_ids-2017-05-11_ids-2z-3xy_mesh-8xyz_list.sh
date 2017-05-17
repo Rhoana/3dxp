@@ -1,10 +1,5 @@
 #!/bin/bash
 
-####
-# Note: this assumes raw images have already been processed
-# The files given by $RAW_JPG and $RAW_H5 should already exist
-####
-
 # Starting from step 0
 EXAMPLE="ids-2017-05-11_ids-2z-3xy_mesh-8xyz"
 ROOT_IN="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/images"
@@ -85,15 +80,15 @@ for STEP in $(seq $START $STOP); do
 
     0) 
         echo "0A) Will downsample original tiff ids to a tiff stack..." 
-      # echo "0B) Will downsample original png raw images to a jpg stack..." 
+        echo "0B) Will downsample original png raw images to a jpg stack..." 
 
         LOGS_0A="-o $LOG_OUT/scale_img/ids_%a.out -e $LOG_OUT/scale_img/ids_%a.err"
         ARGS_0A="-f tif -r $RUNS -n $IDS_DOWNSAMPLE_XY -z $IDS_DOWNSAMPLE_Z -o $IDS_TIF $IDS_JSON"
         J0A=$(sbatch $LOGS_0A -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0A" --array=0-$((RUNS - 1)) scale_img.sbatch)
 
-      #  LOGS_0B="-o $LOG_OUT/scale_img/raw_%a.out -e $LOG_OUT/scale_img/raw_%a.err"
-      #  ARGS_0B="-f jpg -r $RUNS -n $RAW_DOWNSAMPLE_XY -z $RAW_DOWNSAMPLE_Z -o $RAW_JPG $RAW_JSON"
-      #  J0B=$(sbatch $LOGS_0B -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0B" --array=0-$((RUNS - 1)) scale_img.sbatch)
+        LOGS_0B="-o $LOG_OUT/scale_img/raw_%a.out -e $LOG_OUT/scale_img/raw_%a.err"
+        ARGS_0B="-f jpg -r $RUNS -n $RAW_DOWNSAMPLE_XY -z $RAW_DOWNSAMPLE_Z -o $RAW_JPG $RAW_JSON"
+        J0B=$(sbatch $LOGS_0B -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0B" --array=0-$((RUNS - 1)) scale_img.sbatch)
         
         echo "... $J0A and $J0B ..."
         J0A=${J0A//[^0-9]}
@@ -102,7 +97,7 @@ for STEP in $(seq $START $STOP); do
 
     1)  
         echo "1A) Will convert ids tiff stack to an hdf5 file..."
-      #  echo "1B) Will convert raw jpg stack to an hdf5 file..."
+        echo "1B) Will convert raw jpg stack to an hdf5 file..."
         # Calculate dependencies if needed
         if [ "$START" -lt "1" ]; then
             echo "... both after 0A) and 0B) finish."
@@ -110,14 +105,13 @@ for STEP in $(seq $START $STOP); do
             DEP_1B="--dependency=afterok:$J0B"
         fi
 
-        DTYPE="-d uint32"
         CALL_1A="python -u h5_writers/tif2hd.py $IDS_TIF $IDS_H5"
         LOGS_1A="-o $LOG_OUT/simple/ids_0.out -e $LOG_OUT/simple/ids_0.err"
         J1A=$(sbatch $LOGS_1A $DEP_1A -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1A" simple.sbatch)
 
-      #  CALL_1B="python -u h5_writers/jpg2hd.py $RAW_JPG $RAW_H5"
-      #  LOGS_1B="-o $LOG_OUT/simple/raw_0.out -e $LOG_OUT/simple/raw_0.err"
-      #  J1B=$(sbatch $LOGS_1B $DEP_1B -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1B" simple.sbatch)
+        CALL_1B="python -u h5_writers/jpg2hd.py $RAW_JPG $RAW_H5"
+        LOGS_1B="-o $LOG_OUT/simple/raw_0.out -e $LOG_OUT/simple/raw_0.err"
+        J1B=$(sbatch $LOGS_1B $DEP_1B -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1B" simple.sbatch)
 
         echo "... $J1A and $J1B ..."
         J1A=${J1A//[^0-9]}
@@ -166,11 +160,10 @@ for STEP in $(seq $START $STOP); do
     4) 
         echo "4A) Will convert $IDS_LIST ids to x3d HTML files..."
         # Calculate dependencies if needed
-      #  if [ "$START" -lt "2" ]; then
-      #      echo "... after 1B) and 3A) finish."
-      #      DEP_4A="--dependency=afterok:$J1B:$J3A"
-      #  elif [ "$START" -lt "4" ]; then
-        if [ "$START" -lt "4" ]; then
+        if [ "$START" -lt "2" ]; then
+            echo "... after 1B) and 3A) finish."
+            DEP_4A="--dependency=afterok:$J1B:$J3A"
+        elif [ "$START" -lt "4" ]; then
             echo "... after 3A) finishes."
             DEP_4A="--dependency=afterok:$J3A"
         fi
