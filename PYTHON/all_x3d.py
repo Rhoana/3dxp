@@ -30,8 +30,9 @@ def start(_argv):
     I_SCALE = 2**np.float64(args['Iratio'].split(':'))
     R_SCALE = 2**np.float64(args['Rratio'].split(':'))
     # Store the 3 element scales as strings
-    i_scale = V_SCALE / I_SCALE[[(0,1,1)]]
-    r_scale = V_SCALE / R_SCALE[[(0,1,1)]]
+    i_scale = V_SCALE * I_SCALE[[(0,1,1)]]
+    r_scale = V_SCALE * R_SCALE[[(0,1,1)]]
+    print i_scale
     # Get keywords for making website
     www_keys = {
         'www': WWW,
