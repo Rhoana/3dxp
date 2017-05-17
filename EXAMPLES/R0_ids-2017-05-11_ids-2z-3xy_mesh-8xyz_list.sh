@@ -25,7 +25,7 @@ BLOCK_RUNS=$((BLOCK_COUNTS**3))
 ROOT_OUT="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/meshes"
 
 # Starting from step 3
-IDS_LIST="1214353 28180"
+IDS_LIST="2524300 269173 9982 6558 263 185260 4002574 121268 32073 723196 106938 1197321"
 # The number of the ids in the list
 NUMBER_TOP=`wc -w <<< $IDS_LIST`
 IDS_LIST=${IDS_LIST// /:}
@@ -37,7 +37,7 @@ IDS_RATIO="$IDS_DOWNSAMPLE_Z:$IDS_DOWNSAMPLE_XY"
 VOXEL_RATIO="7.5"
 
 # Starting from step 5
-INDEX_NAME="synapse_1214353-28180.html"
+INDEX_NAME="12soma.html"
 
 # Load the virtual environment
 source new-modules.sh
@@ -60,6 +60,7 @@ mkdir -p $ROOT_IN
 mkdir -p $ROOT_OUT
 
 # Make log directories
+KLOG="soma"
 mkdir -p "$LOG_OUT/scale_img"
 mkdir -p "$LOG_OUT/all_stl"
 mkdir -p "$LOG_OUT/all_x3d"
@@ -82,11 +83,11 @@ for STEP in $(seq $START $STOP); do
         echo "0A) Will downsample original tiff ids to a tiff stack..." 
         echo "0B) Will downsample original png raw images to a jpg stack..." 
 
-        LOGS_0A="-o $LOG_OUT/scale_img/ids_%a.out -e $LOG_OUT/scale_img/ids_%a.err"
+        LOGS_0A="-o $LOG_OUT/scale_img/${KLOG}_ids_%a.out -e $LOG_OUT/scale_img/${KLOG}_ids_%a.err"
         ARGS_0A="-f tif -r $RUNS -n $IDS_DOWNSAMPLE_XY -z $IDS_DOWNSAMPLE_Z -o $IDS_TIF $IDS_JSON"
         J0A=$(sbatch $LOGS_0A -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0A" --array=0-$((RUNS - 1)) scale_img.sbatch)
 
-        LOGS_0B="-o $LOG_OUT/scale_img/raw_%a.out -e $LOG_OUT/scale_img/raw_%a.err"
+        LOGS_0B="-o $LOG_OUT/scale_img/${KLOG}_raw_%a.out -e $LOG_OUT/scale_img/${KLOG}_raw_%a.err"
         ARGS_0B="-f jpg -r $RUNS -n $RAW_DOWNSAMPLE_XY -z $RAW_DOWNSAMPLE_Z -o $RAW_JPG $RAW_JSON"
         J0B=$(sbatch $LOGS_0B -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0B" --array=0-$((RUNS - 1)) scale_img.sbatch)
         
@@ -106,11 +107,11 @@ for STEP in $(seq $START $STOP); do
         fi
 
         CALL_1A="python -u h5_writers/tif2hd.py $IDS_TIF $IDS_H5"
-        LOGS_1A="-o $LOG_OUT/simple/ids_0.out -e $LOG_OUT/simple/ids_0.err"
+        LOGS_1A="-o $LOG_OUT/simple/${KLOG}_ids.out -e $LOG_OUT/simple/${KLOG}_ids.err"
         J1A=$(sbatch $LOGS_1A $DEP_1A -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1A" simple.sbatch)
 
         CALL_1B="python -u h5_writers/jpg2hd.py $RAW_JPG $RAW_H5"
-        LOGS_1B="-o $LOG_OUT/simple/raw_0.out -e $LOG_OUT/simple/raw_0.err"
+        LOGS_1B="-o $LOG_OUT/simple/${KLOG}_raw.out -e $LOG_OUT/simple/${KLOG}_raw.err"
         J1B=$(sbatch $LOGS_1B $DEP_1B -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1B" simple.sbatch)
 
         echo "... $J1A and $J1B ..."
@@ -129,11 +130,11 @@ for STEP in $(seq $START $STOP); do
         fi
 
         CALL_2A="python -u all_counts.py -d 0 -b $BLOCK_COUNTS $IDS_H5 $ROOT_OUT"
-        LOGS_2A="-o $LOG_OUT/simple/big_0.out -e $LOG_OUT/simple/big_0.err"
+        LOGS_2A="-o $LOG_OUT/simple/${KLOG}_big.out -e $LOG_OUT/simple/${KLOG}_big.err"
         J2A=$(sbatch $LOGS_2A $DEP_2A -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_2A" simple.sbatch)
 
         CALL_2B="python -u all_counts.py -d 1 -b $BLOCK_COUNTS $IDS_H5 $ROOT_OUT"
-        LOGS_2B="-o $LOG_OUT/simple/deep_0.out -e $LOG_OUT/simple/deep_0.err"
+        LOGS_2B="-o $LOG_OUT/simple/${KLOG}_deep.out -e $LOG_OUT/simple/${KLOG}_deep.err"
         J2B=$(sbatch $LOGS_2B $DEP_2B -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_2B" simple.sbatch)
 
         echo "... $J2A and $J2B..."
@@ -150,7 +151,7 @@ for STEP in $(seq $START $STOP); do
         fi
 
         ARGS_3A="-b $BLOCK_COUNTS -l $IDS_LIST $IDS_H5 $ROOT_OUT"
-        LOGS_3A="-o $LOG_OUT/all_stl/list_%a.out -e $LOG_OUT/all_stl/list_%a.err"
+        LOGS_3A="-o $LOG_OUT/all_stl/${KLOG}_%a.out -e $LOG_OUT/all_stl/${KLOG}_%a.err"
         J3A=$(sbatch $LOGS_3A $DEP_3A -D $WORKING_DIR --export="ARGUMENTS=$ARGS_3A" --array=0-$((BLOCK_RUNS - 1)) all_stl.sbatch)
 
         echo "... $J3A ..."
@@ -168,7 +169,7 @@ for STEP in $(seq $START $STOP); do
             DEP_4A="--dependency=afterok:$J3A"
         fi
 
-        LOGS_4A="-o $LOG_OUT/all_x3d/list_%a.out -e $LOG_OUT/all_x3d/list_%a.err"
+        LOGS_4A="-o $LOG_OUT/all_x3d/${KLOG}_%a.out -e $LOG_OUT/all_x3d/${KLOG}_%a.err"
         ARGS_4A="-V $VOXEL_RATIO -R $RAW_RATIO -I $IDS_RATIO -l $IDS_LIST -w $WWW_IN $RAW_H5 $RAW_JPG $ROOT_OUT"
         J4A=$(sbatch $LOGS_4A $DEP_4A -D $WORKING_DIR --export="ARGUMENTS=$ARGS_4A" --array=0-$((NUMBER_TOP - 1)) all_x3d.sbatch)
 
@@ -185,14 +186,14 @@ for STEP in $(seq $START $STOP); do
         fi
 
         CALL_5A="python all_index.py -f $INDEX_NAME -l $IDS_LIST $ROOT_OUT"
-        LOGS_5A="-o $LOG_OUT/simple/merge_1.out -e $LOG_OUT/simple/merge_1.err"
+        LOGS_5A="-o $LOG_OUT/simple/${KLOG}_html.out -e $LOG_OUT/simple/${KLOG}_html.err"
         J5A=$(sbatch $LOGS_5A $DEP_5A -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_5A" simple.sbatch)
 
         echo "... $J5A ..."
         J5A=${J5A//[^0-9]}
         ;;
 
-    0) echo ""
+    *) echo ""
 
     esac
 done

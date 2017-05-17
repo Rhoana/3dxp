@@ -6,19 +6,16 @@
 import json
 import sys
 
-sys.path.append('PYTHON')
-
 from threed import ThreeD
-
 
 # In[ ]:
 
-X3DFOLDER = '/media/SPEED/X3D/ids-2017-05-11/ids-2z-3xy/mesh-8xyz/x3d/'
-
+X3DFOLDER = '/n/coxfs01/thejohnhoffer/R0/ids-2017-05-11_ids-2z-3xy_mesh-8xyz/meshes/x3d'
+SYNFOLDER = '/n/coxfs01/thejohnhoffer/R0/ids-2017-05-11_ids-2z-3xy_mesh-8xyz/meshes/37_synapses.json'
 
 # In[4]:
 
-with open('/tmp/syn.json', 'r') as f:
+with open(SYNFOLDER, 'r') as f:
     pairs = json.load(f)
 
 
@@ -33,9 +30,4 @@ for p in pairs:
     
     ThreeD.merge_website(X3DFOLDER, index_file, p)
     
-
-
-# In[ ]:
-
-
 
