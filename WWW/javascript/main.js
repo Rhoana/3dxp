@@ -6,6 +6,7 @@ allstates.allframes = [];
 animation = false;
 loading = false;
 buffer = 0;
+dojo = null;
 
 // Default frames
 ALLFRAMES = []
@@ -180,6 +181,8 @@ function startup(_depth) {
   runtime = document.getElementById("r").runtime;
   scene = document.getElementById( "scene" );
 
+  samplerate = [1,1,1];
+
   search_dict = parse_args()
   // Get json from the url
   if ('keyframes' in search_dict){
@@ -193,6 +196,12 @@ function startup(_depth) {
     // Interpolate the keyframes
     ALLFRAMES = interpolate(key_slices, key_frames)
   }
+  if ('dojo' in search_dict){
+    dojo = search_dict.dojo;
+  }
+  if ('samplerate' in search_dict){
+    samplerate = JSON.parse(search_dict.samplerate);
+  }
   // two clipping planes
   clipScopeX = document.getElementById( "clipScopeX" );
   clipScopeY = document.getElementById( "clipScopeY" );
@@ -200,9 +209,85 @@ function startup(_depth) {
   clipPlanes.push( new ClipPlane(clipScopeX, scene, runtime) );
   clipPlanes.push( new ClipPlane(clipScopeY, scene, runtime) );
 
-  slice_mover(slice)
-  
+  slice_mover(slice);
+
+  //
+  // 3D PICKING
+  //
+  var label_text = document.createElement('span');
+  label_text.setAttribute('id','labeltext');
+  label_text.innerText = 'ID: ';
+  document.body.appendChild(label_text);
+
+  var transform = document.createElement('Transform');
+  transform.setAttribute('id','marker');
+  transform.setAttribute('scale', '10 10 10');
+  transform.setAttribute('translation', '0 0 0');
+  var shape = document.createElement('Shape');
+  var appearance = document.createElement('Appearance');
+  var material = document.createElement('Material');
+  material.setAttribute('diffuseColor', 'red');
+  var sphere = document.createElement('Sphere');
+  appearance.appendChild(material);
+  shape.appendChild(appearance);
+  shape.appendChild(sphere);
+  transform.appendChild(shape);
+  scene.appendChild(transform);
+  var g = document.getElementsByTagName('group')[0];
+  g.onclick = function(e) {
+
+    var segmentId = parseInt(e.hitObject.children[1].children[0].src.split('/')[0],10);
+
+    if (segmentId == null) {
+      return;
+    }
+
+    console.log('clicked on mesh', segmentId);
+
+    document.getElementById('marker').setAttribute('translation', e.hitPnt);
+    var coordinates = e.hitPnt;
+
+    // convert coordinates according to scale of meshes and samplerate
+    // order: Z, Y, X
+    var mesh_scale = g.children[0].getAttribute('scale').split(' ');
+    for (var m in mesh_scale) {
+      mesh_scale[m] = parseInt(mesh_scale[m], 10);
+    }
+    coordinates[0] = coordinates[0] / mesh_scale[0];
+    coordinates[1] = coordinates[1] / mesh_scale[1];
+    coordinates[2] = coordinates[2] / mesh_scale[2];
+
+    console.log('world ZYX', coordinates);
+
+    // if a samplerate is passed, meaning we don't operate in full-res,
+    // take it into account
+    coordinates[0] = coordinates[0] * samplerate[0];
+    coordinates[1] = coordinates[1] * samplerate[1];
+    coordinates[2] = coordinates[2] * samplerate[2];
+
+    console.log('DOJO ZYX', coordinates);    
+
+    // launch dojo
+    if (dojo) {
+
+      window.open('http://'+dojo+'/?jump='+coordinates[2]+','+coordinates[1]+','+coordinates[0]+'&activeId='+segmentId, 'dojo');
+
+    };
+
+  };
+  g.onmouseover = function(e) {
+    var segmentId = parseInt(e.hitObject.children[1].children[0].src.split('/')[0],10);
+
+    if (segmentId == null) {
+      return;
+    }
+
+    label_text.innerText = 'ID: ' + segmentId;
+
+  };
+
 };
+
 
 //
 // viewpoint changed
@@ -242,6 +327,11 @@ function save_state(){
 }
 
 function save_states(){
+
+  if (dojo != null) {
+    return;
+  }
+
   document.body.className = 'green';
   setTimeout(function(){
     document.body.className = '';
