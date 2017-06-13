@@ -85,6 +85,9 @@ Writing {} volume to {}
             image_path = '{:05d}.{}'.format(s_z, _format)
             image_path = os.path.join(_path, image_path)
 
+            if os.path.exists(image_path):
+              print 'was there', image_path
+              continue
 
             # Open all tiff files in the stack
             for f in range(self.n_xy):
@@ -115,6 +118,7 @@ Writing {} volume to {}
                 jpeg_qual = [int(cv2.IMWRITE_JPEG_QUALITY), 80]
                 cv2.imwrite(image_path, a[:,:,:3], jpeg_qual)
             else:
+                print 'MAX',a.max()
                 tiff.imsave(image_path, a)
 
             print("""
