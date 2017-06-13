@@ -1,32 +1,31 @@
 #!/bin/bash
 
 # Starting from step 0
-EXAMPLE="ids-2017-05-11_ids-2z-3xy_mesh-7xyz"
-EXAMPLE_8X="ids-2017-05-11_ids-2z-3xy_mesh-8xyz"
-ROOT_IN="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE_8X/images"
+EXAMPLE="ids-2017-05-11_ids-0z-3xy_mesh-6xyz"
+ROOT_IN="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/images"
 LOG_OUT="/n/coxfs01/thejohnhoffer/logging"
 WORKING_DIR="/n/coxfs01/thejohnhoffer/2017/3dxp/PYTHON"
 IDS_JSON="/n/coxfs01/leek/results/2017-05-11_R0/boss/boss.json"
 RAW_JSON="/n/coxfs01/leek/dropbox/25k_201610_dataset_em.json"
-IDS_TIF=$ROOT_IN"/3200_3200_ids"
-RAW_JPG=$ROOT_IN"/1600_1600_raw"
+IDS_TIF=$ROOT_IN"/1_8_8_ids"
+RAW_JPG=$ROOT_IN"/4_8_8_raw"
 IDS_DOWNSAMPLE_XY=3
-IDS_DOWNSAMPLE_Z=2
+IDS_DOWNSAMPLE_Z=0
 RAW_DOWNSAMPLE_XY=4
 RAW_DOWNSAMPLE_Z=2
-RUNS=80
+RUNS=320
 
 # Starting from step 1
-IDS_H5=$ROOT_IN"/3200_3200_ids.h5"
-RAW_H5=$ROOT_IN"/1600_1600_raw.h5"
+IDS_H5=$ROOT_IN"/1_8_8_ids.h5"
+RAW_H5=$ROOT_IN"/4_8_8_raw.h5"
 
 # Starting from step 2
-BLOCK_COUNTS="7"
+BLOCK_COUNTS="8"
 BLOCK_RUNS=$((BLOCK_COUNTS**3))
 ROOT_OUT="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/meshes"
 
 # Starting from step 3
-IDS_LIST="2524300 269173 9982 6558 263 185260 4002574 121268 32073 723196 106938 1197321"
+IDS_LIST="2524300"
 # The number of the ids in the list
 NUMBER_TOP=`wc -w <<< $IDS_LIST`
 IDS_LIST=${IDS_LIST// /:}
@@ -38,7 +37,7 @@ IDS_RATIO="$IDS_DOWNSAMPLE_Z:$IDS_DOWNSAMPLE_XY"
 VOXEL_RATIO="7.5"
 
 # Starting from step 5
-INDEX_NAME="12soma.html"
+INDEX_NAME="all.html"
 
 # Load the virtual environment
 source new-modules.sh
