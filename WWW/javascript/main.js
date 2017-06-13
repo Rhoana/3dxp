@@ -270,7 +270,7 @@ function startup(_depth) {
     // launch dojo
     if (dojo) {
 
-      window.open('http://'+dojo+'/?jump='+coordinates[2]+','+coordinates[1]+','+coordinates[0]+'&activeId='+segmentId, 'dojo');
+      window.open(dojo+'/?jump='+coordinates[2]+','+coordinates[1]+','+coordinates[0]+'&activeId='+segmentId, 'dojo');
 
     };
 
