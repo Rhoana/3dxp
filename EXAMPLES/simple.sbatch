@@ -16,7 +16,7 @@ source activate h5_tile
 
 # we are working
 echo $FUNCTION_CALL
-$FUNCTION_CALL
+time $FUNCTION_CALL
 
 # end of program
 exit 0;

@@ -2,7 +2,7 @@
 #
 # add all other SBATCH directives here...
 #
-#SBATCH -p cox
+#SBATCH -p holyseasgpu
 #SBATCH -n 1 # Number of cores
 #SBATCH -N 1 # Ensure that all cores are on one machine
 #SBATCH --mem=32000
@@ -16,7 +16,7 @@ source activate h5_tile
 
 # we are working
 echo "python -u tiff_lists/tiffScale.py -t $SLURM_ARRAY_TASK_ID $ARGUMENTS"
-python -u tiff_lists/tiffScale.py -t $SLURM_ARRAY_TASK_ID $ARGUMENTS
+time python -u tiff_lists/tiffScale.py -t $SLURM_ARRAY_TASK_ID $ARGUMENTS
 
 # end of program
 exit 0;

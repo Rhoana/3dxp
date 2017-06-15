@@ -18,8 +18,12 @@ def start(_argv):
     # Join only specific indexes
     LIST = []
     if args['list'] != '':
-        LIST = args['list'].split(':')
-        LIST = map(int, LIST)
+        # If list is range, actualize it
+        if '-' in args['list']:
+            LIST = [int(v) for v in args['list'].split('-')]
+            LIST = range(*LIST)
+        else:
+            LIST = [int(v) for v in args['list'].split(':')]
 
     # Load stl (and cached x3d) to make x3dom html
     ThreeD.merge_website(X3DFOLDER, INDEX, LIST)

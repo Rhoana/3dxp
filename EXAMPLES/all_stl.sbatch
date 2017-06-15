@@ -2,11 +2,11 @@
 #
 # add all other SBATCH directives here...
 #
-#SBATCH -p holyseasgpu
+#SBATCH -p cox
 #SBATCH -n 1 # Number of cores
 #SBATCH -N 1 # Ensure that all cores are on one machine
 #SBATCH --mem=8000
-#SBATCH -t 1-12:00
+#SBATCH -t 7-12:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=john@hoff.in
 
@@ -16,6 +16,6 @@ source activate h5_tile
 
 # we are working
 echo "python -u all_stl.py -t $SLURM_ARRAY_TASK_ID $ARGUMENTS"
-python -u all_stl.py -t $SLURM_ARRAY_TASK_ID $ARGUMENTS 
+time python -u all_stl.py -t $SLURM_ARRAY_TASK_ID $ARGUMENTS 
 # end of program
 exit 0;

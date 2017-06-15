@@ -26,13 +26,12 @@ def start(_argv):
     X3DFOLDER = sharepath(ROOTOUT, 'x3d')
 
     # Calculate raw image and id mesh scales
-    V_SCALE = np.float64([1, args['Vratio']])
+    V_SCALE = np.float64([args['Vratio'], 1])
     I_SCALE = 2**np.float64(args['Iratio'].split(':'))
     R_SCALE = 2**np.float64(args['Rratio'].split(':'))
     # Store the 3 element scales as strings
-    i_scale = [ V_SCALE / I_SCALE ][[(0,1,1)]]
-    r_scale = [ V_SCALE / R_SCALE ][[(0,1,1)]]
-    print i_scale
+    i_scale = ( V_SCALE * I_SCALE )[[(0,1,1)]]
+    r_scale = ( V_SCALE * R_SCALE )[[(0,1,1)]]
     # Get keywords for making website
     www_keys = {
         'www': WWW,
@@ -44,7 +43,12 @@ def start(_argv):
     # IF A LIST OF IDS IS PASSED
     #
     if args['list'] != '':
-        LIST = [int(v) for v in args['list'].split(':')]
+        # If list is range, actualize it
+        if '-' in args['list']:
+            LIST = [int(v) for v in args['list'].split('-')]
+            LIST = range(*LIST)
+        else:
+            LIST = [int(v) for v in args['list'].split(':')]
 
         # Load ids and make x3d files
         if os.path.exists(IMAGE):

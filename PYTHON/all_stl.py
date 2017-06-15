@@ -27,7 +27,12 @@ def start(_argv):
     # IF A LIST OF IDS IS PASSED
     #
     if args['list'] != '':
-        LIST = [int(v) for v in args['list'].split(':')]
+        # If list is range, actualize it
+        if '-' in args['list']:
+            LIST = [int(v) for v in args['list'].split('-')]
+            LIST = range(*LIST)
+        else:
+            LIST = [int(v) for v in args['list'].split(':')]
 
         print args['list']
 

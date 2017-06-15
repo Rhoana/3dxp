@@ -25,10 +25,9 @@ BLOCK_RUNS=$((BLOCK_COUNTS**3))
 ROOT_OUT="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/meshes"
 
 # Starting from step 3
-IDS_LIST="2524300"
+IDS_LIST="3-7179096"
 # The number of the ids in the list
-NUMBER_TOP=`wc -w <<< $IDS_LIST`
-IDS_LIST=${IDS_LIST// /:}
+NUMBER_TOP="7179093"
 
 # Starting from step 4
 WWW_IN="/n/coxfs01/thejohnhoffer/2017/3dxp/WWW"
@@ -60,7 +59,7 @@ mkdir -p $ROOT_IN
 mkdir -p $ROOT_OUT
 
 # Make log directories
-KLOG="soma"
+KLOG="all"
 mkdir -p "$LOG_OUT/scale_img"
 mkdir -p "$LOG_OUT/all_stl"
 mkdir -p "$LOG_OUT/all_x3d"
@@ -143,7 +142,7 @@ for STEP in $(seq $START $STOP); do
         ;;
 
     3) 
-        echo "3A) Will convert $IDS_LIST ids to stl mesh files..."
+        echo "3A) Will convert $NUMBER_TOP ids to stl mesh files..."
         # Calculate dependencies if needed
         if [ "$START" -lt "3" ]; then
             echo "... after 2A) and 2B) finish."
@@ -159,7 +158,7 @@ for STEP in $(seq $START $STOP); do
         ;;
 
     4) 
-        echo "4A) Will convert $IDS_LIST ids to x3d HTML files..."
+        echo "4A) Will convert $NUMBER_TOP ids to x3d HTML files..."
         # Calculate dependencies if needed
         if [ "$START" -lt "2" ]; then
             echo "... after 1B) and 3A) finish."
@@ -178,7 +177,7 @@ for STEP in $(seq $START $STOP); do
         ;;
 
     5) 
-        echo "5A) Will merge $IDS_LIST x3d HTML files..."
+        echo "5A) Will merge $NUMBER_TOP x3d HTML files..."
         # Calculate dependencies if needed
         if [ "$START" -lt "5" ]; then
             echo "... after 4A) finishes."
