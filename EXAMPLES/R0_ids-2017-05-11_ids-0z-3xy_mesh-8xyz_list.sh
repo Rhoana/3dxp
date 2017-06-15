@@ -27,6 +27,7 @@ ROOT_OUT="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/meshes"
 # Starting from step 3
 IDS_LIST="3-7179096"
 # The number of the ids in the list
+MESH_RUNS="320"
 NUMBER_TOP="7179093"
 
 # Starting from step 4
@@ -169,8 +170,8 @@ for STEP in $(seq $START $STOP); do
         fi
 
         LOGS_4A="-o $LOG_OUT/all_x3d/${KLOG}_%a.out -e $LOG_OUT/all_x3d/${KLOG}_%a.err"
-        ARGS_4A="-V $VOXEL_RATIO -R $RAW_RATIO -I $IDS_RATIO -l $IDS_LIST -w $WWW_IN $RAW_H5 $RAW_JPG $ROOT_OUT"
-        J4A=$(sbatch $LOGS_4A $DEP_4A -D $WORKING_DIR --export="ARGUMENTS=$ARGS_4A" --array=0-$((NUMBER_TOP - 1)) all_x3d.sbatch)
+        ARGS_4A="-r $MESH_RUNS -V $VOXEL_RATIO -R $RAW_RATIO -I $IDS_RATIO -l $IDS_LIST -w $WWW_IN $RAW_H5 $RAW_JPG $ROOT_OUT"
+        J4A=$(sbatch $LOGS_4A $DEP_4A -D $WORKING_DIR --export="ARGUMENTS=$ARGS_4A" --array=0-$((MESH_RUNS - 1)) all_x3d.sbatch)
 
         echo "... $J4A ..."
         J4A=${J4A//[^0-9]}

@@ -15,7 +15,8 @@ def start(_argv):
     realpath = lambda pathy: os.path.realpath(homepath(pathy))
     sharepath = lambda share,pathy: os.path.join(share, homepath(pathy))
 
-    WHICH_ID = args['top']
+    RUNS = args['runs']
+    TRIAL = args['trial']
     TOP_DEEP = args['deep']
     N_TOP_IDS = args['number'] + 1
     WWW = realpath(args['www'])
@@ -49,6 +50,14 @@ def start(_argv):
             LIST = range(*LIST)
         else:
             LIST = [int(v) for v in args['list'].split(':')]
+
+        # Find all IDs to make for this trial
+        trial_ids = np.linspace(0, len(LIST), RUNS + 1)
+        start, stop = np.uint32(trial_ids[TRIAL:][:2])
+        # Narrow the list by the chosen ids
+        LIST = LIST[start:stop]
+        msg = "from {} to {}".format(LIST[0], LIST[-1])
+        print(msg)
 
         # Load ids and make x3d files
         if os.path.exists(IMAGE):
@@ -98,10 +107,11 @@ def parseArgv(argv):
         'w': 'folder containing js/css (default www)',
         'n': 'make meshes for the top n ids (default 1)',
         'l': 'make meshes for : separated list of ids',
-        't': 'make for only the top id (default make all)',
         'V': 'Original voxel physical z size over xy size  (default 10.0)',
         'R': 'Number of downsamplings in z:xy of raw img data (default 0:3)',
         'I': 'Number of downsamplings in z:xy of ID mesh data (default 0:3)',
+        'runs': 'The number of runs for all the ids (1)',
+        'trial': 'The trial number for this run (0)',
         'help': 'Make an hdf5 file into html meshes!'
     }
 
@@ -111,7 +121,8 @@ def parseArgv(argv):
     parser.add_argument('out', default='.', nargs='?', help=help['out'])
     parser.add_argument('-n','--number', type=int, default=1, help=help['n'])
     parser.add_argument('-l','--list', default='', help=help['l'])    
-    parser.add_argument('-t','--top', type=int, default=-1, help=help['t'])
+    parser.add_argument('-t','--trial', type=int, default=0, help=help['trial'])
+    parser.add_argument('--runs', '-r', default=1, type=int, help=help['runs'])
     parser.add_argument('-d','--deep',type=int, default=0, help=help['d'])
     parser.add_argument('-w','--www', default='www', help=help['w'])
     parser.add_argument('-V','--Vratio', default=10.0, type=float, help=help['V'])
