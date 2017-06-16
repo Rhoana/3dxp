@@ -220,10 +220,16 @@ class ThreeD:
 
         for id in using_ids:
 
-            # skip 0
-            outfile = str(id) + '_' + str(Z) + '_' + str(Y) + '_' + str(X) +'.stl'
-            outpath = os.path.join(outdir, outfile)
+            # Get the output name and folder
+            outname = str(Z) + '_' + str(Y) + '_' + str(X) +'.stl'
+            outfolder = os.path.join(outdir, str(id))
+            # Make outfolder if doesn't yet exist
+            if not os.path.exists(outfolder):
+                os.makedirs(outfolder)
 
+            # Combine to get the full output path
+            outpath = os.path.join(outfolder, outname)
+            # Continue if output path doesn't exist
             if id == 0 or os.path.exists(outpath):
                 continue
 
@@ -243,7 +249,7 @@ class ThreeD:
                 smoothed = np.swapaxes(smoothed, 0, 1) # Z,Y,X
                 ThreeD.create_stl(smoothed, outpath, blockshape, Z=Z, Y=Y, X=X)
 
-                print 'Stored', outfile
+                print 'Stored {}/{}'.format(id, outname)
 
             except:
 
@@ -253,12 +259,13 @@ class ThreeD:
     @staticmethod
     def start_website(stldir, ids=None):
 
+
         if ids == None:
             # grab all ids
-            return sorted([os.path.basename(v) for v in glob.glob(os.path.join(stldir, '*.stl'))])
+            return [v for v in glob.glob(os.path.join(stldir, '*', '*.stl'))]
         else:
             # use the specified list
-            return [os.path.basename(v) for id in ids for v in glob.glob(os.path.join(stldir, str(id)+'_*.stl'))]
+            return [v for id in ids for v in glob.glob(os.path.join(stldir, str(id), '*.stl'))]
 
     @staticmethod
     def create_website(stldir, outputfolder, ids=None, dimz=1024, dimy=1024, dimx=1024,**keywords):
@@ -275,7 +282,11 @@ class ThreeD:
         if not os.path.exists(outputfolder):
             os.makedirs(outputfolder)
 
-        for f in stl_files:
+        for stl_file in stl_files:
+
+            # Convert to old format
+            path, basename = os.path.split(stl_file) 
+            f = '{}_{}'.format(os.path.basename(path), basename)         
 
             STRID = f.split('_')[0]
             mipfile = '_'.join(f.split('_')[1:])
@@ -283,7 +294,6 @@ class ThreeD:
             mipdir = os.path.join(outputfolder,STRID)
             ID = int(STRID)
 
-            stl_file = os.path.join(stldir, f)
             x3d_file = os.path.join(mipdir, f.replace('.stl', '.x3d'))
             html_tmp_file = os.path.join(outputfolder, f.replace('.stl', '.html'))
             html_id_file = os.path.join(outputfolder, STRID+'.html')

@@ -84,7 +84,7 @@ def start(_argv):
         subvols = zip(*np.where(np.ones(ntiles)))
 
         # Only search volume for ids that need more stl files
-        re_path = [os.path.join(STLFOLDER,str(intid)+'_*') for intid in top_ids]
+        re_path = [os.path.join(STLFOLDER,str(intid),'*') for intid in top_ids]
 
         z,y,x = subvols[TRIAL]
         # Check for existing stl files
