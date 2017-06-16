@@ -4,7 +4,7 @@
 SYNC=32
 
 # Starting from step 0
-EXAMPLE="ids-2017-05-11_ids-0z-3xy_mesh-6xyz"
+EXAMPLE="ids-2017-05-11_ids-0z-3xy_mesh-8xyz"
 ROOT_IN="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/images"
 LOG_OUT="/n/coxfs01/thejohnhoffer/logging"
 WORKING_DIR="/n/coxfs01/thejohnhoffer/2017/3dxp/PYTHON"

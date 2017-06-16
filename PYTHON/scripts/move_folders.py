@@ -63,4 +63,4 @@ if __name__ == '__main__':
                 msg = "Moving {} to {}".format(old_path, new_path)
                 print(msg)
                 # Actually move the files
-                #os.rename(old_path, new_path)
+                os.rename(old_path, new_path)
