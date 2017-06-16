@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import argparse
 import numpy as np
 
@@ -39,6 +40,9 @@ if __name__ == '__main__':
     Moving all stl files for all files from {} to {}
     """.format(start, stop)
     print(msg)
+
+    # Allow for all jobs to sync
+    time.sleep(120) 
 
     # Move each id
     for old_name in old_stl[start:stop]:
