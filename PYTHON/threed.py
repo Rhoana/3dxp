@@ -270,8 +270,12 @@ class ThreeD:
     @staticmethod
     def create_website(stldir, outputfolder, ids=None, dimz=1024, dimy=1024, dimx=1024,**keywords):
 
+
         # Get all stl_files
         stl_files = ThreeD.start_website(stldir, ids)
+
+        print stldir
+        print stl_files
 
         html_content = {}
         html_new_files = {}
@@ -314,9 +318,10 @@ class ThreeD:
                 continue
 
             result = [0,0]
-            if not id_x3d_done:
-                result[0] = os.system('aopt -i '+ stl_file +' -x '+ x3d_file)
+            format_cmd = 'aopt -i '+ stl_file +' -x '+ x3d_file
             mipmap_cmd = 'aopt -i '+ x3d_file + ' -K ' + STRID+'/'+mipmaps + ':pb -N '+ html_tmp_file
+            if not id_x3d_done:
+                result[0] = os.system(format_cmd)
             result[1] = os.system('cd ' + outputfolder + ' && ' + mipmap_cmd)
 
             if not id_read:
@@ -325,6 +330,8 @@ class ThreeD:
                 print 'Generated HTML for', mipmaps
             else:
                 print 'Error making', mipmaps
+                print format_cmd
+                print mipmap_cmd
                 continue
 
             # grab popGeometry HTML

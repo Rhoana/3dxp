@@ -25,9 +25,9 @@ if __name__ == '__main__':
     RUNS = args['runs']
     STEP = args['step']
 
-    SOURCE="/n/coxfs01/thejohnhoffer/R0/ids-2017-05-11_ids-0z-3xy_mesh-6xyz/meshes/stl/"
+    SOURCE="/n/coxfs01/thejohnhoffer/R0/ids-2017-05-11_ids-2z-3xy_mesh-8xyz/meshes/stl_old/"
 
-    TARGET="/n/coxfs01/thejohnhoffer/R0/ids-2017-05-11_ids-0z-3xy_mesh-8xyz/meshes/stl/" 
+    TARGET="/n/coxfs01/thejohnhoffer/R0/ids-2017-05-11_ids-2z-3xy_mesh-8xyz/meshes/stl/" 
 
     # Get all stl files in directory
     old_stl = os.listdir(SOURCE)

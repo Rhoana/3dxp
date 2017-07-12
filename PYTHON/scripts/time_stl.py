@@ -13,6 +13,7 @@ if __name__ == "__main__":
     OUT_FILE = "/n/coxfs01/thejohnhoffer/R0/ids-2017-05-11_ids-0z-3xy_mesh-8xyz/time_stl.json"
     # The output list
     OUTPUT = {
+        "N": 0,
         "TOTAL": 0,
         "LIST": [],
     }
@@ -33,6 +34,7 @@ if __name__ == "__main__":
                 # Add the time to the list and total
                 OUTPUT["LIST"].append(time)
                 OUTPUT["TOTAL"] += time
+                OUTPUT["N"] += 1
 
     # Save to json
     with open(OUT_FILE, 'w') as jf:

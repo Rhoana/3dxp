@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Number of jobs at once
-SYNC=32
-RUNS=32
+SYNC=10
+RUNS=10
 
 # Root level logging and workign path names
 LOG_OUT="/n/coxfs01/thejohnhoffer/logging"
@@ -25,7 +25,7 @@ if [ -z "$VENV_INFO" ]; then
 fi
 
 # Make log directories
-KLOG="all"
+KLOG="some"
 mkdir -p "$LOG_OUT/move_folders"
 
 echo "0A) Will move stl files to folders..." 
