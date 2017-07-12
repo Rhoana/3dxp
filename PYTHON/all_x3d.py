@@ -64,10 +64,6 @@ def start(_argv):
             with h5py.File(IMAGE, 'r') as df:
                 full_shape = df[df.keys()[0]].shape
 
-        # Run conversion on only one particular ID
-        if WHICH_ID >= 0:
-            LIST = [LIST[WHICH_ID]]
-
         # Load stl (and cached x3d) to make x3dom html
         ThreeD.create_website(STLFOLDER, X3DFOLDER, LIST, *full_shape, **www_keys)
         # Link full image stack and create cube sides
@@ -86,10 +82,6 @@ def start(_argv):
     if os.path.exists(IMAGE):
         with h5py.File(IMAGE, 'r') as df:
             full_shape = df[df.keys()[0]].shape
-
-    # Run conversion on only one particular ID
-    if WHICH_ID >= 0:
-        top_ids = [top_ids[WHICH_ID]]
 
     # Load stl (and cached x3d) to make x3dom html
     ThreeD.create_website(STLFOLDER, X3DFOLDER, top_ids, *full_shape, **www_keys)
