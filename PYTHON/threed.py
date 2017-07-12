@@ -2,6 +2,7 @@ import time
 import json
 import glob
 import h5py
+import random
 import mahotas as mh
 import math
 import numpy as np
@@ -288,8 +289,18 @@ class ThreeD:
         if not os.path.exists(outputfolder):
             os.makedirs(outputfolder)
 
+        # Make a time folder
+        time_dir = os.path.join(outputfolder, 'time')
+        if not os.path.exists(time_dir):
+            os.makedirs(time_dir)
+
+        # Make a time file with random name
+        t_count = len(os.listdir(time_dir))
+        t_noise = random.randint(0, 10**8 - 1)
+        time_name = '{}_{:8d}.json'.format(t_count, t_noise)
+
         # Make empty time object
-        time_file = os.path.join(outputfolder, 'time.json')
+        time_file = os.path.join(time_dir, time_name)
         time_out = {
             "N": 0,
             "TOTAL": 0,
