@@ -1,3 +1,5 @@
+import time
+import json
 import glob
 import h5py
 import mahotas as mh
@@ -286,7 +288,19 @@ class ThreeD:
         if not os.path.exists(outputfolder):
             os.makedirs(outputfolder)
 
+        # Make empty time object
+        time_file = os.path.join(outputfolder, 'time.json')
+        time_out = {
+            "N": 0,
+            "TOTAL": 0,
+            "LIST": [], 
+            "ID_LIST": [],
+        }
+
         for stl_file in stl_files:
+
+            # Start timing
+            t0 = time.time()
 
             # Convert to old format
             path, basename = os.path.split(stl_file) 
@@ -357,6 +371,22 @@ class ThreeD:
 
             print 'Generated HTML ', html_tmp_file
             os.remove(html_tmp_file)
+
+            # Stop timing
+            t1 = time.time()
+            # Store time info
+            one_time = t1 - t0
+
+            # Write to output
+            time_out["N"] += 1
+            time_out["TOTAL"] += one_time
+            time_out["LIST"].append(one_time)
+            time_out["ID_LIST"].append(ID)
+
+        # Write all time info to a file
+        with open(time_file, 'w') as tf:
+            print "Writing times to {}".format(time_file)
+            json.dump(time_out, tf)
 
         string_pad = 5
         html_header = ThreeD.html_header
