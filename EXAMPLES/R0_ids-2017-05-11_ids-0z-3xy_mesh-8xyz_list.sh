@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Number of jobs at once
-SYNC=64
+SYNC=320
 
 # Starting from step 0
 EXAMPLE="ids-2017-05-11_ids-0z-3xy_mesh-8xyz"

@@ -294,13 +294,7 @@ class ThreeD:
         if not os.path.exists(time_dir):
             os.makedirs(time_dir)
 
-        # Make a time file with random name
-        t_count = len(os.listdir(time_dir))
-        t_noise = random.randint(0, 10**8 - 1)
-        time_name = '{}_{:8d}.json'.format(t_count, t_noise)
-
         # Make empty time object
-        time_file = os.path.join(time_dir, time_name)
         time_out = {
             "N": 0,
             "TOTAL": 0,
@@ -393,6 +387,12 @@ class ThreeD:
             time_out["TOTAL"] += one_time
             time_out["LIST"].append(one_time)
             time_out["ID_LIST"].append(ID)
+
+        # Make a time file with random name
+        t_count = len(os.listdir(time_dir))
+        t_noise = random.randint(0, 10**8 - 1)
+        time_name = '{}_{:08d}.json'.format(t_count, t_noise)
+        time_file = os.path.join(time_dir, time_name)
 
         # Write all time info to a file
         with open(time_file, 'w') as tf:
