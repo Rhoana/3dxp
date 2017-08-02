@@ -71,8 +71,9 @@ class TiffMGMT():
         scale_slice = self.slice_shape[1:] // scale[1:] # per slice
         scale_tile = self.tile_shape[1:] // scale[1:] # for 1 file
         print("""
+Scaled Z Bounds: {}
 Writing {} volume to {}
-""".format(scale_slice, _path))
+""".format(scale_bounds, scale_slice, _path))
         # Start timing the h5 file writing
         sec_start = time.time()
         # Add to the h5 file for the given stack

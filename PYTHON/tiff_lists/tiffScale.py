@@ -13,6 +13,7 @@ if __name__ == '__main__':
         'fmt': 'The output format as jpg, tif, or png (png)',
         'runs': 'The number of runs for all slices (1)',
         'trial': 'The trial number for this run (0)',
+        'span': 'The start and end Z slices to use',
         'num': 'Downsampling times in XY (4)',
         'numz': 'Downsampling times in Z (2)'
     }
@@ -26,6 +27,7 @@ if __name__ == '__main__':
     parser.add_argument('--numz', '-z', default=2, type=int, help=help['numz'])
     parser.add_argument('--out', '-o', default='out', help=help['out'])
     parser.add_argument('--fmt', '-f', default='png', help=help['fmt'])
+    parser.add_argument('--span', '-s', default='0', help=help['span'])
     # Read the argumentss into a dictionary
     argd = vars(parser.parse_args())
     # Format the path arguments properly
@@ -41,11 +43,22 @@ if __name__ == '__main__':
 
     # Format the bound arguments properly
     def fmt_bound(k):
-        return np.uint32(map(int,argd[k].split(':')))
+        return map(int, k.split(':'))
+    
     # Create a file manager
     mgmt = TiffMGMT(in_file)
+
+    # Get the span across Z
+    z_span = fmt_bound(argd['span'])
+    # Default full span in Z
+    if len(z_span) != 2:
+        z_span = [0, mgmt.size[0]]
+
+    # Make a linear space
+    z_span.append(argd['runs']+1)
+    tiles = np.linspace(*z_span)
+    
     # Get the bounds over z
-    tiles = np.linspace(0, mgmt.size[0], argd['runs'] + 1)
     z_bounds = np.uint32(tiles[argd['trial']:][:2])
     resolution = (argd['numz'], argd['num'], argd['num'])
 
