@@ -1,38 +1,40 @@
 #!/bin/bash
 
 # Number of jobs at once
-SYNC=320
+SYNC=64
 
 # Starting from step 0
-EXAMPLE="ids-2017-05-11_ids-0z-3xy_mesh-8xyz"
-ROOT_IN="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/images"
-LOG_OUT="/n/coxfs01/thejohnhoffer/logging"
+EXAMPLE="ids-2017-06-15_original"
+ROOT_IN="/n/coxfs01/thejohnhoffer/R0_exp/$EXAMPLE/images"
+LOG_OUT="/n/coxfs01/thejohnhoffer/logging_exp"
 WORKING_DIR="/n/coxfs01/thejohnhoffer/2017/3dxp/PYTHON"
-IDS_JSON="/n/coxfs01/leek/results/2017-05-11_R0/boss/boss.json"
+IDS_JSON="/n/coxfs01/leek/results/2017-06-15_block_merging/SIMPLE_OVERLAP-final-segmentation-1200-1500.json"
 RAW_JSON="/n/coxfs01/leek/dropbox/25k_201610_dataset_em.json"
-IDS_TIF=$ROOT_IN"/1_8_8_ids"
-RAW_JPG=$ROOT_IN"/4_8_8_raw"
+IDS_TIF=$ROOT_IN"/1_8_8_spaghetti"
+RAW_JPG=$ROOT_IN"/1_16_16_raw"
 IDS_DOWNSAMPLE_XY=3
 IDS_DOWNSAMPLE_Z=0
 RAW_DOWNSAMPLE_XY=4
-RAW_DOWNSAMPLE_Z=2
-RUNS=320
+RAW_DOWNSAMPLE_Z=0
+RUNS=30
+
+# Subset of Raw images
+RAW_RANGE="1200:1500"
 
 # Starting from step 1
-IDS_H5=$ROOT_IN"/1_8_8_ids.h5"
-RAW_H5=$ROOT_IN"/4_8_8_raw.h5"
+IDS_H5=$ROOT_IN"/1_8_8_spaghetti.h5"
+RAW_H5=$ROOT_IN"/1_16_16_raw.h5"
 
 # Starting from step 2
-BLOCK_COUNTS="8"
+BLOCK_COUNTS="4"
 BLOCK_RUNS=$((BLOCK_COUNTS**3))
-ROOT_OUT="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/meshes"
+ROOT_OUT="/n/coxfs01/thejohnhoffer/R0_exp/$EXAMPLE/meshes"
 
 # Starting from step 3
-IDS_LIST="3-7179096"
-IDS_LIST="3-4"
+IDS_LIST="48973"
 # The number of the ids in the list
-MESH_RUNS="320"
-NUMBER_TOP="7179093"
+MESH_RUNS="2"
+NUMBER_TOP="2"
 
 # Starting from step 4
 WWW_IN="/n/coxfs01/thejohnhoffer/2017/3dxp/WWW"
@@ -41,7 +43,7 @@ IDS_RATIO="$IDS_DOWNSAMPLE_Z:$IDS_DOWNSAMPLE_XY"
 VOXEL_RATIO="7.5"
 
 # Starting from step 5
-INDEX_NAME="3_4.html"
+INDEX_NAME="original_0.html"
 
 # Load the virtual environment
 source new-modules.sh
@@ -64,7 +66,7 @@ mkdir -p $ROOT_IN
 mkdir -p $ROOT_OUT
 
 # Make log directories
-KLOG="all"
+KLOG="original"
 mkdir -p "$LOG_OUT/scale_img"
 mkdir -p "$LOG_OUT/all_stl"
 mkdir -p "$LOG_OUT/all_x3d"
@@ -88,12 +90,12 @@ for STEP in $(seq $START $STOP); do
         echo "0B) Will downsample original png raw images to a jpg stack..." 
 
         LOGS_0A="-o $LOG_OUT/scale_img/${KLOG}_ids_%a.out -e $LOG_OUT/scale_img/${KLOG}_ids_%a.err"
-        ARGS_0A="-f tif -r $RUNS -n $IDS_DOWNSAMPLE_XY -z $IDS_DOWNSAMPLE_Z -o $IDS_TIF $IDS_JSON"
+        ARGS_0A="-f tif -r $RUNS -n $IDS_DOWNSAMPLE_XY -z $IDS_DOWNSAMPLE_Z -o $IDS_TIF $IDS_JSON -l $IDS_LIST"
         J0A=$(sbatch $LOGS_0A -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0A" --array=0-$((RUNS - 1))%$SYNC scale_img.sbatch)
 
-        LOGS_0B="-o $LOG_OUT/scale_img/${KLOG}_raw_%a.out -e $LOG_OUT/scale_img/${KLOG}_raw_%a.err"
-        ARGS_0B="-f jpg -r $RUNS -n $RAW_DOWNSAMPLE_XY -z $RAW_DOWNSAMPLE_Z -o $RAW_JPG $RAW_JSON"
-        J0B=$(sbatch $LOGS_0B -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0B" --array=0-$((RUNS - 1))%$SYNC scale_img.sbatch)
+        #LOGS_0B="-o $LOG_OUT/scale_img/${KLOG}_raw_%a.out -e $LOG_OUT/scale_img/${KLOG}_raw_%a.err"
+        #ARGS_0B="-f jpg -r $RUNS -n $RAW_DOWNSAMPLE_XY -z $RAW_DOWNSAMPLE_Z -o $RAW_JPG -s $RAW_RANGE $RAW_JSON"
+        #J0B=$(sbatch $LOGS_0B -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0B" --array=0-$((RUNS - 1))%$SYNC scale_img.sbatch)
         
         echo "... $J0A and $J0B ..."
         J0A=${J0A//[^0-9]}

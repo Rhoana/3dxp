@@ -52,7 +52,7 @@ class TiffMGMT():
             self.all_off, self.all_path = zip(*pairs)
             self.all_off = np.uint32(self.all_off)
 
-    def scale_images(self, _bounds, _path, _res, _format='png'):
+    def scale_images(self, _bounds, _path, _res, _format='png', _list=[]):
         """ Downsample the tiffs to a png stack
         
         Arguments
@@ -104,6 +104,19 @@ Writing {} volume to {}
                 y1, x1 = [y0, x0] + np.uint32(scale_vol.shape)
                 # Fill the tile with scaled volume
                 a[y0:y1, x0:x1] = scale_vol
+
+            # Mask data if list
+            if len(_list):
+                # Make empty uint8 array
+                new_a = np.zeros(a.shape, dtype=np.uint8)
+                # Add each list id to array
+                for lin, liv in enumerate(_list):
+                    # Add 1 to list index
+                    list_index = lin + 1
+                    # Add values to array
+                    new_a += np.uint8(a == liv)*list_index
+                # New a becomes a
+                a = new_a
 
             # Handle each format
             if _format == 'png':

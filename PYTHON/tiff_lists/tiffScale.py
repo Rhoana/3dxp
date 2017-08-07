@@ -14,6 +14,7 @@ if __name__ == '__main__':
         'runs': 'The number of runs for all slices (1)',
         'trial': 'The trial number for this run (0)',
         'span': 'The start and end Z slices to use',
+        'l': 'make meshes for : separated list of ids',
         'num': 'Downsampling times in XY (4)',
         'numz': 'Downsampling times in Z (2)'
     }
@@ -28,6 +29,7 @@ if __name__ == '__main__':
     parser.add_argument('--out', '-o', default='out', help=help['out'])
     parser.add_argument('--fmt', '-f', default='png', help=help['fmt'])
     parser.add_argument('--span', '-s', default='0', help=help['span'])
+    parser.add_argument('-l','--list', default='', help=help['l'])
     # Read the argumentss into a dictionary
     argd = vars(parser.parse_args())
     # Format the path arguments properly
@@ -62,5 +64,22 @@ if __name__ == '__main__':
     z_bounds = np.uint32(tiles[argd['trial']:][:2])
     resolution = (argd['numz'], argd['num'], argd['num'])
 
-    # Write the downsampled volume to a tiff stack
-    mgmt.scale_images(z_bounds, out_folder, resolution, argd['fmt'])
+    #
+    # IF A LIST OF IDS IS PASSED
+    #
+    if argd['list'] != '':
+        # If list is range, actualize it
+        if '-' in argd['list']:
+            LIST = [int(v) for v in argd['list'].split('-')]
+            LIST = range(*LIST)
+        else:
+            LIST = [int(v) for v in argd['list'].split(':')]
+
+        # Write the downsampled volume to a tiff stack
+        mgmt.scale_images(z_bounds, out_folder, resolution, argd['fmt'], LIST)
+    ### 
+    # Default
+    ###
+    else: 
+        # Write the downsampled volume to a tiff stack
+        mgmt.scale_images(z_bounds, out_folder, resolution, argd['fmt'])
