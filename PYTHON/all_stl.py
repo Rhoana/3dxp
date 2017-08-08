@@ -5,6 +5,8 @@ import sys, argparse
 from threed import ThreeD
 from scripts import biggest
 from scripts import deepest
+from scripts import highest
+from scripts import widest
 
 
 def start(_argv):
@@ -17,7 +19,7 @@ def start(_argv):
 
     BLOCK = args['block']
     TRIAL = args['trial']
-    TOP_DEEP = args['deep']
+    TOP_TYPE = args['deep']
     N_TOP_IDS = args['number'] + 1
     DATA = realpath(args['ids'])
     ROOTOUT = realpath(args['out'])
@@ -58,14 +60,18 @@ def start(_argv):
 
         return
 
-
-
-
     # Count the biggest and the deepest ids 
     BIG_IDS, BIG_COUNTS = biggest(DATA, sharepath(ROOTOUT, 'spread_count.txt'), BLOCK)
-    DEEP_IDS, DEEP_COUNTS = deepest(DATA, sharepath(ROOTOUT, 'deep_count.txt'), BLOCK)
+    if TOP_TYPE == 0:
+        TOP_IDS = BIG_IDS
+    elif TOP_TYPE == 1:
+        TOP_IDS = deepest(DATA, sharepath(ROOTOUT, 'deep_count.txt'), BLOCK)[0]
+    elif TOP_TYPE == 2:
+        TOP_IDS = highest(DATA, sharepath(ROOTOUT, 'high_count.txt'), BLOCK)[0]
+    elif TOP_TYPE == 3:
+        TOP_IDS = widest(DATA, sharepath(ROOTOUT, 'wide_count.txt'), BLOCK)[0]
     # Get the id numbers to use to generate meshes
-    top_ids = [BIG_IDS, DEEP_IDS][TOP_DEEP][-N_TOP_IDS:-1]
+    top_ids = TOP_IDS[-N_TOP_IDS:-1]
     # No matter what, get the total block counts for each ID
     big_ids = [np.where(BIG_IDS == tid)[0][0] for tid in top_ids]
     top_counts = BIG_COUNTS[big_ids]

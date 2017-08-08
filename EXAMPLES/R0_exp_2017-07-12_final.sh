@@ -10,7 +10,7 @@ LOG_OUT="/n/coxfs01/thejohnhoffer/logging_exp"
 WORKING_DIR="/n/coxfs01/thejohnhoffer/2017/3dxp/PYTHON"
 IDS_JSON="/n/coxfs01/leek/results/2017-07-12_hanspeter_cube/boss/final-segmentation/boss.json"
 RAW_JSON="/n/coxfs01/leek/dropbox/25k_201610_dataset_em.json"
-IDS_TIF=$ROOT_IN"/4_16_16_ids_syn_v0"
+IDS_TIF=$ROOT_IN"/4_16_16_ids_syn_v6"
 RAW_JPG=$ROOT_IN"/1_16_16_raw"
 IDS_DOWNSAMPLE_XY=4
 IDS_DOWNSAMPLE_Z=2
@@ -22,7 +22,7 @@ RUNS=5
 RAW_RANGE="1200:1500"
 
 # Starting from step 1
-IDS_H5=$ROOT_IN"/4_8_8_ids_syn_v0.h5"
+IDS_H5=$ROOT_IN"/4_8_8_ids_syn_v6.h5"
 RAW_H5=$ROOT_IN"/1_16_16_raw.h5"
 
 # Starting from step 2
@@ -31,7 +31,7 @@ BLOCK_RUNS=$((BLOCK_COUNTS**3))
 ROOT_OUT="/n/coxfs01/thejohnhoffer/R0_exp/$EXAMPLE/meshes"
 
 # Starting from step 3
-IDS_LIST="4883778:698218:418327:224632"
+IDS_LIST="4883778:4473475:3523143:8058:3233995:245346:4274255:4647763:4180120:8237210:6403293:9907166:8977951:8900514:118243:4466525:2945000:8636650:11422813:7999536:3161009:1092466:6584564:2953466:698218:2729406:5410047"
 # The number of the ids in the list
 MESH_RUNS="2"
 NUMBER_TOP="2"

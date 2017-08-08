@@ -26,15 +26,15 @@ IDS_H5=$ROOT_IN"/1_8_8_ids.h5"
 RAW_H5=$ROOT_IN"/1_16_16_raw.h5"
 
 # Starting from step 2
-BLOCK_COUNTS="4"
+BLOCK_COUNTS="8"
 BLOCK_RUNS=$((BLOCK_COUNTS**3))
 ROOT_OUT="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/meshes"
 
 # Starting from step 3
-IDS_LIST="611671:30576:338211"
+IDS_LIST="0"
 # The number of the ids in the list
-MESH_RUNS="2"
-NUMBER_TOP="2"
+MESH_RUNS="20"
+NUMBER_TOP="20"
 
 # Starting from step 4
 WWW_IN="/n/coxfs01/thejohnhoffer/2017/3dxp/WWW"
@@ -128,6 +128,8 @@ for STEP in $(seq $START $STOP); do
     2) 
         echo "2A) Will count the biggest in the ids hdf5 file..."
         echo "2B) Will count the deepest in the ids hdf5 file..."
+        echo "2C) Will count the highest in the ids hdf5 file..."
+        echo "2D) Will count the widest in the ids hdf5 file..."
         # Calculate dependencies if needed
         if [ "$START" -lt "2" ]; then
             echo "... both after 1A) finishes."
@@ -143,9 +145,19 @@ for STEP in $(seq $START $STOP); do
         LOGS_2B="-o $LOG_OUT/simple/${KLOG}_deep.out -e $LOG_OUT/simple/${KLOG}_deep.err"
         J2B=$(sbatch $LOGS_2B $DEP_2B -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_2B" simple.sbatch)
 
-        echo "... $J2A and $J2B..."
+        CALL_2C="python -u all_counts.py -d 2 -b $BLOCK_COUNTS $IDS_H5 $ROOT_OUT"
+        LOGS_2C="-o $LOG_OUT/simple/${KLOG}_high.out -e $LOG_OUT/simple/${KLOG}_high.err"
+        J2C=$(sbatch $LOGS_2C $DEP_2C -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_2C" simple.sbatch)
+
+        CALL_2D="python -u all_counts.py -d 3 -b $BLOCK_COUNTS $IDS_H5 $ROOT_OUT"
+        LOGS_2D="-o $LOG_OUT/simple/${KLOG}_wide.out -e $LOG_OUT/simple/${KLOG}_wide.err"
+        J2D=$(sbatch $LOGS_2D $DEP_2D -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_2D" simple.sbatch)
+
+        echo "... $J2A, $J2B, $J2C, and $J2D..."
         J2A=${J2A//[^0-9]}
         J2B=${J2B//[^0-9]}
+        J2C=${J2C//[^0-9]}
+        J2D=${J2D//[^0-9]}
         ;;
 
     3) 
@@ -156,7 +168,7 @@ for STEP in $(seq $START $STOP); do
             DEP_3A="--dependency=afterok:$J2A:$J2B"
         fi
 
-        ARGS_3A="-b $BLOCK_COUNTS -l $IDS_LIST $IDS_H5 $ROOT_OUT"
+        ARGS_3A="-b $BLOCK_COUNTS -t $NUMBER_TOP $IDS_H5 $ROOT_OUT"
         LOGS_3A="-o $LOG_OUT/all_stl/${KLOG}_%a.out -e $LOG_OUT/all_stl/${KLOG}_%a.err"
         J3A=$(sbatch $LOGS_3A $DEP_3A -D $WORKING_DIR --export="ARGUMENTS=$ARGS_3A" --array=0-$((BLOCK_RUNS - 1))%$SYNC all_stl.sbatch)
 
@@ -176,7 +188,7 @@ for STEP in $(seq $START $STOP); do
         fi
 
         LOGS_4A="-o $LOG_OUT/all_x3d/${KLOG}_%a.out -e $LOG_OUT/all_x3d/${KLOG}_%a.err"
-        ARGS_4A="-r $MESH_RUNS -V $VOXEL_RATIO -R $RAW_RATIO -I $IDS_RATIO -l $IDS_LIST -w $WWW_IN $RAW_H5 $RAW_JPG $ROOT_OUT"
+        ARGS_4A="-r $MESH_RUNS -V $VOXEL_RATIO -R $RAW_RATIO -I $IDS_RATIO -n $NUMBER_TOP -w $WWW_IN $RAW_H5 $RAW_JPG $ROOT_OUT"
         J4A=$(sbatch $LOGS_4A $DEP_4A -D $WORKING_DIR --export="ARGUMENTS=$ARGS_4A" --array=0-$((MESH_RUNS - 1))%$SYNC all_x3d.sbatch)
 
         echo "... $J4A ..."
@@ -191,7 +203,7 @@ for STEP in $(seq $START $STOP); do
             DEP_5A="--dependency=afterok:$J4A"
         fi
 
-        CALL_5A="python all_index.py -f $INDEX_NAME -l $IDS_LIST $ROOT_OUT"
+        CALL_5A="python all_index.py -f $INDEX_NAME $ROOT_OUT"
         LOGS_5A="-o $LOG_OUT/simple/${KLOG}_html.out -e $LOG_OUT/simple/${KLOG}_html.err"
         J5A=$(sbatch $LOGS_5A $DEP_5A -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_5A" simple.sbatch)
 

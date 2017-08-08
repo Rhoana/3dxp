@@ -5,6 +5,8 @@ import sys, argparse
 from threed import ThreeD
 from scripts import biggest
 from scripts import deepest
+from scripts import highest
+from scripts import widest
 
 def start(_argv):
 
@@ -19,8 +21,12 @@ def start(_argv):
     ROOTOUT = realpath(args['out'])
     DATA = realpath(args['ids'])
     # Count most spread or deep ids 
-    if SAVE_DEEP > 0 :
+    if SAVE_DEEP == 1:
         deepest(DATA, sharepath(ROOTOUT,'deep_count.txt'), BLOCK)
+    elif SAVE_DEEP == 2:
+        highest(DATA, sharepath(ROOTOUT,'high_count.txt'), BLOCK)
+    elif SAVE_DEEP == 3:
+        widest(DATA, sharepath(ROOTOUT,'wide_count.txt'), BLOCK)
     else:
         biggest(DATA, sharepath(ROOTOUT,'spread_count.txt'), BLOCK)
 
