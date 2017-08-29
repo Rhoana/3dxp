@@ -260,10 +260,9 @@ class ThreeD:
                 continue
 
     @staticmethod
-    def start_website(stldir, ids=None):
+    def start_website(stldir, ids=[]):
 
-
-        if ids == None:
+        if not len(ids):
             # grab all ids
             return [v for v in glob.glob(os.path.join(stldir, '*', '*.stl'))]
         else:
@@ -271,8 +270,7 @@ class ThreeD:
             return [v for id in ids for v in glob.glob(os.path.join(stldir, str(id), '*.stl'))]
 
     @staticmethod
-    def create_website(stldir, outputfolder, ids=None, dimz=1024, dimy=1024, dimx=1024,**keywords):
-
+    def create_website(stldir, outputfolder, ids=[], dimz=1024, dimy=1024, dimx=1024,**keywords):
 
         # Get all stl_files
         stl_files = ThreeD.start_website(stldir, ids)

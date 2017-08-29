@@ -5,6 +5,8 @@ import sys, argparse
 from threed import ThreeD
 from scripts import biggest
 from scripts import deepest
+from scripts import highest
+from scripts import widest
 from scripts import sides
 
 def start(_argv):
@@ -17,7 +19,7 @@ def start(_argv):
 
     RUNS = args['runs']
     TRIAL = args['trial']
-    TOP_DEEP = args['deep']
+    TOP_TYPE = args['deep']
     N_TOP_IDS = args['number'] + 1
     WWW = realpath(args['www'])
     IMGS = realpath(args['img'])
@@ -71,12 +73,18 @@ def start(_argv):
 
         return
 
-
     # Count the biggest and the deepest ids 
     BIG_IDS, BIG_COUNTS = biggest('', sharepath(ROOTOUT, 'spread_count.txt'), 1)
-    DEEP_IDS, DEEP_COUNTS = deepest('', sharepath(ROOTOUT, 'deep_count.txt'), 1)
+    if TOP_TYPE == 0:
+        TOP_IDS = BIG_IDS
+    elif TOP_TYPE == 1:
+        TOP_IDS = deepest('', sharepath(ROOTOUT, 'deep_count.txt'), 1)[0]
+    elif TOP_TYPE == 2:
+        TOP_IDS = highest('', sharepath(ROOTOUT, 'high_count.txt'), 1)[0]
+    elif TOP_TYPE == 3:
+        TOP_IDS = widest('', sharepath(ROOTOUT, 'wide_count.txt'), 1)[0]
     # Get the id numbers to use to generate meshes
-    top_ids = [BIG_IDS, DEEP_IDS][TOP_DEEP][-N_TOP_IDS:-1]
+    top_ids = TOP_IDS[-N_TOP_IDS:-1]
 
     # Load ids and make x3d files
     if os.path.exists(IMAGE):

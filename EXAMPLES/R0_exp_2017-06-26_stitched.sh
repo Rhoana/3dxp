@@ -10,7 +10,7 @@ LOG_OUT="/n/coxfs01/thejohnhoffer/logging_exp"
 WORKING_DIR="/n/coxfs01/thejohnhoffer/2017/3dxp/PYTHON"
 IDS_JSON="/n/coxfs01/leek/results/2017-06-26/1200-1500-final-segmentation.json"
 RAW_JSON="/n/coxfs01/leek/dropbox/25k_201610_dataset_em.json"
-IDS_TIF=$ROOT_IN"/1_8_8_long"
+IDS_TIF=$ROOT_IN"/1_8_8_long_v7"
 RAW_JPG=$ROOT_IN"/1_16_16_raw"
 IDS_DOWNSAMPLE_XY=3
 IDS_DOWNSAMPLE_Z=0
@@ -22,7 +22,7 @@ RUNS=30
 RAW_RANGE="1200:1500"
 
 # Starting from step 1
-IDS_H5=$ROOT_IN"/1_8_8_long.h5"
+IDS_H5=$ROOT_IN"/1_8_8_long_v7.h5"
 RAW_H5=$ROOT_IN"/1_16_16_raw.h5"
 
 # Starting from step 2
@@ -31,7 +31,7 @@ BLOCK_RUNS=$((BLOCK_COUNTS**3))
 ROOT_OUT="/n/coxfs01/thejohnhoffer/R0_exp/$EXAMPLE/meshes"
 
 # Starting from step 3
-IDS_LIST="16544:25115"
+IDS_LIST="92165:508799:131176:474195:69592:530688:8729:121954:361255:48631:79874:105405:388920:1166080:391906:14357"
 # The number of the ids in the list
 MESH_RUNS="6"
 NUMBER_TOP="6"
@@ -43,7 +43,7 @@ IDS_RATIO="$IDS_DOWNSAMPLE_Z:$IDS_DOWNSAMPLE_XY"
 VOXEL_RATIO="7.5"
 
 # Starting from step 5
-INDEX_NAME="stitched_0.html"
+INDEX_NAME="stitched_v7.html"
 
 # Load the virtual environment
 source new-modules.sh
@@ -66,7 +66,7 @@ mkdir -p $ROOT_IN
 mkdir -p $ROOT_OUT
 
 # Make log directories
-KLOG="long"
+KLOG="long_v7"
 mkdir -p "$LOG_OUT/scale_img"
 mkdir -p "$LOG_OUT/all_stl"
 mkdir -p "$LOG_OUT/all_x3d"
