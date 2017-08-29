@@ -93,9 +93,9 @@ for STEP in $(seq $START $STOP); do
         ARGS_0A="-f tif -r $RUNS -n $IDS_DOWNSAMPLE_XY -z $IDS_DOWNSAMPLE_Z -o $IDS_TIF $IDS_JSON -l $IDS_LIST"
         J0A=$(sbatch $LOGS_0A -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0A" --array=0-$((RUNS - 1))%$SYNC scale_img.sbatch)
 
-        LOGS_0B="-o $LOG_OUT/scale_img/${KLOG}_raw_%a.out -e $LOG_OUT/scale_img/${KLOG}_raw_%a.err"
-        ARGS_0B="-f jpg -r $RUNS -n $RAW_DOWNSAMPLE_XY -z $RAW_DOWNSAMPLE_Z -o $RAW_JPG -s $RAW_RANGE $RAW_JSON"
-        J0B=$(sbatch $LOGS_0B -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0B" --array=0-$((RUNS - 1))%$SYNC scale_img.sbatch)
+        #LOGS_0B="-o $LOG_OUT/scale_img/${KLOG}_raw_%a.out -e $LOG_OUT/scale_img/${KLOG}_raw_%a.err"
+        #ARGS_0B="-f jpg -r $RUNS -n $RAW_DOWNSAMPLE_XY -z $RAW_DOWNSAMPLE_Z -o $RAW_JPG -s $RAW_RANGE $RAW_JSON"
+        #J0B=$(sbatch $LOGS_0B -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0B" --array=0-$((RUNS - 1))%$SYNC scale_img.sbatch)
         
         echo "... $J0A and $J0B ..."
         J0A=${J0A//[^0-9]}
@@ -112,9 +112,9 @@ for STEP in $(seq $START $STOP); do
             DEP_1B="--dependency=afterok:$J0B"
         fi
 
-        #CALL_1A="python -u h5_writers/tif2hd.py $IDS_TIF $IDS_H5"
-        #LOGS_1A="-o $LOG_OUT/simple/${KLOG}_ids.out -e $LOG_OUT/simple/${KLOG}_ids.err"
-        #J1A=$(sbatch $LOGS_1A $DEP_1A -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1A" simple.sbatch)
+        CALL_1A="python -u h5_writers/tif2hd.py $IDS_TIF $IDS_H5"
+        LOGS_1A="-o $LOG_OUT/simple/${KLOG}_ids.out -e $LOG_OUT/simple/${KLOG}_ids.err"
+        J1A=$(sbatch $LOGS_1A $DEP_1A -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1A" simple.sbatch)
 
         CALL_1B="python -u h5_writers/jpg2hd.py $RAW_JPG $RAW_H5"
         LOGS_1B="-o $LOG_OUT/simple/${KLOG}_raw.out -e $LOG_OUT/simple/${KLOG}_raw.err"
@@ -199,10 +199,8 @@ for STEP in $(seq $START $STOP); do
         J5A=${J5A//[^0-9]}
         ;;
 
-    *)  
-        echo "Will get the sides near a given synapse"
-        ARGS_6A=""
-        echo $ARGS_6A
+    *)  ARGS_4A="-V $VOXEL_RATIO -R $RAW_RATIO -I $IDS_RATIO -l $IDS_LIST -w $WWW_IN $RAW_H5 $RAW_JPG $ROOT_OUT"
+        echo $ARGS_4A
         ;;
 
     esac
