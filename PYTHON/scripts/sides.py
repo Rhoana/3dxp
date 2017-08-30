@@ -11,12 +11,15 @@ def start(_argv):
     IMG_OUT = args['out']
     PNG_OUT = os.path.join(IMG_OUT,'images')
 
+    if not os.path.exists(IMG_OUT):
+        os.makedirs(IMG_OUT)
+
     all_sides = {
         'y': lambda vol, i: vol[:,i,:],
         'x': lambda vol, i: vol[:,:,i]
     }
     def get_side(vol, key, i):
-        all_sides[key](vol, i)
+        return all_sides[key](vol, i)
 
     # Generate side images
     if os.path.exists(IMG_IN):
@@ -54,8 +57,8 @@ def parseArgv(argv):
     parser.add_argument('out', default='.', help=help['out'])
     parser.add_argument('raw', default='raw.h5', help=help['raw'])
     parser.add_argument('png', default='pngs', help=help['png'])
-    parser.add_argument('y', type=int, default=0, help=help['y'])
-    parser.add_argument('x', type=int, default=0, help=help['x'])
+    parser.add_argument('-y', type=int, default=0, help=help['y'])
+    parser.add_argument('-x', type=int, default=0, help=help['x'])
 
     return vars(parser.parse_args())
 

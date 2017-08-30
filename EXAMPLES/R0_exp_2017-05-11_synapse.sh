@@ -89,13 +89,13 @@ for STEP in $(seq $START $STOP); do
         echo "0A) Will downsample original tiff ids to a tiff stack..." 
         echo "0B) Will downsample original png raw images to a jpg stack..." 
 
-        LOGS_0A="-o $LOG_OUT/scale_img/${KLOG}_ids_%a.out -e $LOG_OUT/scale_img/${KLOG}_ids_%a.err"
-        ARGS_0A="-f tif -r $RUNS -n $IDS_DOWNSAMPLE_XY -z $IDS_DOWNSAMPLE_Z -o $IDS_TIF $IDS_JSON -l $IDS_LIST"
-        J0A=$(sbatch $LOGS_0A -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0A" --array=0-$((RUNS - 1))%$SYNC scale_img.sbatch)
+        #LOGS_0A="-o $LOG_OUT/scale_img/${KLOG}_ids_%a.out -e $LOG_OUT/scale_img/${KLOG}_ids_%a.err"
+        #ARGS_0A="-f tif -r $RUNS -n $IDS_DOWNSAMPLE_XY -z $IDS_DOWNSAMPLE_Z -o $IDS_TIF $IDS_JSON -l $IDS_LIST"
+        #J0A=$(sbatch $LOGS_0A -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0A" --array=0-$((RUNS - 1))%$SYNC scale_img.sbatch)
 
-        #LOGS_0B="-o $LOG_OUT/scale_img/${KLOG}_raw_%a.out -e $LOG_OUT/scale_img/${KLOG}_raw_%a.err"
-        #ARGS_0B="-f jpg -r $RUNS -n $RAW_DOWNSAMPLE_XY -z $RAW_DOWNSAMPLE_Z -o $RAW_JPG -s $RAW_RANGE $RAW_JSON"
-        #J0B=$(sbatch $LOGS_0B -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0B" --array=0-$((RUNS - 1))%$SYNC scale_img.sbatch)
+        LOGS_0B="-o $LOG_OUT/scale_img/${KLOG}_raw_%a.out -e $LOG_OUT/scale_img/${KLOG}_raw_%a.err"
+        ARGS_0B="-f jpg -r $RUNS -n $RAW_DOWNSAMPLE_XY -z $RAW_DOWNSAMPLE_Z -o $RAW_JPG -s $RAW_RANGE $RAW_JSON"
+        J0B=$(sbatch $LOGS_0B -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0B" --array=0-$((RUNS - 1))%$SYNC scale_img.sbatch)
         
         echo "... $J0A and $J0B ..."
         J0A=${J0A//[^0-9]}
@@ -112,13 +112,13 @@ for STEP in $(seq $START $STOP); do
             DEP_1B="--dependency=afterok:$J0B"
         fi
 
-        CALL_1A="python -u h5_writers/tif2hd.py $IDS_TIF $IDS_H5"
-        LOGS_1A="-o $LOG_OUT/simple/${KLOG}_ids.out -e $LOG_OUT/simple/${KLOG}_ids.err"
-        J1A=$(sbatch $LOGS_1A $DEP_1A -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1A" simple.sbatch)
+        #CALL_1A="python -u h5_writers/tif2hd.py $IDS_TIF $IDS_H5"
+        #LOGS_1A="-o $LOG_OUT/simple/${KLOG}_ids.out -e $LOG_OUT/simple/${KLOG}_ids.err"
+        #J1A=$(sbatch $LOGS_1A $DEP_1A -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1A" simple.sbatch)
 
-        #CALL_1B="python -u h5_writers/jpg2hd.py $RAW_JPG $RAW_H5"
-        #LOGS_1B="-o $LOG_OUT/simple/${KLOG}_raw.out -e $LOG_OUT/simple/${KLOG}_raw.err"
-        #J1B=$(sbatch $LOGS_1B $DEP_1B -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1B" simple.sbatch)
+        CALL_1B="python -u h5_writers/jpg2hd.py $RAW_JPG $RAW_H5"
+        LOGS_1B="-o $LOG_OUT/simple/${KLOG}_raw.out -e $LOG_OUT/simple/${KLOG}_raw.err"
+        J1B=$(sbatch $LOGS_1B $DEP_1B -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1B" simple.sbatch)
 
         echo "... $J1A and $J1B ..."
         J1A=${J1A//[^0-9]}
@@ -199,8 +199,16 @@ for STEP in $(seq $START $STOP); do
         J5A=${J5A//[^0-9]}
         ;;
 
-    *)  ARGS_4A="-V $VOXEL_RATIO -R $RAW_RATIO -I $IDS_RATIO -l $IDS_LIST -w $WWW_IN $RAW_H5 $RAW_JPG $ROOT_OUT"
-        echo $ARGS_4A
+    *)  
+        SYN_Y="563"
+        SYN_X="890"
+        echo "Will get the sides near a given synapse"
+        CALL_6A="python -u scripts/sides.py $ROOT_OUT/x3d/ $RAW_H5 $RAW_JPG -y $SYN_Y -x $SYN_X"
+        LOGS_6A="-o $LOG_OUT/simple/${KLOG}_sides.out -e $LOG_OUT/simple/${KLOG}_sides.err"
+        J6A=$(sbatch $LOGS_6A -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_6A" simple.sbatch)
+        
+        echo "... $J6A ..."
+        J6A=${J6A//[^0-9]}
         ;;
 
     esac
