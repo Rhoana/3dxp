@@ -106,7 +106,7 @@ for STEP in $(seq $START $STOP); do
             DEP_1A="--dependency=afterok:$J0A"
         fi
 
-        CALL_1A="python -u h5_writers/tif2hd.py $IDS_TIF $IDS_H5"
+        CALL_1A="python -u conversion_scripts/tif2hd.py $IDS_TIF $IDS_H5"
         LOGS_1A="-o $LOG_OUT/simple/${KLOG}_ids.out -e $LOG_OUT/simple/${KLOG}_ids.err"
         J1A=$(sbatch $LOGS_1A $DEP_1A -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1A" simple.sbatch)
 

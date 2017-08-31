@@ -10,17 +10,17 @@ LOG_OUT="/n/coxfs01/thejohnhoffer/logging"
 WORKING_DIR="/n/coxfs01/thejohnhoffer/2017/3dxp/PYTHON"
 IDS_JSON="/n/coxfs01/leek/results/2017-08-23_100um_cube/88_88_14/boss/final-segmentation/boss.json"
 RAW_JSON="/n/coxfs01/leek/dropbox/25k_201610_dataset_em.json"
-IDS_TIF=$ROOT_IN"/4_16_16_ids_all"
-RAW_JPG=$ROOT_IN"/4_16_16_raw_all"
-IDS_DOWNSAMPLE_XY=4
-IDS_DOWNSAMPLE_Z=2
-RAW_DOWNSAMPLE_XY=4
-RAW_DOWNSAMPLE_Z=2
-RUNS=30
+IDS_TIF=$ROOT_IN"/16_4_4_ids_all"
+RAW_JPG=$ROOT_IN"/16_4_4_raw_all"
+IDS_DOWNSAMPLE_XY=2
+IDS_DOWNSAMPLE_Z=4
+RAW_DOWNSAMPLE_XY=2
+RAW_DOWNSAMPLE_Z=4
+RUNS=50
 
 # Starting from step 1
-IDS_H5=$ROOT_IN"/4_16_16_ids_all.h5"
-RAW_H5=$ROOT_IN"/4_16_16_raw_all.h5"
+IDS_H5=$ROOT_IN"/16_4_4_ids_all.h5"
+RAW_H5=$ROOT_IN"/16_4_4_raw_all.h5"
 
 # Starting from step 2
 BLOCK_COUNTS="4"
@@ -110,11 +110,12 @@ for STEP in $(seq $START $STOP); do
             DEP_1B="--dependency=afterok:$J0B"
         fi
 
-        CALL_1A="python -u h5_writers/tif2hd.py $IDS_TIF $IDS_H5"
+        CALL_1A="python -u conversion_scripts/tif2hd.py $IDS_TIF $IDS_H5"
         LOGS_1A="-o $LOG_OUT/simple/${KLOG}_ids.out -e $LOG_OUT/simple/${KLOG}_ids.err"
         J1A=$(sbatch $LOGS_1A $DEP_1A -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1A" simple.sbatch)
 
-        CALL_1B="python -u h5_writers/jpg2hd.py -z 3:432 -y 5:773 -x 5:773 $RAW_JPG $RAW_H5"
+        # Full offset is -z 14:1728 -y 88:12376 -x 88:12376
+        CALL_1B="python -u conversion_scripts/jpg2hd.py -z 1:108 -y 22:3094 -x 22:3094 $RAW_JPG $RAW_H5"
         LOGS_1B="-o $LOG_OUT/simple/${KLOG}_raw.out -e $LOG_OUT/simple/${KLOG}_raw.err"
         J1B=$(sbatch $LOGS_1B $DEP_1B -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1B" simple.sbatch)
 

@@ -112,11 +112,11 @@ for STEP in $(seq $START $STOP); do
             DEP_1B="--dependency=afterok:$J0B"
         fi
 
-        #CALL_1A="python -u h5_writers/tif2hd.py $IDS_TIF $IDS_H5"
+        #CALL_1A="python -u conversion_scripts/tif2hd.py $IDS_TIF $IDS_H5"
         #LOGS_1A="-o $LOG_OUT/simple/${KLOG}_ids.out -e $LOG_OUT/simple/${KLOG}_ids.err"
         #J1A=$(sbatch $LOGS_1A $DEP_1A -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1A" simple.sbatch)
 
-        CALL_1B="python -u h5_writers/jpg2hd.py $RAW_JPG $RAW_H5"
+        CALL_1B="python -u conversion_scripts/jpg2hd.py $RAW_JPG $RAW_H5"
         LOGS_1B="-o $LOG_OUT/simple/${KLOG}_raw.out -e $LOG_OUT/simple/${KLOG}_raw.err"
         J1B=$(sbatch $LOGS_1B $DEP_1B -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1B" simple.sbatch)
 
