@@ -88,7 +88,7 @@ for STEP in $(seq $START $STOP); do
         echo "0B) Will downsample original png raw images to a jpg stack..." 
 
         LOGS_0A="-o $LOG_OUT/scale_img/${KLOG}_ids_%a.out -e $LOG_OUT/scale_img/${KLOG}_ids_%a.err"
-        ARGS_0A="-f tif -r $RUNS -n $IDS_DOWNSAMPLE_XY -z $IDS_DOWNSAMPLE_Z -o $IDS_TIF $IDS_JSON"
+        RGS_0A="-f tif -r $RUNS -n $IDS_DOWNSAMPLE_XY -z $IDS_DOWNSAMPLE_Z -o $IDS_TIF $IDS_JSON"
         J0A=$(sbatch $LOGS_0A -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0A" --array=0-$((RUNS - 1))%$SYNC scale_img.sbatch)
 
         LOGS_0B="-o $LOG_OUT/scale_img/${KLOG}_raw_%a.out -e $LOG_OUT/scale_img/${KLOG}_raw_%a.err"
