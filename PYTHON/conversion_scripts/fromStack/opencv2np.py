@@ -63,9 +63,9 @@ def opencv2np(path_in, ext_list, out_type, order='', span_pairs=[[],[],[]]):
         progress(zi, z1-z0)
         if not order:
             # Yield as a plain image
-            image = cv2.imread(file, 0)[y0:y1,x0:x1]
+            image = cv2.imread(zfile, 0)[y0:y1,x0:x1]
             yield image.astype(out_type)
         else:
             # Convert color image to grayscale
-            image = cv2.imread(file)[y0:y1, x0:x1, :]
+            image = cv2.imread(zfile)[y0:y1, x0:x1, :]
             yield color2gray(image, out_type, order)
