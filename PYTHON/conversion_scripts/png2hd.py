@@ -5,6 +5,7 @@ import h5py
 import glob
 import argparse
 import numpy as np
+from fromStack.opencv2np import opencv2np
 
 help = {
     'out': 'output file (default out.h5)',
@@ -17,7 +18,6 @@ help = {
     'y': 'The start:stop subregion to crop in Y (default full)',
     'x': 'The start:stop Subregion to crop in X (default full)',
 }
-paths = {}
 parser = argparse.ArgumentParser(description=help['png2hd'])
 parser.add_argument('-t', metavar='string', default='uint8', help=help['t'])
 parser.add_argument('-o', metavar='string', default='', help=help['o'])
@@ -57,7 +57,7 @@ png_gen = opencv2np(in_path, k_png, out_type, order, span_pairs)
 out_shape = png_gen.next()
 
 # open an output file
-with h5py.File(paths['out'], 'w') as hf:
+with h5py.File(out_path, 'w') as hf:
     written = hf.create_dataset("main", out_shape, dtype=out_type)
     # Add each png file as a slice
     for zi, z_slice in enumerate(png_gen):
