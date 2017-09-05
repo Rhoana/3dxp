@@ -1,37 +1,37 @@
 #!/bin/bash
 
 # Number of jobs at once
-SYNC=64
+SYNC=100
 
 # Starting from step 0
 EXAMPLE="ids-2017-08-23_50um"
-ROOT_IN="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/images"
-LOG_OUT="/n/coxfs01/thejohnhoffer/logging"
+ROOT_IN="/n/coxfs01/thejohnhoffer/R0_exp/$EXAMPLE/images"
+LOG_OUT="/n/coxfs01/thejohnhoffer/logging_exp"
 WORKING_DIR="/n/coxfs01/thejohnhoffer/2017/3dxp/PYTHON"
 IDS_JSON="/n/coxfs01/leek/results/2017-08-23_100um_cube/88_88_14/boss/final-segmentation/boss.json"
 RAW_JSON="/n/coxfs01/leek/dropbox/25k_201610_dataset_em.json"
-IDS_TIF=$ROOT_IN"/16_4_4_ids_all"
-RAW_JPG=$ROOT_IN"/16_4_4_raw_all"
-IDS_DOWNSAMPLE_XY=2
-IDS_DOWNSAMPLE_Z=4
-RAW_DOWNSAMPLE_XY=2
-RAW_DOWNSAMPLE_Z=4
-RUNS=50
+IDS_TIF=$ROOT_IN"/4_16_16_ids_all"
+RAW_JPG=$ROOT_IN"/4_16_16_raw_all"
+IDS_DOWNSAMPLE_XY=4
+IDS_DOWNSAMPLE_Z=2
+RAW_DOWNSAMPLE_XY=4
+RAW_DOWNSAMPLE_Z=2
+RUNS=100
 
 # Starting from step 1
-IDS_H5=$ROOT_IN"/16_4_4_ids_all.h5"
-RAW_H5=$ROOT_IN"/16_4_4_raw_all.h5"
+IDS_H5=$ROOT_IN"/4_16_16_ids_all.h5"
+RAW_H5=$ROOT_IN"/4_16_16_raw_all.h5"
 
 # Starting from step 2
 BLOCK_COUNTS="4"
 BLOCK_RUNS=$((BLOCK_COUNTS**3))
-ROOT_OUT="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/meshes"
+ROOT_OUT="/n/coxfs01/thejohnhoffer/R0_exp/$EXAMPLE/meshes"
 
 # Starting from step 3
-IDS_LIST="0"
+IDS_LIST="42369"
 # The number of the ids in the list
-NUMBER_TOP="48"
-MESH_RUNS="64"
+NUMBER_TOP="1"
+MESH_RUNS="1"
 TOP_TYPE="1"
 
 # Starting from step 4
@@ -88,12 +88,12 @@ for STEP in $(seq $START $STOP); do
         echo "0B) Will downsample original png raw images to a jpg stack..." 
 
         LOGS_0A="-o $LOG_OUT/scale_img/${KLOG}_ids_%a.out -e $LOG_OUT/scale_img/${KLOG}_ids_%a.err"
-        RGS_0A="-f tif -r $RUNS -n $IDS_DOWNSAMPLE_XY -z $IDS_DOWNSAMPLE_Z -o $IDS_TIF $IDS_JSON"
+        ARGS_0A="-f tif -r $RUNS -n $IDS_DOWNSAMPLE_XY -z $IDS_DOWNSAMPLE_Z -o $IDS_TIF -l $IDS_LIST $IDS_JSON"
         J0A=$(sbatch $LOGS_0A -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0A" --array=0-$((RUNS - 1))%$SYNC scale_img.sbatch)
 
-        LOGS_0B="-o $LOG_OUT/scale_img/${KLOG}_raw_%a.out -e $LOG_OUT/scale_img/${KLOG}_raw_%a.err"
-        ARGS_0B="-f jpg -r $RUNS -n $RAW_DOWNSAMPLE_XY -z $RAW_DOWNSAMPLE_Z -o $RAW_JPG $RAW_JSON"
-        J0B=$(sbatch $LOGS_0B -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0B" --array=0-$((RUNS - 1))%$SYNC scale_img.sbatch)
+        #LOGS_0B="-o $LOG_OUT/scale_img/${KLOG}_raw_%a.out -e $LOG_OUT/scale_img/${KLOG}_raw_%a.err"
+        #ARGS_0B="-f jpg -r $RUNS -n $RAW_DOWNSAMPLE_XY -z $RAW_DOWNSAMPLE_Z -o $RAW_JPG $RAW_JSON"
+        #J0B=$(sbatch $LOGS_0B -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0B" --array=0-$((RUNS - 1))%$SYNC scale_img.sbatch)
  
         echo "... $J0A and $J0B ..."
         J0A=${J0A//[^0-9]}
@@ -115,9 +115,9 @@ for STEP in $(seq $START $STOP); do
         #J1A=$(sbatch $LOGS_1A $DEP_1A -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1A" simple.sbatch)
 
         # Full offset is -z 14:1728 -y 0:12288 -x 0:12288
-        CALL_1B="python -u conversion_scripts/jpg2hd.py -z 1:108 -y 0:3072 -x 0:3072 $RAW_JPG $RAW_H5"
-        LOGS_1B="-o $LOG_OUT/simple/${KLOG}_raw.out -e $LOG_OUT/simple/${KLOG}_raw.err"
-        J1B=$(sbatch $LOGS_1B $DEP_1B -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1B" simple.sbatch)
+        #CALL_1B="python -u conversion_scripts/jpg2hd.py -z 1:108 -y 0:3072 -x 0:3072 $RAW_JPG $RAW_H5"
+        #LOGS_1B="-o $LOG_OUT/simple/${KLOG}_raw.out -e $LOG_OUT/simple/${KLOG}_raw.err"
+        #J1B=$(sbatch $LOGS_1B $DEP_1B -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1B" simple.sbatch)
 
         echo "... $J1A and $J1B ..."
         J1A=${J1A//[^0-9]}
