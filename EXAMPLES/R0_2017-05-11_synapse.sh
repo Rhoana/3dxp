@@ -1,38 +1,40 @@
 #!/bin/bash
 
 # Number of jobs at once
-SYNC=100
+SYNC=64
 
 # Starting from step 0
-EXAMPLE="ids-2017-08-23_50um"
-ROOT_IN="/n/coxfs01/thejohnhoffer/R0_exp/$EXAMPLE/images"
-LOG_OUT="/n/coxfs01/thejohnhoffer/logging_exp"
+EXAMPLE="ids-2017-05-11_ids-2z-3xy_mesh-8xyz"
+ROOT_IN="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/images"
+LOG_OUT="/n/coxfs01/thejohnhoffer/logging"
 WORKING_DIR="/n/coxfs01/thejohnhoffer/2017/3dxp/PYTHON"
-IDS_JSON="/n/coxfs01/leek/results/2017-08-23_100um_cube/88_88_14/boss/final-segmentation/boss.json"
+IDS_JSON="/n/coxfs01/leek/results/2017-05-11_R0/boss/boss.json"
 RAW_JSON="/n/coxfs01/leek/dropbox/25k_201610_dataset_em.json"
-IDS_TIF=$ROOT_IN"/4_16_16_ids_all"
-RAW_JPG=$ROOT_IN"/4_16_16_raw_all"
-IDS_DOWNSAMPLE_XY=4
+IDS_TIF=$ROOT_IN"/ids_4_8_8"
+RAW_JPG=$ROOT_IN"/raw_4_8_8"
+IDS_DOWNSAMPLE_XY=3
 IDS_DOWNSAMPLE_Z=2
-RAW_DOWNSAMPLE_XY=4
+RAW_DOWNSAMPLE_XY=3
 RAW_DOWNSAMPLE_Z=2
-RUNS=100
+RUNS=40
+
+# Subset of Raw images
+RAW_RANGE="0"
 
 # Starting from step 1
-IDS_H5=$ROOT_IN"/4_16_16_ids_all.h5"
-RAW_H5=$ROOT_IN"/4_16_16_raw_all.h5"
+IDS_H5=$ROOT_IN"/ids_4_8_8.h5"
+RAW_H5=$ROOT_IN"/raw_4_8_8.h5"
 
 # Starting from step 2
 BLOCK_COUNTS="4"
 BLOCK_RUNS=$((BLOCK_COUNTS**3))
-ROOT_OUT="/n/coxfs01/thejohnhoffer/R0_exp/$EXAMPLE/meshes"
+ROOT_OUT="/n/coxfs01/thejohnhoffer/R0/$EXAMPLE/meshes"
 
 # Starting from step 3
-IDS_LIST="58146"
+IDS_LIST="4239:44692:105292"
 # The number of the ids in the list
-NUMBER_TOP="1"
-MESH_RUNS="1"
-TOP_TYPE="1"
+MESH_RUNS="3"
+NUMBER_TOP="3"
 
 # Starting from step 4
 WWW_IN="/n/coxfs01/thejohnhoffer/2017/3dxp/WWW"
@@ -41,14 +43,7 @@ IDS_RATIO="$IDS_DOWNSAMPLE_Z:$IDS_DOWNSAMPLE_XY"
 VOXEL_RATIO="7.5"
 
 # Starting from step 5
-INDEX_NAME="index.html"
-
-# Make log directories
-KLOG="50um_08-23"
-mkdir -p "$LOG_OUT/scale_img"
-mkdir -p "$LOG_OUT/all_stl"
-mkdir -p "$LOG_OUT/all_x3d"
-mkdir -p "$LOG_OUT/simple"
+INDEX_NAME="final_0.html"
 
 # Load the virtual environment
 source new-modules.sh
@@ -70,6 +65,13 @@ fi
 mkdir -p $ROOT_IN
 mkdir -p $ROOT_OUT
 
+# Make log directories
+KLOG="early"
+mkdir -p "$LOG_OUT/scale_img"
+mkdir -p "$LOG_OUT/all_stl"
+mkdir -p "$LOG_OUT/all_x3d"
+mkdir -p "$LOG_OUT/simple"
+
 # Get start and stop of range
 START=${1:-0}
 STOP=${2:-5}
@@ -87,14 +89,14 @@ for STEP in $(seq $START $STOP); do
         echo "0A) Will downsample original tiff ids to a tiff stack..." 
         echo "0B) Will downsample original png raw images to a jpg stack..." 
 
-        LOGS_0A="-o $LOG_OUT/scale_img/${KLOG}_ids_%a.out -e $LOG_OUT/scale_img/${KLOG}_ids_%a.err"
-        ARGS_0A="-f tif -r $RUNS -n $IDS_DOWNSAMPLE_XY -z $IDS_DOWNSAMPLE_Z -o $IDS_TIF -l $IDS_LIST $IDS_JSON"
-        J0A=$(sbatch $LOGS_0A -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0A" --array=0-$((RUNS - 1))%$SYNC scale_img.sbatch)
+        #LOGS_0A="-o $LOG_OUT/scale_img/${KLOG}_ids_%a.out -e $LOG_OUT/scale_img/${KLOG}_ids_%a.err"
+        #ARGS_0A="-f tif -r $RUNS -n $IDS_DOWNSAMPLE_XY -z $IDS_DOWNSAMPLE_Z -o $IDS_TIF $IDS_JSON -l $IDS_LIST"
+        #J0A=$(sbatch $LOGS_0A -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0A" --array=0-$((RUNS - 1))%$SYNC scale_img.sbatch)
 
-        #LOGS_0B="-o $LOG_OUT/scale_img/${KLOG}_raw_%a.out -e $LOG_OUT/scale_img/${KLOG}_raw_%a.err"
-        #ARGS_0B="-f jpg -r $RUNS -n $RAW_DOWNSAMPLE_XY -z $RAW_DOWNSAMPLE_Z -o $RAW_JPG $RAW_JSON"
-        #J0B=$(sbatch $LOGS_0B -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0B" --array=0-$((RUNS - 1))%$SYNC scale_img.sbatch)
- 
+        LOGS_0B="-o $LOG_OUT/scale_img/${KLOG}_raw_%a.out -e $LOG_OUT/scale_img/${KLOG}_raw_%a.err"
+        ARGS_0B="-f jpg -r $RUNS -n $RAW_DOWNSAMPLE_XY -z $RAW_DOWNSAMPLE_Z -o $RAW_JPG -s $RAW_RANGE $RAW_JSON"
+        J0B=$(sbatch $LOGS_0B -D $WORKING_DIR --export="ARGUMENTS=$ARGS_0B" --array=0-$((RUNS - 1))%$SYNC scale_img.sbatch)
+        
         echo "... $J0A and $J0B ..."
         J0A=${J0A//[^0-9]}
         J0B=${J0B//[^0-9]}
@@ -114,10 +116,9 @@ for STEP in $(seq $START $STOP); do
         #LOGS_1A="-o $LOG_OUT/simple/${KLOG}_ids.out -e $LOG_OUT/simple/${KLOG}_ids.err"
         #J1A=$(sbatch $LOGS_1A $DEP_1A -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1A" simple.sbatch)
 
-        # Full offset is -z 14:1728 -y 0:12288 -x 0:12288
-        #CALL_1B="python -u conversion_scripts/jpg2hd.py -z 1:108 -y 0:3072 -x 0:3072 $RAW_JPG $RAW_H5"
-        #LOGS_1B="-o $LOG_OUT/simple/${KLOG}_raw.out -e $LOG_OUT/simple/${KLOG}_raw.err"
-        #J1B=$(sbatch $LOGS_1B $DEP_1B -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1B" simple.sbatch)
+        CALL_1B="python -u conversion_scripts/jpg2hd.py $RAW_JPG $RAW_H5"
+        LOGS_1B="-o $LOG_OUT/simple/${KLOG}_raw.out -e $LOG_OUT/simple/${KLOG}_raw.err"
+        J1B=$(sbatch $LOGS_1B $DEP_1B -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_1B" simple.sbatch)
 
         echo "... $J1A and $J1B ..."
         J1A=${J1A//[^0-9]}
@@ -126,7 +127,7 @@ for STEP in $(seq $START $STOP); do
 
     2) 
         echo "2A) Will count the biggest in the ids hdf5 file..."
-        echo "2B) Will count the most $TOP_TYPE in the ids hdf5 file..."
+        echo "2B) Will count the deepest in the ids hdf5 file..."
         # Calculate dependencies if needed
         if [ "$START" -lt "2" ]; then
             echo "... both after 1A) finishes."
@@ -138,11 +139,11 @@ for STEP in $(seq $START $STOP); do
         LOGS_2A="-o $LOG_OUT/simple/${KLOG}_big.out -e $LOG_OUT/simple/${KLOG}_big.err"
         J2A=$(sbatch $LOGS_2A $DEP_2A -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_2A" simple.sbatch)
 
-        CALL_2B="python -u all_counts.py -d $TOP_TYPE -b $BLOCK_COUNTS $IDS_H5 $ROOT_OUT"
-        LOGS_2B="-o $LOG_OUT/simple/${KLOG}_top.out -e $LOG_OUT/simple/${KLOG}_top.err"
-        J2B=$(sbatch $LOGS_2B $DEP_2B -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_2B" simple.sbatch)
+        #CALL_2B="python -u all_counts.py -d 1 -b $BLOCK_COUNTS $IDS_H5 $ROOT_OUT"
+        #LOGS_2B="-o $LOG_OUT/simple/${KLOG}_deep.out -e $LOG_OUT/simple/${KLOG}_deep.err"
+        #J2B=$(sbatch $LOGS_2B $DEP_2B -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_2B" simple.sbatch)
 
-        echo "... $J2A and  $J2B..."
+        echo "... $J2A and $J2B..."
         J2A=${J2A//[^0-9]}
         J2B=${J2B//[^0-9]}
         ;;
@@ -155,7 +156,7 @@ for STEP in $(seq $START $STOP); do
             DEP_3A="--dependency=afterok:$J2A:$J2B"
         fi
 
-        ARGS_3A="-b $BLOCK_COUNTS -d $TOP_TYPE -n $NUMBER_TOP $IDS_H5 $ROOT_OUT"
+        ARGS_3A="-b $BLOCK_COUNTS -l $IDS_LIST $IDS_H5 $ROOT_OUT"
         LOGS_3A="-o $LOG_OUT/all_stl/${KLOG}_%a.out -e $LOG_OUT/all_stl/${KLOG}_%a.err"
         J3A=$(sbatch $LOGS_3A $DEP_3A -D $WORKING_DIR --export="ARGUMENTS=$ARGS_3A" --array=0-$((BLOCK_RUNS - 1))%$SYNC all_stl.sbatch)
 
@@ -175,7 +176,7 @@ for STEP in $(seq $START $STOP); do
         fi
 
         LOGS_4A="-o $LOG_OUT/all_x3d/${KLOG}_%a.out -e $LOG_OUT/all_x3d/${KLOG}_%a.err"
-        ARGS_4A="-r $MESH_RUNS -V $VOXEL_RATIO -R $RAW_RATIO -I $IDS_RATIO -n $NUMBER_TOP -d $TOP_TYPE -w $WWW_IN $RAW_H5 $RAW_JPG $ROOT_OUT"
+        ARGS_4A="-r $MESH_RUNS -V $VOXEL_RATIO -R $RAW_RATIO -I $IDS_RATIO -l $IDS_LIST -w $WWW_IN $RAW_H5 $RAW_JPG $ROOT_OUT"
         J4A=$(sbatch $LOGS_4A $DEP_4A -D $WORKING_DIR --export="ARGUMENTS=$ARGS_4A" --array=0-$((MESH_RUNS - 1))%$SYNC all_x3d.sbatch)
 
         echo "... $J4A ..."
@@ -190,7 +191,7 @@ for STEP in $(seq $START $STOP); do
             DEP_5A="--dependency=afterok:$J4A"
         fi
 
-        CALL_5A="python all_index.py -f $INDEX_NAME $ROOT_OUT"
+        CALL_5A="python all_index.py -f $INDEX_NAME -l $IDS_LIST $ROOT_OUT"
         LOGS_5A="-o $LOG_OUT/simple/${KLOG}_html.out -e $LOG_OUT/simple/${KLOG}_html.err"
         J5A=$(sbatch $LOGS_5A $DEP_5A -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_5A" simple.sbatch)
 
@@ -198,8 +199,16 @@ for STEP in $(seq $START $STOP); do
         J5A=${J5A//[^0-9]}
         ;;
 
-    *)  ARGS_4A="-V $VOXEL_RATIO -R $RAW_RATIO -I $IDS_RATIO -l $IDS_LIST -w $WWW_IN $RAW_H5 $RAW_JPG $ROOT_OUT"
-        echo $ARGS_4A
+    *)  
+        SYN_Y="563"
+        SYN_X="890"
+        echo "Will get the sides near a given synapse"
+        CALL_6A="python -u scripts/sides.py $ROOT_OUT/x3d/ $RAW_H5 $RAW_JPG -y $SYN_Y -x $SYN_X"
+        LOGS_6A="-o $LOG_OUT/simple/${KLOG}_sides.out -e $LOG_OUT/simple/${KLOG}_sides.err"
+        J6A=$(sbatch $LOGS_6A -D $WORKING_DIR --export="FUNCTION_CALL=$CALL_6A" simple.sbatch)
+        
+        echo "... $J6A ..."
+        J6A=${J6A//[^0-9]}
         ;;
 
     esac

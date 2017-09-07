@@ -12,11 +12,12 @@
 
 source new-modules.sh
 module load python/2.7.11-fasrc01
-source activate h5_tile
+source activate 3DXP
 
 # we are working
-echo "python -u tiff_lists/tiffScale.py -t $SLURM_ARRAY_TASK_ID $ARGUMENTS"
-time python -u tiff_lists/tiffScale.py -t $SLURM_ARRAY_TASK_ID $ARGUMENTS
+RUNNING="python -u $PYTHON $ARGS -t $SLURM_ARRAY_TASK_ID"
+echo $RUNNING
+time $RUNNING
 
 # end of program
 exit 0;

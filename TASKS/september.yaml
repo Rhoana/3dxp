@@ -1,0 +1,36 @@
+constant: &constant
+    HOME: "/n/coxfs01/thejohnhoffer"
+    COX_DATA: "/n/coxfs01/data"
+    PYTHON: "../PYTHON/"
+    SLURM: "../SLURM/"
+inputs:
+    - &2017-08-28_broken
+        IN_IMG: "{COX_DATA}/test_sample/image.h5"
+        IN_IDS: "{COX_DATA}/test_sample/segmentation.h5"
+        OUT_PATH: "{HOME}/mojo/2017_08_28/broken/mojo"
+        LOG: "{HOME}/logging/2017-08-28_broken"
+scripts:
+    - &hd2mojo
+        slurm: "{SLURM}/one.sbatch"
+        python: "{PYTHON}/conversion/hd2mojo.py"
+    - &hd2mojo_break_all 
+        needs:
+            - <<: *hd2mojo
+              args: "{IN_IMG} {OUT_PATH}"
+              logs: "{LOG}/hd2mojo_img"
+            - <<: *hd2mojo
+              args: "{IN_IDS} {OUT_PATH}"
+              logs: "{LOG}/hd2mojo_ids"
+#####
+# Actions run scripts on inputs
+#####
+actions:
+    - &2017-09-06
+        input: *2017-08-28_broken
+        <<: *hd2mojo_break_all
+#####
+# Set the main action
+#####
+main:
+    constant: *constant
+    <<: *2017-09-06
