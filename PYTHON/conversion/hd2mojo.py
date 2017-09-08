@@ -34,7 +34,7 @@ with h5py.File(paths['hd5'],'r') as hi:
     if np.iinfo(dtype).max is not 255:
         outfile = Sego(paths['out'])
 
-    for zi in range(500, shape[0]):
+    for zi in range(0, shape[0]):
         outfile.run(group[zi, :, :], zi)
     
     # Write as image or segmentation
