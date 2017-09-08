@@ -5,4 +5,5 @@ from deepest import main as deepest
 from highest import main as highest
 from widest import main as widest
 from frames import main as frames
+from link import main as link
 from sides import main as sides

@@ -15,9 +15,9 @@ module load python/2.7.11-fasrc01
 source activate 3DXP
 
 # we are working
-RUNNING="python -u $PYTHON $ARGS"
+RUNNING="python -u $python $args"
 echo $RUNNING
-time $RUNNING
+#time $RUNNING
 
 # end of program
 exit 0;

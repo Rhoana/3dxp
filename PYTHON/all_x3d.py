@@ -8,6 +8,7 @@ from scripts import deepest
 from scripts import highest
 from scripts import widest
 from scripts import sides
+from scripts import link
 
 def start(_argv):
 
@@ -69,7 +70,8 @@ def start(_argv):
         # Load stl (and cached x3d) to make x3dom html
         ThreeD.create_website(STLFOLDER, X3DFOLDER, LIST, *full_shape, **www_keys)
         # Link full image stack and create cube sides
-        sides(X3DFOLDER, IMAGE, IMGS)
+        link(X3DFOLDER, IMGS)
+        sides(X3DFOLDER, IMAGE)
 
         return
 
@@ -94,7 +96,8 @@ def start(_argv):
     # Load stl (and cached x3d) to make x3dom html
     ThreeD.create_website(STLFOLDER, X3DFOLDER, top_ids, *full_shape, **www_keys)
     # Link full image stack and create cube sides
-    sides(X3DFOLDER, IMAGE, IMGS)
+    link(X3DFOLDER, IMGS)
+    sides(X3DFOLDER, IMAGE)
 
 def parseArgv(argv):
     sys.argv = argv

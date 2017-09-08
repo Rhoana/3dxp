@@ -1,36 +1,65 @@
-constant: &constant
+constants: &constants
     HOME: "/n/coxfs01/thejohnhoffer"
     COX_DATA: "/n/coxfs01/data"
-    PYTHON: "../PYTHON/"
-    SLURM: "../SLURM/"
-inputs:
-    - &2017-08-28_broken
+    PYTHON: "../PYTHON"
+    SLURM: "../SLURM"
+2017-08-28:
+    - &2017-08-28_main
+        LOG: "{HOME}/logging/2017-08-28"
         IN_IMG: "{COX_DATA}/test_sample/image.h5"
         IN_IDS: "{COX_DATA}/test_sample/segmentation.h5"
+    - &2017-08-28_broken
+        <<: *2017-08-28_main
         OUT_PATH: "{HOME}/mojo/2017_08_28/broken/mojo"
-        LOG: "{HOME}/logging/2017-08-28_broken"
-scripts:
-    - &hd2mojo
+2017-08-23:
+    - &2017-08-23_main
+        LOG: "{HOME}/logging/2017-08-23"
+        OUT_PATH: "{HOME}/R0/render/2017-08-23/"
+        IN_IMG: "{COX_DATA}/test_sample/image.h5"
+        IN_IDS: "{COX_DATA}/test_sample/segmentation.h5"
+    - &2017-08-23_id-58146
+        <<: *2017-08-23_main
+        ID: 58146
+slurms:
+    - &one_sbatch
         slurm: "{SLURM}/one.sbatch"
+        exports: ["python", "args"]
+hd2mojo:
+    - &hd2mojo_py
+        <<: *one_sbatch
         python: "{PYTHON}/conversion/hd2mojo.py"
     - &hd2mojo_break_all 
         needs:
-            - <<: *hd2mojo
+            - <<: *hd2mojo_py
               args: "{IN_IMG} {OUT_PATH}"
               logs: "{LOG}/hd2mojo_img"
-            - <<: *hd2mojo
+            - <<: *hd2mojo_py
               args: "{IN_IDS} {OUT_PATH}"
               logs: "{LOG}/hd2mojo_ids"
+sides:
+    - &sides_py
+        <<: *one_sbatch
+        python: "{PYTHON}/scripts/sides.py"
+    - &slice-z_id
+        needs:
+            - <<: *sides_py
+              args: "{OUT_PATH} {IN_IMG} {IN_IDS} -i {ID} -o 0.25 -a z -z 5"
+              logs: "{LOG}/z5_id-{ID}"
 #####
 # Actions run scripts on inputs
 #####
 actions:
-    - &2017-09-06
-        input: *2017-08-28_broken
-        <<: *hd2mojo_break_all
+    - &break_2017-09-06
+        inputs: *2017-08-28_broken
+        tasks:
+            - <<: *hd2mojo_break_all
+    - &slice_2017-09-07
+        inputs: *2017-08-23_id-58146
+        tasks:
+            - <<: *slice-z_id
 #####
 # Set the main action
 #####
 main:
-    constant: *constant
-    <<: *2017-09-06
+    constants: *constants
+    <<: *slice_2017-09-07
