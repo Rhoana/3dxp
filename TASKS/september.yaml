@@ -14,15 +14,18 @@ constants: &constants
 2017-08-23:
     - &2017-08-23_main
         LOG: "{HOME}/logging/2017-08-23"
-        OUT_PATH: "{HOME}/R0/render/2017-08-23/"
         IN_IMG: "{COX_DATA}/test_sample/image.h5"
         IN_IDS: "{COX_DATA}/test_sample/segmentation.h5"
     - &2017-08-23_id-58146
         <<: *2017-08-23_main
+        OUT_PATH: "{HOME}/R0/render/2017-08-23/"
         ID: 58146
 slurms:
     - &one_sbatch
         slurm: "{SLURM}/one.sbatch"
+        exports: ["python", "args"]
+    - &many_sbatch
+        slurm: "{SLURM}/many.sbatch"
         exports: ["python", "args"]
 hd2mojo:
     - &hd2mojo_py
@@ -41,10 +44,9 @@ sides:
         <<: *one_sbatch
         python: "{PYTHON}/scripts/sides.py"
     - &slice-z_id
-        needs:
-            - <<: *sides_py
-              args: "{OUT_PATH} {IN_IMG} {IN_IDS} -i {ID} -o 0.25 -a z -z 5"
-              logs: "{LOG}/z5_id-{ID}"
+        <<: *sides_py
+        args: "{OUT_PATH} {IN_IMG} {IN_IDS} -i {ID} -o 0.25 -a z -z 5"
+        logs: "{LOG}/z5_id-{ID}"
 #####
 # Actions run scripts on inputs
 #####

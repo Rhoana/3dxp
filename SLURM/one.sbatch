@@ -17,7 +17,7 @@ source activate 3DXP
 # we are working
 RUNNING="python -u $python $args"
 echo $RUNNING
-#time $RUNNING
+time $RUNNING
 
 # end of program
 exit 0;
