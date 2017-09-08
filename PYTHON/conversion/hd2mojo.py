@@ -4,8 +4,8 @@ import h5py
 import glob
 import argparse
 import numpy as np
-from toMojo.np2imgo import Imgo
-from toMojo.np2sego import Sego
+from toMojo import Imgo
+from toMojo import Sego
 
 help = {
     'out': 'output mojo parent (default mojo)',
