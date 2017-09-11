@@ -1,2 +1,2 @@
-from np2imgo import Imgo
-from np2sego import Sego
+from np2img import MojoImg
+from np2seg import MojoSeg

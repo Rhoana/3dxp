@@ -2,6 +2,7 @@ import os
 import json
 import argparse
 import numpy as np
+from common import trial2span
 from fromBoss import Boss2np
 
 if __name__ == '__main__':
@@ -55,13 +56,12 @@ if __name__ == '__main__':
     # Default full span in Z
     if len(z_span) != 2:
         z_span = [0, mgmt.size[0]]
+    # Get the trial and number of runs
+    trial, runs = argd['trial'], argd['runs']
 
-    # Make a linear space
-    z_span.append(argd['runs']+1)
-    tiles = np.linspace(*z_span)
+    # Get the bounds over input z slices
+    z_bounds = trial2span(trial, runs, *z_span)
     
-    # Get the bounds over z
-    z_bounds = np.uint32(tiles[argd['trial']:][:2])
     resolution = (argd['numz'], argd['num'], argd['num'])
 
     #

@@ -6,7 +6,7 @@ import lxml.etree
 import numpy as np
 
 
-class Imgo:
+class MojoImg:
     def __init__(self, output_dir):
 
         self.tile_num_pixels_y = 512
