@@ -2,8 +2,8 @@ import os
 import json
 import argparse
 import numpy as np
-from common import trial2span
-from fromBoss import Boss2np
+from formats.common import trial2span
+from formats.fromBoss import Boss2np
 
 if __name__ == '__main__':
 

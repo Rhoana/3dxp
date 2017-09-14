@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from np2mojo import MojoSave
-from .. import color_ids
+from ..common import color_ids
 import sqlite3
 import h5py
 
@@ -16,7 +16,7 @@ class MojoSeg(MojoSave):
         self.output_tile_volume_file = os.path.join(output_path, 'tiledVolumeDescription.xml')
 
         self.output_extension     = '.hdf5'
-        ncolors = 1000
+        n_colors = 1000
 
         self.output_color_map_file         = output_path + os.sep + 'colorMap.hdf5'
         self.output_segment_info_db_file   = output_path + os.sep + 'segmentInfo.db'
@@ -34,15 +34,15 @@ class MojoSeg(MojoSave):
         super(MojoSeg, self).load_tile(tile, new_width, new_height, stride)
         return tile[ ::stride, ::stride ]
 
-    def save_tile(self, tile_name, tile, index_x, index_y):
+    def save_tile(self, tile_path, tile, index_x, index_y):
         """ Required method to save tiles
         """
-        super(MojoSeg, self).save_tile(tile_name, tile, index_x, index_y)
+        super(MojoSeg, self).save_tile(tile_path, tile, index_x, index_y)
 
         tile_padded = np.zeros( ( self.tile_y, self.tile_x ), np.uint32 )
         tile_padded[ 0:tile.shape[0], 0:tile.shape[1] ] = tile[:,:]
         # Save the hdf5 file
-        with h5py.File( tile_name, 'w' ) as hf:
+        with h5py.File( tile_path, 'w' ) as hf:
             hf.create_dataset( 'IdMap', data=tile_padded )
 
         position = (self.tile_index_w, self.tile_index_z, index_y, index_x)

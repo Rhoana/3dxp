@@ -21,8 +21,8 @@ class MojoImg(MojoSave):
         super(MojoImg, self).load_tile(tile, new_width, new_height, stride)
         return cv2.resize(tile, ( new_width, new_height ))
 
-    def save_tile(self, tile_name, tile, index_x, index_y):
+    def save_tile(self, tile_path, tile, index_x, index_y):
         """ Required method to save tiles
         """
-        super(MojoImg, self).save_tile(tile_name, tile, index_x, index_y)
-        cv2.imwrite(tile_name, tile)
+        super(MojoImg, self).save_tile(tile_path, tile, index_x, index_y)
+        cv2.imwrite(tile_path, tile)

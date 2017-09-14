@@ -2,7 +2,6 @@ import os
 import glob
 import h5py
 import numpy as np
-import common
 
 def hd2info(in_path):
     """
@@ -35,12 +34,12 @@ def hd2np(in_path, z_span):
 
     Yields
     -------
-    np.ndarray
-        Each 2D slice from a single tif file
+    (int, np.ndarray)
+        The Z index and Each 2D slice
     """
     with h5py.File(in_path, 'r') as hi:
         # Get the group in the file
         group = hi[hi.keys()[0]]
         # Yield each slice
         for zi in range(*z_span):
-            yield group[zi, :, :]
+            yield (zi, group[zi, :, :])

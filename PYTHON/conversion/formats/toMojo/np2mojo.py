@@ -4,23 +4,22 @@ import lxml
 import numpy as np
 
 
-class MojoSave:
+class MojoSave(object):
     def __init__(self, mojo_dir):
 
         self.tile_y = 512
         self.tile_x = 512
-
 
     def load_tile(self, tile, new_width, new_height, stride):
         """ Subclass must implement
         """
         pass
     
-    def save_tile(self, tile_name, tile, index_x, index_y):
+    def save_tile(self, tile_path, tile, index_x, index_y):
         """ Subclass must implement
         """
         msg = """Saving {}
-        """.format(file_path)
+        """.format(tile_path)
         print(msg)
 
     def save_xml(self, in_shape, dxgi='R8_UNorm', nbytes=1):

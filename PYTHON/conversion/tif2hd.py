@@ -6,7 +6,7 @@ import glob
 import argparse
 import numpy as np
 import tifffile as tiff
-from fromStack import tif2np
+from formats.fromStack import tif2np
 
 help = {
     'out': 'output file (default out.h5)',

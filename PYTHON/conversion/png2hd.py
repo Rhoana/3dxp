@@ -5,7 +5,7 @@ import h5py
 import glob
 import argparse
 import numpy as np
-from fromStack import opencv2np
+from formats.fromStack import opencv2np
 
 help = {
     'out': 'output file (default out.h5)',
