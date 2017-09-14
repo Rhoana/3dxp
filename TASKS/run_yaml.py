@@ -80,7 +80,7 @@ def run_task(inputs, task):
         submitted = subprocess.check_output(slurm_job).rstrip()
         job_id = next(s for s in submitted.split(' ') if s.isdigit())
         # Slurm job dependencies
-        print(slurm_job[-1])
+        print(' '.join(slurm_job))
         log_yaml(job_id, needs_ids)
         # Return job id
         return [job_id]
