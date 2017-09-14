@@ -52,5 +52,5 @@ for zi, z_slice in hd2np(in_path, z_span):
     mojoMaker.run(z_slice, zi)
     
 # Write as image or segmentation
-outfile.save(out_shape)
+mojoMaker.save(out_shape)
 
