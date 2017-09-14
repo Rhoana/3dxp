@@ -199,7 +199,7 @@ def merge_db(mojo_dir):
         add_segment = 'INSERT INTO segmentInfo VALUES({0}, "{1}", {2}, {3});'
         out_cur.execute(add_segment.format( id_index, new_name, id_count, 0 ))
         # Show progress
-        progress(i, len(trial_dbs), step="Write segmentInfo")
+        progress(id_index, len(out_counts), step="Write segmentInfo")
 
     # Commit output and close output
     out_con.commit()

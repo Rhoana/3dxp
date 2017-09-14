@@ -8,9 +8,9 @@ constants: &constants
         LOG: "{HOME}/logging/2017-08-28"
         IN_IMG: "{COX_DATA}/test_sample/image.h5"
         IN_IDS: "{COX_DATA}/test_sample/segmentation.h5"
-    - &2017-08-28_many
+    - &2017-08-28_full
         <<: *2017-08-28_main
-        OUT_PATH: "{HOME}/mojo/2017_08_28/many/mojo"
+        OUT_PATH: "{HOME}/mojo/2017_08_28/full/mojo"
 2017-08-23:
     - &2017-08-23_main
         LOG: "{HOME}/logging/2017-08-28"
@@ -28,13 +28,13 @@ slurms:
         slurm: "{SLURM}/many.sbatch"
         exports: ["python", "args"]
 tasks:
-    - &hd2mojo_many-img
+    - &hd2mojo_img
         <<: *many_sbatch
         python: "{PYTHON}/conversion/hd2mojo.py"
         args: "{IN_IMG} {OUT_PATH}"
         logs: "{LOG}/hd2mojo_img"
         runs: 30
-    - &hd2mojo_many-ids
+    - &hd2mojo_ids
         <<: *many_sbatch
         python: "{PYTHON}/conversion/hd2mojo.py"
         args: "{IN_IDS} {OUT_PATH}"
@@ -54,15 +54,13 @@ tasks:
 # Actions run scripts on inputs
 #####
 actions:
-    - &db_2017-09-14
-        inputs: *2017-08-28_many
+    - &full_2017-09-14
+        inputs: *2017-08-28_full
         tasks:
             - <<: *db4mojo
-    - &mojo_2017-09-14
-        inputs: *2017-08-28_many
-        tasks:
-            - <<: *hd2mojo_many-img
-            - <<: *hd2mojo_many-ids
+              needs:
+                - <<: *hd2mojo_ids
+            - <<: *hd2mojo_img
     - &slice_2017-09-07
         inputs: *2017-08-23_id-58146
         tasks:
@@ -71,7 +69,7 @@ actions:
 # Set the main action
 #####
 main:
-    <<: *db_2017-09-14
+    <<: *full_2017-09-14
     constants:
         HOME: "/n/coxfs01/thejohnhoffer"
         COX_DATA: "/n/coxfs01/data"
