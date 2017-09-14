@@ -57,7 +57,7 @@ def get_exports(task):
 
 def get_array(task):
     # Get slurm array parameters
-    n_runs = min(0, task.get('runs', 1) - 1)
+    n_runs = max(0, task.get('runs', 1) - 1)
     n_sync = task.get('sync', n_runs+1)
     return [
         "--array=0-{}%{}".format(n_runs, n_sync),
