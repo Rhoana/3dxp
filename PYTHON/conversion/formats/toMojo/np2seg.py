@@ -7,19 +7,24 @@ import h5py
 
 
 class MojoSeg(MojoSave):
-    def __init__(self, mojo_dir):
+    def __init__(self, mojo_dir, trial=0):
 
-        super(MojoSeg, self).__init__(mojo_dir)
+        super(MojoSeg, self).__init__(mojo_dir, trial)
 
         output_path = os.path.join(mojo_dir, 'ids')
         self.output_tile_path = os.path.join(output_path, 'tiles')
         self.output_tile_volume_file = os.path.join(output_path, 'tiledVolumeDescription.xml')
 
-        self.output_extension     = '.hdf5'
+        self.output_extension = '.hdf5'
         n_colors = 1000
 
-        self.output_color_map_file         = output_path + os.sep + 'colorMap.hdf5'
-        self.output_segment_info_db_file   = output_path + os.sep + 'segmentInfo.db'
+        # Make path for colormap and database
+        self.output_color_map_file = os.path.join(output_path, 'colorMap.hdf5')
+        self.output_db_file = os.path.join(output_path, 'segmentInfo.db')
+        # Write new databases for other trials
+        if trial:
+            trial_db = '{}_segmentInfo.db'.format(trial)
+            self.output_db_file = os.path.join(output_path, 'trials', trial_db)
 
         self.id_max               = 0
         self.id_counts            = np.array([0], dtype=np.int64 )
@@ -77,21 +82,24 @@ class MojoSeg(MojoSave):
         ## Sort the tile list so that the same id appears together
         self.id_tile_list = np.array( sorted( self.id_tile_list ), np.uint32 )
 
-        ## Write all segment info to a single file
-
         print 'Writing colorMap file (hdf5)'
 
-        with h5py.File( self.output_color_map_file, 'w' ) as hf:
-
-            hf['idColorMap'] = self.color_map
+        if not os.path.exists(self.output_color_map_file):
+            with h5py.File( self.output_color_map_file, 'w' ) as hf:
+                hf['idColorMap'] = self.color_map
 
         print 'Writing segmentInfo file (sqlite)'
 
-        if os.path.exists(self.output_segment_info_db_file):
-            os.remove(self.output_segment_info_db_file)
+        # Make folder for database if needed
+        db_parent = os.path.dirname(self.output_db_file)
+        self.mkdir_safe(db_parent)
+
+        # Remove the database if already there
+        if os.path.exists(self.output_db_file):
+            os.remove(self.output_db_file)
             print "Deleted existing database file."
 
-        con = sqlite3.connect(self.output_segment_info_db_file)
+        con = sqlite3.connect(self.output_db_file)
 
         cur = con.cursor()
 

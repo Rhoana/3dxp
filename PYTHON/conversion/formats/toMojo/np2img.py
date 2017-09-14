@@ -5,9 +5,9 @@ import cv2
 
 
 class MojoImg(MojoSave):
-    def __init__(self, mojo_dir):
+    def __init__(self, mojo_dir, trial=0):
 
-        super(MojoImg, self).__init__(mojo_dir)
+        super(MojoImg, self).__init__(mojo_dir, trial)
 
         output_path = os.path.join(mojo_dir, 'images')
         self.output_tile_path = os.path.join(output_path, 'tiles')

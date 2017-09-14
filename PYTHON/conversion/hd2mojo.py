@@ -43,9 +43,9 @@ msg = """z:{}
 print(msg)
 
 # Select the correct conversion
-mojoMaker = MojoImg(out_path)
+mojoMaker = MojoImg(out_path, trial)
 if np.iinfo(out_type).max is not 255:
-    mojoMaker = MojoSeg(out_path)
+    mojoMaker = MojoSeg(out_path, trial)
 
 # Save images for each z slice
 for zi, z_slice in hd2np(in_path, z_span):

@@ -28,16 +28,18 @@ slurms:
         slurm: "{SLURM}/many.sbatch"
         exports: ["python", "args"]
 tasks:
-    - &hd2mojo_break-img
-        <<: *one_sbatch
+    - &hd2mojo_many-img
+        <<: *many_sbatch
         python: "{PYTHON}/conversion/hd2mojo.py"
         args: "{IN_IMG} {OUT_PATH}"
         logs: "{LOG}/hd2mojo_img"
-    - &hd2mojo_break-ids
-        <<: *one_sbatch
+        runs: 30
+    - &hd2mojo_many-ids
+        <<: *many_sbatch
         python: "{PYTHON}/conversion/hd2mojo.py"
         args: "{IN_IDS} {OUT_PATH}"
         logs: "{LOG}/hd2mojo_ids"
+        runs: 30
     - &sides_z
         <<: *one_sbatch
         python: "{PYTHON}/scripts/sides.py"
@@ -47,11 +49,11 @@ tasks:
 # Actions run scripts on inputs
 #####
 actions:
-    - &break_2017-09-06
+    - &mojo_2017-09-14
         inputs: *2017-08-28_broken
         tasks:
-            - <<: *hd2mojo_break-img
-            - <<: *hd2mojo_break-ids
+            - <<: *hd2mojo_many-img
+            - <<: *hd2mojo_many-ids
     - &slice_2017-09-07
         inputs: *2017-08-23_id-58146
         tasks:
@@ -60,5 +62,9 @@ actions:
 # Set the main action
 #####
 main:
-    constants: *constants
-    <<: *break_2017-09-06
+    <<: *mojo_2017-09-14
+    constants:
+        HOME: "/n/coxfs01/thejohnhoffer"
+        COX_DATA: "/n/coxfs01/data"
+        PYTHON: "../PYTHON"
+        SLURM: "../SLURM"

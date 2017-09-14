@@ -5,7 +5,7 @@ import numpy as np
 
 
 class MojoSave(object):
-    def __init__(self, mojo_dir):
+    def __init__(self, mojo_dir, trial=0):
 
         self.tile_y = 512
         self.tile_x = 512
@@ -25,6 +25,10 @@ class MojoSave(object):
     def save_xml(self, in_shape, dxgi='R8_UNorm', nbytes=1):
         """ Subclass may overwrite
         """
+        # Return if file exists
+        if os.path.exists(self.output_tile_volume_file):
+            return
+
         # Get the full width, depth, height
         all_shape = self.round(in_shape)
         (depth, width, height) = all_shape
