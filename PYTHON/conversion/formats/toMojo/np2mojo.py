@@ -1,6 +1,7 @@
 import os
 import math
 import lxml
+import lxml.etree
 import numpy as np
 
 
