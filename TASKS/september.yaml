@@ -13,12 +13,12 @@ constants: &constants
         OUT_PATH: "{HOME}/mojo/2017_08_28/broken/mojo"
 2017-08-23:
     - &2017-08-23_main
-        LOG: "{HOME}/logging/2017-08-23"
+        LOG: "{HOME}/logging/2017-08-28"
         IN_IMG: "{COX_DATA}/test_sample/image.h5"
         IN_IDS: "{COX_DATA}/test_sample/segmentation.h5"
     - &2017-08-23_id-58146
         <<: *2017-08-23_main
-        OUT_PATH: "{HOME}/R0/render/2017-08-23/"
+        OUT_PATH: "{HOME}/R0/render/2017-08-28/"
         ID: 58146
 slurms:
     - &one_sbatch
@@ -27,24 +27,20 @@ slurms:
     - &many_sbatch
         slurm: "{SLURM}/many.sbatch"
         exports: ["python", "args"]
-hd2mojo:
-    - &hd2mojo_py
+tasks:
+    - &hd2mojo_break-img
         <<: *one_sbatch
         python: "{PYTHON}/conversion/hd2mojo.py"
-    - &hd2mojo_break_all 
-        needs:
-            - <<: *hd2mojo_py
-              args: "{IN_IMG} {OUT_PATH}"
-              logs: "{LOG}/hd2mojo_img"
-            - <<: *hd2mojo_py
-              args: "{IN_IDS} {OUT_PATH}"
-              logs: "{LOG}/hd2mojo_ids"
-sides:
-    - &sides_py
+        args: "{IN_IMG} {OUT_PATH}"
+        logs: "{LOG}/hd2mojo_img"
+    - &hd2mojo_break-ids
+        <<: *one_sbatch
+        python: "{PYTHON}/conversion/hd2mojo.py"
+        args: "{IN_IDS} {OUT_PATH}"
+        logs: "{LOG}/hd2mojo_ids"
+    - &sides_z
         <<: *one_sbatch
         python: "{PYTHON}/scripts/sides.py"
-    - &slice-z_id
-        <<: *sides_py
         args: "{OUT_PATH} {IN_IMG} {IN_IDS} -i {ID} -o 0.25 -a z -z 5"
         logs: "{LOG}/z5_id-{ID}"
 #####
@@ -54,14 +50,15 @@ actions:
     - &break_2017-09-06
         inputs: *2017-08-28_broken
         tasks:
-            - <<: *hd2mojo_break_all
+            - <<: *hd2mojo_break-img
+            - <<: *hd2mojo_break-ids
     - &slice_2017-09-07
         inputs: *2017-08-23_id-58146
         tasks:
-            - <<: *slice-z_id
+            - <<: *sides_z
 #####
 # Set the main action
 #####
 main:
     constants: *constants
-    <<: *slice_2017-09-07
+    <<: *break_2017-09-06
