@@ -1,4 +1,4 @@
-def progress(part, whole, N=100):
+def progress(part, whole, N=100, step='Loaded'):
     """ Shows progress in loop
     Arguments
     ----------
@@ -8,8 +8,11 @@ def progress(part, whole, N=100):
         All iterations
     N: int
         Print N iterations
+    step: str
+        The end goal of progress
     """
-    if part % (whole / N) == 1:
-        msg = 'Loaded: {:.2f}%'
+    interval = max(1, whole / N)
+    if part % interval == 0:
+        msg = '{}: {:.2f}%'
         percent = 100.0 * part / whole
-        print(msg.format(percent))
+        print(msg.format(step, percent))

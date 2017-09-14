@@ -8,9 +8,9 @@ constants: &constants
         LOG: "{HOME}/logging/2017-08-28"
         IN_IMG: "{COX_DATA}/test_sample/image.h5"
         IN_IDS: "{COX_DATA}/test_sample/segmentation.h5"
-    - &2017-08-28_broken
+    - &2017-08-28_many
         <<: *2017-08-28_main
-        OUT_PATH: "{HOME}/mojo/2017_08_28/broken/mojo"
+        OUT_PATH: "{HOME}/mojo/2017_08_28/many/mojo"
 2017-08-23:
     - &2017-08-23_main
         LOG: "{HOME}/logging/2017-08-28"
@@ -40,6 +40,11 @@ tasks:
         args: "{IN_IDS} {OUT_PATH}"
         logs: "{LOG}/hd2mojo_ids"
         runs: 30
+    - &db4mojo
+        <<: *one_sbatch
+        python: "{PYTHON}/conversion/db4mojo.py"
+        logs: "{LOG}/db4mojo"
+        args: "{OUT_PATH}"
     - &sides_z
         <<: *one_sbatch
         python: "{PYTHON}/scripts/sides.py"
@@ -49,8 +54,12 @@ tasks:
 # Actions run scripts on inputs
 #####
 actions:
+    - &db_2017-09-14
+        inputs: *2017-08-28_many
+        tasks:
+            - <<: *db4mojo
     - &mojo_2017-09-14
-        inputs: *2017-08-28_broken
+        inputs: *2017-08-28_many
         tasks:
             - <<: *hd2mojo_many-img
             - <<: *hd2mojo_many-ids
@@ -62,7 +71,7 @@ actions:
 # Set the main action
 #####
 main:
-    <<: *mojo_2017-09-14
+    <<: *db_2017-09-14
     constants:
         HOME: "/n/coxfs01/thejohnhoffer"
         COX_DATA: "/n/coxfs01/data"
