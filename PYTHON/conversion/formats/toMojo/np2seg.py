@@ -81,11 +81,9 @@ class MojoSeg(MojoSave):
 
         print 'Writing colorMap file (hdf5)'
 
-        hdf5 = h5py.File( self.output_color_map_file, 'w' )
+        with h5py.File( self.output_color_map_file, 'w' ) as hf:
 
-        hdf5['idColorMap'] = self.color_map
-
-        hdf5.close()
+            hf['idColorMap'] = self.color_map
 
         print 'Writing segmentInfo file (sqlite)'
 
