@@ -3,6 +3,7 @@ import math
 import lxml
 import lxml.etree
 import numpy as np
+from ..common import make_path
 
 
 class MojoSave(object):
@@ -63,10 +64,6 @@ class MojoSave(object):
         """
         pass
     
-    def mkdir_safe( self, dir_to_make ):
-        if not os.path.exists( dir_to_make ):
-            os.makedirs(dir_to_make)
-
     def round(self,shape):
         logs = np.ceil(np.log2(shape)).astype(np.uint32)
         padshape = tuple(2 ** p for p in logs)
@@ -97,7 +94,7 @@ class MojoSave(object):
 
             current_tile_path    = self.output_tile_path     + os.sep + 'w=' + '%08d' % ( self.tile_index_w ) + os.sep + 'z=' + '%08d' % ( self.tile_index_z )
 
-            self.mkdir_safe( current_tile_path )
+            make_path( current_tile_path )
 
             current_image = self.load_tile(original_image, current_image_x, current_image_y, stride)
 

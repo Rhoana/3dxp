@@ -2,6 +2,8 @@ import os
 import json
 import argparse
 import numpy as np
+from formats.common import make_path
+from formats.common import format_path
 from formats.common import trial2span
 from formats.fromBoss import Boss2np
 
@@ -32,54 +34,49 @@ if __name__ == '__main__':
     parser.add_argument('--span', '-s', default='0', help=help['span'])
     parser.add_argument('-l','--list', default='', help=help['l'])
     # Read the argumentss into a dictionary
-    argd = vars(parser.parse_args())
-    # Format the path arguments properly
-    def fmt_path(k):
-        return os.path.abspath(os.path.expanduser(argd[k]))
-    in_file, out_folder = map(fmt_path, ['files', 'out'])
-    # Make sure the out folder exists
-    if not os.path.exists(out_folder):
-        try:
-            os.mkdir(out_folder)
-        except OSError:
-            pass
+    args = vars(parser.parse_args())
+
+    # Format input and output paths
+    in_path = format_path(args['files'])
+    out_path = format_path(args['out'])
+    make_path(out_path)
 
     # Format the bound arguments properly
     def fmt_bound(k):
         return map(int, k.split(':'))
     
     # Create a file manager
-    mgmt = Boss2np(in_file)
+    mgmt = Boss2np(in_path)
 
     # Get the span across Z
-    z_span = fmt_bound(argd['span'])
+    z_span = fmt_bound(args['span'])
     # Default full span in Z
     if len(z_span) != 2:
         z_span = [0, mgmt.size[0]]
     # Get the trial and number of runs
-    trial, runs = argd['trial'], argd['runs']
+    trial, runs = args['trial'], args['runs']
 
     # Get the bounds over input z slices
     z_bounds = trial2span(trial, runs, *z_span)
     
-    resolution = (argd['numz'], argd['num'], argd['num'])
+    resolution = (args['numz'], args['num'], args['num'])
 
     #
     # IF A LIST OF IDS IS PASSED
     #
-    if argd['list'] != '':
+    if args['list'] != '':
         # If list is range, actualize it
-        if '-' in argd['list']:
-            LIST = [int(v) for v in argd['list'].split('-')]
+        if '-' in args['list']:
+            LIST = [int(v) for v in args['list'].split('-')]
             LIST = range(*LIST)
         else:
-            LIST = [int(v) for v in argd['list'].split(':')]
+            LIST = [int(v) for v in args['list'].split(':')]
 
         # Write the downsampled volume to a tiff stack
-        mgmt.scale_images(z_bounds, out_folder, resolution, argd['fmt'], LIST)
+        mgmt.scale_images(z_bounds, out_path, resolution, args['fmt'], LIST)
     ### 
     # Default
     ###
     else: 
         # Write the downsampled volume to a tiff stack
-        mgmt.scale_images(z_bounds, out_folder, resolution, argd['fmt'])
+        mgmt.scale_images(z_bounds, out_path, resolution, args['fmt'])

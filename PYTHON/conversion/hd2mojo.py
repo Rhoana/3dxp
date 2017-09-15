@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import os
 import h5py
 import glob
