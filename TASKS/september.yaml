@@ -1,25 +1,3 @@
-constants: &constants
-    HOME: "/n/coxfs01/thejohnhoffer"
-    COX_DATA: "/n/coxfs01/data"
-    PYTHON: "../PYTHON"
-    SLURM: "../SLURM"
-2017-08-28:
-    - &2017-08-28_main
-        LOG: "{HOME}/logging/2017-08-28"
-        IN_IMG: "{COX_DATA}/test_sample/image.h5"
-        IN_IDS: "{COX_DATA}/test_sample/segmentation.h5"
-    - &2017-08-28_full
-        <<: *2017-08-28_main
-        OUT_PATH: "{HOME}/mojo/2017_08_28/full/mojo"
-2017-08-23:
-    - &2017-08-23_main
-        LOG: "{HOME}/logging/2017-08-28"
-        IN_IMG: "{COX_DATA}/test_sample/image.h5"
-        IN_IDS: "{COX_DATA}/test_sample/segmentation.h5"
-    - &2017-08-23_id-58146
-        <<: *2017-08-23_main
-        OUT_PATH: "{HOME}/R0/render/2017-08-28/"
-        ID: 58146
 slurms:
     - &one_sbatch
         slurm: "{SLURM}/one.sbatch"
@@ -27,6 +5,11 @@ slurms:
     - &many_sbatch
         slurm: "{SLURM}/many.sbatch"
         exports: ["python", "args"]
+inputs:
+    - &2017-08-28_soma
+        LOG: "{HOME}/logging/2017-08-28"
+        IN_IMG: "{COX_DATA}/test_sample/image.h5"
+        IN_IDS: "{COX_DATA}/test_sample/segmentation.h5"
 tasks:
     - &hd2mojo_img
         <<: *many_sbatch
@@ -55,14 +38,19 @@ tasks:
 #####
 actions:
     - &full_2017-09-14
-        inputs: *2017-08-28_full
+        inputs:
+            <<: *2017-08-28_soma
+            OUT_PATH: "{HOME}/mojo/2017_08_28/full_v0/mojo"
         tasks:
             - <<: *db4mojo
               needs:
                 - <<: *hd2mojo_ids
             - <<: *hd2mojo_img
     - &slice_2017-09-07
-        inputs: *2017-08-23_id-58146
+        inputs:
+            <<: *2017-08-28_soma
+            OUT_PATH: "{HOME}/R0/render/2017-08-28/"
+            ID: 58146
         tasks:
             - <<: *sides_z
 #####
