@@ -36,10 +36,10 @@ class MojoSeg(MojoSave):
         # Make a color map
         self.color_map = color_ids(np.arange(n_colors+1, dtype=np.uint64))
 
-    def load_tile(self, tile, new_width, new_height, stride):
+    def scale_tile(self, tile, new_width, new_height, stride):
         """ Required method to load tiles
         """
-        super(MojoSeg, self).load_tile(tile, new_width, new_height, stride)
+        super(MojoSeg, self).scale_tile(tile, new_width, new_height, stride)
         return tile[ ::stride, ::stride ]
 
     def save_tile(self, tile_path, tile, index_x, index_y):

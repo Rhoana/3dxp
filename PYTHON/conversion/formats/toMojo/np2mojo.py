@@ -12,7 +12,7 @@ class MojoSave(object):
         self.tile_y = 512
         self.tile_x = 512
 
-    def load_tile(self, tile, new_width, new_height, stride):
+    def scale_tile(self, tile, new_width, new_height, stride):
         """ Subclass must implement
         """
         pass
@@ -96,7 +96,7 @@ class MojoSave(object):
 
             make_path( current_tile_path )
 
-            current_image = self.load_tile(original_image, current_image_x, current_image_y, stride)
+            current_image = self.scale_tile(original_image, current_image_x, current_image_y, stride)
 
             num_tiles_y = int( math.ceil( float( current_image_y ) / self.tile_y ) )
             num_tiles_x = int( math.ceil( float( current_image_x ) / self.tile_x ) )

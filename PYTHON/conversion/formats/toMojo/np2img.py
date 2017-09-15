@@ -1,4 +1,5 @@
 import os
+
 import numpy as np
 from np2mojo import MojoSave
 import cv2
@@ -15,10 +16,10 @@ class MojoImg(MojoSave):
 
         self.output_extension     = '.tif'
 
-    def load_tile(self, tile, new_width, new_height, stride):
+    def scale_tile(self, tile, new_width, new_height, stride):
         """ Required method to load tiles
         """
-        super(MojoImg, self).load_tile(tile, new_width, new_height, stride)
+        super(MojoImg, self).scale_tile(tile, new_width, new_height, stride)
         return cv2.resize(tile, ( new_width, new_height ))
 
     def save_tile(self, tile_path, tile, index_x, index_y):
