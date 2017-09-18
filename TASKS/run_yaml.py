@@ -5,7 +5,7 @@ import six
 import os
 
 def log_yaml(i, y):
-    print("{}:\n{}".format(i, yaml.dump(y)))
+    print("{}: {}".format(i, yaml.dump(y)))
 
 def update_dict(parent, child):
     # create new dictionary
@@ -48,16 +48,22 @@ def get_depends(needed):
     ]
 
 def get_exports(task):
+    all_log = []
     # Export all environment variables
     for k in task.get('exports', []):
-        os.environ[k] = task.get(k, '')
+        v = task.get(k, '')
+        os.environ[k] = v 
+        # Log the one variable
+        all_log.append("{}='{}'".format(k,v))
+    # Show all exported variables
+    print(' '.join(all_log))
     return [
         "--export=ALL",
     ]
 
 def get_array(task):
     # Get slurm array parameters
-    n_runs = max(0, task.get('runs', 1) - 1)
+    n_runs = max(0, int(task.get('runs', 1)) - 1)
     n_sync = task.get('sync', n_runs+1)
     return [
         "--array=0-{}%{}".format(n_runs, n_sync),
