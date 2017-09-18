@@ -28,6 +28,10 @@ class MojoSave(object):
         """
         # Return if file exists
         if os.path.exists(self.output_tile_volume_file):
+            msg = """file exists:
+            {}
+            """.format(self.output_tile_volume_file)
+            print(msg)
             return
 
         # Get the full width, depth, height
@@ -67,8 +71,8 @@ class MojoSave(object):
         logs = np.ceil(np.log2(shape)).astype(np.uint64)
         padshape = tuple(2 ** p for p in logs)
         if len(shape) > 2:
-            return (shape[0],)+padshape[1:]
-        return padshape
+            padshape = (shape[0],)+padshape[1:]
+        return np.uint64(padshape)
 
     def run(self,input_image,tile_index_z):
         """ Save file for each z section

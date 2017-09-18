@@ -131,8 +131,8 @@ actions:
     - &mojo_first_2017-09-18
         inputs:
             <<: *2017-09-16_preseg
-            HD_IMG: "{HOME}/mojo/2017_09_17/1_1_1_img.h5"
-            MOJO_PATH: "{HOME}/mojo/2017_09_17/1_1_1/preseg/mojo/"
+            HD_IMG: "{HOME}/mojo/2017_09_16/1_1_1_img.h5"
+            MOJO_PATH: "{HOME}/mojo/2017_09_16/1_1_1/preseg/mojo/"
         tasks:
             - <<: *db4mojo
               needs:
