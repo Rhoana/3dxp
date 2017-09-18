@@ -47,7 +47,7 @@ class MojoSeg(MojoSave):
         """
         super(MojoSeg, self).save_tile(tile_path, tile, index_x, index_y)
 
-        tile_padded = np.zeros( ( self.tile_y, self.tile_x ), np.uint32 )
+        tile_padded = np.zeros( ( self.tile_y, self.tile_x ), np.uint64 )
         tile_padded[ 0:tile.shape[0], 0:tile.shape[1] ] = tile[:,:]
         # Save the hdf5 file
         with h5py.File( tile_path, 'w' ) as hf:
@@ -60,7 +60,7 @@ class MojoSeg(MojoSave):
     def save_xml(self, in_shape):
         """ Set Segmentation values for saving xml
         """
-        super(MojoSeg, self).save_xml(in_shape, 'R32_UInt', 4)
+        super(MojoSeg, self).save_xml(in_shape, 'R64_UInt', 4)
 
     def count_ids(self, image):
         """ Optional method to count segments
@@ -83,7 +83,7 @@ class MojoSeg(MojoSave):
         super(MojoSeg, self).save_db()
 
         ## Sort the tile list so that the same id appears together
-        self.id_tile_list = np.array( sorted( self.id_tile_list ), np.uint32 )
+        self.id_tile_list = np.array( sorted( self.id_tile_list ), np.uint64 )
 
         print 'Writing colorMap file (hdf5)'
 
