@@ -2,6 +2,7 @@ import os
 import glob
 import cv2
 import numpy as np
+from ..common import progress
 from color2gray import color2gray
 
 def opencv2np(path_in, ext_list, out_type, order='', span_pairs=[[],[],[]]):
@@ -26,13 +27,6 @@ def opencv2np(path_in, ext_list, out_type, order='', span_pairs=[[],[],[]]):
     np.ndarray
         Each 2D slice from a single tif file
     """
-    # simple progress indicator
-    def progress(part, whole):
-        if part % (whole / 100) == 1:
-            msg = 'Loaded: {:.2f}%'
-            percent = 100.0 * part / whole
-            print(msg.format(percent))
-
     # read all images in folder
     def read_all(ext):
         search = os.path.join(path_in, '*.'+ext)

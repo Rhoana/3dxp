@@ -1,6 +1,7 @@
 import os
 import glob
 import numpy as np
+from ..common import progress
 import tifffile as tiff
 
 def tif2np(path_in, span_pairs=[[],[],[]]):
@@ -19,13 +20,6 @@ def tif2np(path_in, span_pairs=[[],[],[]]):
     np.ndarray
         Each 2D slice from a single tif file
     """
-    # simple progress indicator
-    def progress(part, whole):
-        if part % (whole / 100) == 1:
-            msg = 'Loaded: {:.2f}%'
-            percent = 100.0 * part / whole
-            print(msg.format(percent))
-
     # read all tifs in tifs folder
     search = os.path.join(path_in, '*.tif')
     stack = sorted(glob.glob(search))

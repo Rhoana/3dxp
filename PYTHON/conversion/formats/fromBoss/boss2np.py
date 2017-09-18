@@ -52,100 +52,69 @@ class Boss2np():
             self.all_off, self.all_path = zip(*pairs)
             self.all_off = np.uint32(self.all_off)
 
-    def scale_images(self, _bounds, _path, _res, _format='png', _list=[]):
-        """ Downsample the tiffs to a png stack
+    def scale_image(self, _z, _res, _spans=[[],[],[]], _list=[]):
+        """ Downsample some tifs to a numpy array
         
         Arguments
         ----------
-        _bounds : numpy.ndarray
-            2x1 array of scaled z_arg bounds
-        _path : str
-            The path to the output h5 file
+        _z: int
+            The current full-resolution section
         _res : (int,int,int)
             Number of times to downsample by _res in Z,Y,X
+        _spans: list
+            3x2 z,y,x start and upper limit (default none)
         """
+        # Get the full spans as default
+        spans = np.c_[[0,0,0], self.slice_shape].astype(np.uint64)
+        # Set the spans if not default
+        for i, pair in enumerate(_spans):
+            if len(pair) == 2:
+                spans[i] = pair
+
         # Downsampling constant
         scale = 2 ** np.uint32(_res)
+        # Scale and expand the spans
+        s_y0, s_y1 = spans[1] // scale[1]
+        s_x0, s_x1 = spans[2] // scale[2]
         # Get the downsampled full / tile shape
-        scale_bounds = _bounds // scale[0] # only for Z
-        scale_slice = self.slice_shape[1:] // scale[1:] # per slice
-        scale_tile = self.tile_shape[1:] // scale[1:] # for 1 file
-        print("""
-Scaled Z Bounds: {}
-Writing {} volume to {}
-""".format(scale_bounds, scale_slice, _path))
-        # Start timing the h5 file writing
-        sec_start = time.time()
-        # Add to the h5 file for the given stack
-        for s_z in range(*scale_bounds):
-            # Scale the z bound
-            z = s_z * scale[0]
-            # Create the slice image
-            a = np.zeros(scale_slice, dtype=self.dtype)
-            # Create the png file path
-            image_path = '{:05d}.{}'.format(s_z, _format)
-            image_path = os.path.join(_path, image_path)
+        scale_slice = (self.slice_shape // scale)[1:] # per slice
+        scale_tile = (self.tile_shape // scale)[1:] # for 1 file
+        msg = "Reading {}:{}, {}:{} from a {} section"
+        print(msg.format( s_y0, s_y1, s_x0, s_x1, scale_slice ))
 
-            if os.path.exists(image_path):
-              print 'was there', image_path
-              continue
+        # Create the slice image
+        a = np.zeros(scale_slice, dtype=self.dtype)
 
-            # Open all tiff files in the stack
-            for f in range(self.n_xy):
-                # Get tiff file path and offset
-                f_id = int(z * self.n_xy + f)
-                f_path = self.all_path[f_id]
-                f_offset = self.all_off[f_id]
-                # Read the file to a numpy volume
-                f_vol = self.imread(f_path)
-                scale_vol = f_vol[::scale[1],::scale[2]]
-                # Get coordinates to fill the tile
-                y0, x0 = scale_tile * f_offset[1:]
-                y1, x1 = [y0, x0] + np.uint32(scale_vol.shape)
-                # Fill the tile with scaled volume
-                a[y0:y1, x0:x1] = scale_vol
+        # Open all tiff files in the stack
+        for f in range(self.n_xy):
+            # Get tiff file path and offset
+            f_id = int(_z * self.n_xy + f)
+            f_path = self.all_path[f_id]
+            f_offset = self.all_off[f_id]
+            # Read the file to a numpy volume
+            f_vol = self.imread(f_path)
+            scale_vol = f_vol[::scale[1],::scale[2]]
+            # Get coordinates to fill the tile
+            y0, x0 = scale_tile * f_offset[1:]
+            y1, x1 = [y0, x0] + np.uint32(scale_vol.shape)
+            # Fill the tile with scaled volume
+            a[y0:y1, x0:x1] = scale_vol
 
-            # Mask data if list
-            if len(_list):
-                # Make empty uint8 array
-                new_a = np.zeros(a.shape, dtype=np.uint8)
-                # Add each list id to array
-                for lin, liv in enumerate(_list):
-                    # Add 1 to list index
-                    list_index = lin + 1
-                    # Add values to array
-                    new_a += np.uint8(a == liv)*list_index
-                # New a becomes a
-                a = new_a
+        # Mask data if list
+        if len(_list):
+            # Make empty uint8 array
+            new_a = np.zeros(a.shape, dtype=np.uint8)
+            # Add each list id to array
+            for lin, liv in enumerate(_list):
+                # Add 1 to list index
+                list_index = lin + 1
+                # Add values to array
+                new_a += np.uint8(a == liv)*list_index
+            # New a becomes a
+            a = new_a
 
-            # Handle each format
-            if _format == 'png':
-                # Write the layer to a color or grayscale png file
-                color_shape = a.shape + (-1,)
-                a = a.view(np.uint8).reshape(color_shape)
-                cv2.imwrite(image_path, a[:,:,:3])
-            elif _format in ['jpeg','jpg']:
-                # Write the layer to a color or grayscale png file
-                color_shape = a.shape + (-1,)
-                a = a.view(np.uint8).reshape(color_shape)
-                # Write to a jpeg with a given image quality
-                jpeg_qual = [int(cv2.IMWRITE_JPEG_QUALITY), 80]
-                cv2.imwrite(image_path, a[:,:,:3], jpeg_qual)
-            else:
-                print 'MAX',a.max()
-                tiff.imsave(image_path, a)
-
-            print("""
-            Wrote layer {} to a {} file
-            """.format(z, _format))
-
-        # Record total writing time
-        sec_diff = time.time() - sec_start
-        # Record total slices written
-        z_count = scale_bounds[1] - scale_bounds[0]
-        print("""
-Wrote {} layers to {} in {} seconds
-""".format(z_count, _path, sec_diff))
+        # Return full section
+        return a[s_y0:s_y1,s_x0:s_x1]
 
     @staticmethod
     def imread(_path):

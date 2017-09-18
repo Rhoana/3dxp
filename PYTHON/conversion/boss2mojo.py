@@ -2,20 +2,22 @@ import os
 import json
 import argparse
 import numpy as np
+from formats.common import progress
 from formats.common import make_path
 from formats.common import format_path
 from formats.common import trial2span
+from formats.common import from_scale_z
+from formats.common import to_scale_spans
 from formats.fromBoss import Boss2np
-from formats.toStack import np2opencv
-from formats.toStack import np2tif
+from formats.toMojo import MojoImg
+from formats.toMojo import MojoSeg
 
 if __name__ == '__main__':
 
     help = {
-        'boss2stack': 'Rescale a grid of tiff files to an image stack',
+        'boss2mojo': 'Rescale a grid of tiff files to a mojo directory',
         'files': 'The path to a json file listing all tiff files',
-        'out': 'The directory to save the output images (./out)',
-        'fmt': 'The output format as jpg, tif, or png (png)',
+        'out': 'The output mojo directory (./mojo)',
         'runs': 'The number of runs for all slices (1)',
         'trial': 'The trial number for this run (0)',
         'z': 'The start and end Z slices to use',
@@ -25,14 +27,13 @@ if __name__ == '__main__':
         'scale': 'Downsampling times in Z,Y,X (2:3:3)',
     }
     # Read the arguments correctly
-    parser = argparse.ArgumentParser(description=help['boss2stack'])
+    parser = argparse.ArgumentParser(description=help['boss2mojo'])
     # Define all the arguments
     parser.add_argument('files', help=help['files'])
     parser.add_argument('--trial','-t', default=0, type=int, help=help['trial'])
     parser.add_argument('--runs', '-r', default=1, type=int, help=help['runs'])
     parser.add_argument('--scale', '-s', default='', help=help['scale'])
-    parser.add_argument('--out', '-o', default='out', help=help['out'])
-    parser.add_argument('--fmt', '-f', default='png', help=help['fmt'])
+    parser.add_argument('--out', '-o', default='mojo', help=help['out'])
     parser.add_argument('-l','--list', default='', help=help['l'])
     parser.add_argument('-z', default='0', help=help['z'])
     parser.add_argument('-y', default='0', help=help['y'])
@@ -58,19 +59,30 @@ if __name__ == '__main__':
     # Create a file manager
     mgmt = Boss2np(in_path)
 
+    # Get full shape
+    full_shape = mgmt.full_shape
+
     # Get the span across Z
-    z_span = fmt_span(args['z'], mgmt.full_shape[0])
-    y_span = fmt_span(args['y'], mgmt.full_shape[1])
-    x_span = fmt_span(args['x'], mgmt.full_shape[2])
+    z_span = fmt_span(args['z'], full_shape[0])
+    y_span = fmt_span(args['y'], full_shape[1])
+    x_span = fmt_span(args['x'], full_shape[2])
     # Get all the spans
-    all_spans = [z_span, y_span, x_span]
+    full_spans = [z_span, y_span, x_span]
+
+    # Get the input resolution
+    resolution = fmt_colon(args['scale'], [2,3,3])
+    # Get the scaled spans and shape
+    scale_spans = to_scale_spans(full_spans, resolution)
+    out_shape = np.squeeze(np.diff(scale_spans))
+    # Get the scaled z_span
+    scale_z_span = scale_spans[0]
+    scale_z0 = scale_z_span[0]
 
     # Get the bounds over input z slices
     trial, runs = args['trial'], args['runs']
-    trial_bounds = trial2span(trial, runs, *z_span)
-   
-    # Get the input resolution
-    resolution = fmt_colon(args['scale'], [2,3,3])
+    trial_bounds = trial2span(trial, runs, *scale_z_span)
+    trial_range = range(*trial_bounds)
+
     #
     # IF A LIST OF IDS IS PASSED
     #
@@ -83,28 +95,26 @@ if __name__ == '__main__':
         else:
             LIST = [int(v) for v in args['list'].split(':')]
 
-    # Get the scaled trial_bounds
-    z_steps = mgmt.scale_bounds(trial_bounds, resolution)
+    # Select the correct conversion
+    mojoMaker = MojoImg(out_path, trial)
+    if np.iinfo(mgmt.dtype).max is not 255:
+        mojoMaker = MojoSeg(out_path, trial)
+
     # Go through the scaled bounds
-    for s_z in z_steps:
-        
+    for i, scale_z in enumerate(trial_range):
+        # Get the full z coordinates
+        full_z = from_scale_z(scale_z, resolution) 
+        # Get the output z coordinates
+        out_z = scale_z - scale_z0
+
         # Write the downsampled volume to a tiff stack
-        a = mgmt.scale_image(s_z, resolution, all_spans, LIST)
+        a = mgmt.scale_image(full_z, resolution, full_spans, LIST)
+        # Write a layer to mojo
+        mojoMaker.run(a, out_z)
 
-        image_fmt = args['fmt']
-        # Create the png file path
-        image_path = '{:05d}.{}'.format(s_z, image_fmt)
-        image_path = os.path.join(out_path, image_path)
+        # Write progress
+        progress(i, len(trial_range), step='Total Saved')
+        print("Wrote z={} as z={}".format(full_z, out_z))
 
-        if os.path.exists(image_path):
-            print('Skipping {}'.format(image_path))
-            continue
-
-        # Handle each format
-        if image_fmt in ['tif','tiff']:
-            np2tif(image_path, a)
-        else:
-            np2opencv(image_path, a)
-
-        msg = "Wrote layer {} to {}"
-        print(msg.format(s_z, image_path))
+    # Write as image or segmentation
+    mojoMaker.save(out_shape)

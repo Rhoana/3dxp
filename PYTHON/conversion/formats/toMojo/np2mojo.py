@@ -20,8 +20,7 @@ class MojoSave(object):
     def save_tile(self, tile_path, tile, index_x, index_y):
         """ Subclass must implement
         """
-        msg = """Saving {}
-        """.format(tile_path)
+        msg = "Saving {}".format(tile_path)
         print(msg)
 
     def save_xml(self, in_shape, dxgi='R8_UNorm', nbytes=1):
@@ -65,7 +64,7 @@ class MojoSave(object):
         pass
     
     def round(self,shape):
-        logs = np.ceil(np.log2(shape)).astype(np.uint32)
+        logs = np.ceil(np.log2(shape)).astype(np.uint64)
         padshape = tuple(2 ** p for p in logs)
         if len(shape) > 2:
             return (shape[0],)+padshape[1:]
