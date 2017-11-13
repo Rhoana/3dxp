@@ -28,7 +28,7 @@ python slyml.py my_config.yaml
 
 ### Wait, but first, write a config
 
-Please copy [the demo](TASKS/demos/many.yaml) to run marching cubes on a segmentation volume in parallel over 64 blocks.
+Please copy [the demo](demos/many.yaml) to run marching cubes on a segmentation volume in parallel over 64 blocks.
 ```
 cp demos/many.yaml my_config.yaml
 ```
@@ -79,11 +79,11 @@ This particular demo runs [a python script](PYTHON/all_stl.py) from [a very gene
 Extensibility: 
 
 - If your data does not need to be parallelized, you can omit `Runs` to schedule a single job
-	- Another example ttempts to mesh the full volume in one [one job](TASKS/demos/one.yaml) if `BLOCK_COUNT` is 1.
-- We can write the examples for [one job](TASKS/demos/one.yaml) and [many jobs](TASKS/demos/many.yaml) with fewer total lines in a [combined file](TASKS/demos/list.yaml).
+	- Another example ttempts to mesh the full volume in one [one job](demos/one.yaml) if `BLOCK_COUNT` is 1.
+- We can write the examples for [one job](demos/one.yaml) and [many jobs](demos/many.yaml) with fewer total lines in a [combined file](demos/list.yaml).
 	- The `slyml.py` script will use any entry (like `Main`) if passed as the second argument.
- 		- So `python slymyl.py /demos/list.yaml` schedules [many jobs](TASKS/demos/list.yaml#L8) (from the `Main` entry.
- 		- And `python slymyl.py /demos/list.yaml one` schedules [one job](TASKS/demos/list.yaml) (with different `Inputs`).
+ 		- So `python slymyl.py /demos/list.yaml` schedules [many jobs](demos/list.yaml#L8) (from the `Main` entry.
+ 		- And `python slymyl.py /demos/list.yaml one` schedules [one job](demos/list.yaml) (with different `Inputs`).
 	- With the power to anchor `&`, refer `*`, and extend `<<:` objects and lists, YAML allows the quick [recombination](http://blog.daemonl.com/2016/02/yaml.html) of tasks and parameters.
 - `Main` can have `Needs` that must be completed before `Main` can start.
 	- The `Needs` can have `Needs`, recursively indefinitely.
@@ -112,4 +112,4 @@ Limitations:
 
 
 #### Custom setup
-Running `slyml.py` requires only [a simple setup](TASKS/harvard/minimal.sh) on the harvard cluster, but in this example we also [set up a virtual enviroment](TASKS/harvard/environment.sh) with the libraries needed to run the python used in 3DXP.
+Running `slyml.py` requires only [a simple setup](harvard/minimal.sh) on the harvard cluster, but in this example we also [set up a virtual enviroment](harvard/environment.sh) with the libraries needed to run the python used in 3DXP.
