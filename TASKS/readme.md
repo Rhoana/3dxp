@@ -41,7 +41,7 @@ In `Default.Constants`,
 - `BLOCK_COUNT: 4` breaks meshes into 64 blocks
 	- Each block is ¼×¼×¼ of the volume
 
-In `main.Inputs`,
+In `Main.Inputs`,
 
 - Set `LIST_IDS` to select segments for stl generation
 
