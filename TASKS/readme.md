@@ -51,7 +51,6 @@ In `main.Inputs`,
 Main:
     python: ./PYTHON/all_stl.py
     args: "-b {BLOCK_COUNT} -l {LIST_IDS} {HD_IDS} {MESH_IDS}"
-    Logs: "./LOGS/{TODAY}"
     Inputs:
         MESH_IDS: "{OUTPUT}/{TODAY}/many"
         LIST_IDS: "1:200:300"
@@ -59,6 +58,7 @@ Default:
     Workdir: "git rev-parse --show-toplevel"
     Slurm: ./SLURM/many.sbatch
     Exports: [python, args]
+    Logs: "./LOGS/{TODAY}"
     Runs: "{BLOCK_COUNT}**3"
     Constants:
         TODAY: "2017-11-11"
