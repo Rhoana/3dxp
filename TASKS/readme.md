@@ -78,18 +78,18 @@ This particular demo runs [a python script](PYTHON/all_stl.py) from [a very gene
 
 Extensibility: 
 
-- `Main` can have `Needs` that must be completed before `Main` can start.
-	- The `Needs` can have `Needs`, recursively indefinitely.
-	- The `Needs` inherit `Constants` and `Inputs` as `Default` values.
-	- Other keywords like `Slum`, `Workdir`, or user-defined keys are not inherrited.
 - If your data does not need to be parallelized, you can omit `Runs` to schedule a single job
-	- [This example](TASKS/demos/one.yaml) attempts to mesh the full volume in one job if `BLOCK_COUNT` is 1.
+	- Another example ttempts to mesh the full volume in one [one job](TASKS/demos/one.yaml) if `BLOCK_COUNT` is 1.
 - We can write the examples for [one job](TASKS/demos/one.yaml) and [many jobs](TASKS/demos/many.yaml) with fewer total lines in a [combined file](TASKS/demos/list.yaml).
 	- The `slyml.py` script will use any entry (like `Main`) if passed as the second argument.
  		- So `python slymyl.py /demos/list.yaml` schedules [many jobs](TASKS/demos/list.yaml#L8) (from the `Main` entry.
  		- And `python slymyl.py /demos/list.yaml one` schedules [one job](TASKS/demos/list.yaml) (with different `Inputs`).
 	- With the power to anchor `&`, refer `*`, and extend `<<:` objects and lists, YAML allows the quick recombination of tasks and parameters.
 		- Here is a [great tutorial](http://blog.daemonl.com/2016/02/yaml.html) if you can already read JSON.
+- `Main` can have `Needs` that must be completed before `Main` can start.
+	- The `Needs` can have `Needs`, recursively indefinitely.
+	- The `Needs` inherit `Constants` and `Inputs` as `Default` values.
+	- Other keywords like `Slum`, `Workdir`, or user-defined keys are not inherrited.
 - The `slyml.py` script takes optional keywords that can be set and unset directly in the yaml file.
 	- `python slyml.py -q` or `Default.Quiet` (only log errors or warnings)
 	- `python slyml.py -d` or `Default.Debug` (show parsed commands without really scheduling jobs)
