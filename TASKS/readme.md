@@ -45,15 +45,29 @@ In `main.Inputs`,
 
 - Set `LIST_IDS` to select segments for stl generation
 
-#### This config runs like this bash script
+### Example my_config.yaml
 
-When you run from your config:
-
+```yaml
+Main:
+    python: ./PYTHON/all_stl.py
+    args: "-b {BLOCK_COUNT} -l {LIST_IDS} {HD_IDS} {MESH_IDS}"
+    Logs: "./LOGS/{TODAY}"
+    Inputs:
+        MESH_IDS: "{OUTPUT}/{TODAY}/many"
+        LIST_IDS: "1:200:300"
+Default:
+    Workdir: "git rev-parse --show-toplevel"
+    Slurm: ./SLURM/many.sbatch
+    Exports: [python, args]
+    Runs: "{BLOCK_COUNT}**3"
+    Constants:
+        TODAY: "2017-11-11"
+        HD_IDS: ~/data/ids.h5
+        OUTPUT: ~/data
+        BLOCK_COUNT: 4
 ```
-python slyml.py my_config.yaml
-```
 
-it works like this:
+Running `python slyml.py my_config.yaml` acts like this:
 
 ```
 Workdir=`git rev-parse --show-toplevel`
@@ -64,11 +78,11 @@ Logs=~/LOGS/$TODAY
 BLOCK_COUNT=4
 Runs=$((BLOCK_COUNT**3))
 
-MESH_ROOT=$OUTPUT/$TODAY/many
+MESH_IDS=$OUTPUT/$TODAY/many
 LIST_IDS="1:200:300"
 
 export python="$repo/PYTHON/all_stl.py"
-export args="-b $BLOCK_COUNT -l $LIST_IDS $HD_IDS $MESH_ROOT"
+export args="-b $BLOCK_COUNT -l $LIST_IDS $HD_IDS $MESH_IDS"
 sbatch --job-name=A --output=$Logs/A/array_%a.out --error=~$Logs/A/array_%a.err --workdir=$Workdir --export=ALL --array=0-$((Runs-1)) $Workdir/SLURM/many.sbatch
 ```
 

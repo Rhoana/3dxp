@@ -1,9 +1,9 @@
 Main:
     python: ./PYTHON/all_stl.py
-    args: "-b 2 -l {LIST_IDS} {HD_IDS} {MESH_ROOT}"
+    args: "-b {BLOCK_COUNT} -l {LIST_IDS} {HD_IDS} {MESH_IDS}"
     Logs: "./LOGS/{TODAY}"
     Inputs:
-        MESH_ROOT: "{OUTPUT}/{TODAY}/one"
+        MESH_IDS: "{OUTPUT}/{TODAY}/one"
         LIST_IDS: "1:2:3"
 Default:
     Workdir: "git rev-parse --show-toplevel"
@@ -13,3 +13,4 @@ Default:
         HD_IDS: /n/coxfs01/data/test_sample/segmentation.h5
         OUTPUT: /n/coxfs01/thejohnhoffer/R0/render
         TODAY: "2017-11-11"
+        BLOCK_COUNT: 1

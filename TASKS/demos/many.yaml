@@ -1,9 +1,9 @@
 Main:
     python: ./PYTHON/all_stl.py
-    args: "-b {BLOCK_COUNT} -l {LIST_IDS} {HD_IDS} {MESH_ROOT}"
+    args: "-b {BLOCK_COUNT} -l {LIST_IDS} {HD_IDS} {MESH_IDS}"
     Logs: "./LOGS/{TODAY}"
     Inputs:
-        MESH_ROOT: "{OUTPUT}/{TODAY}/many"
+        MESH_IDS: "{OUTPUT}/{TODAY}/many"
         LIST_IDS: "1:2:3"
 Default:
     Workdir: "git rev-parse --show-toplevel"
