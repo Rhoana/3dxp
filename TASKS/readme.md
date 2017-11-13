@@ -104,7 +104,7 @@ This particular demo runs [a python script](/PYTHON/all_stl.py) from [a very gen
 - `Main` can have `Needs` that must be completed before `Main` can start.
 	- The `Needs` can have `Needs`, recursively indefinitely.
 	- The `Needs` inherit `Constants` and `Inputs` as `Default` values.
-	- Other keywords like `Slum`, `Workdir`, or user-defined keys are not inherrited.
+	- Other keywords like `Slum`, `Workdir`, or user-defined keys are not inherited.
 - The `slyml.py` script takes optional keywords that can be set and unset directly in the yaml file.
 	- `python slyml.py -q` or `Default.Quiet` (only log errors or warnings)
 	- `python slyml.py -d` or `Default.Debug` (only log, without scheduling jobs)
@@ -129,4 +129,4 @@ This particular demo runs [a python script](/PYTHON/all_stl.py) from [a very gen
 
 
 #### Custom setup
-Running `slyml.py` requires only [a simple setup](harvard/minimal.sh) on the harvard cluster, but in this example we also [set up a virtual enviroment](harvard/environment.sh) with the libraries needed to run the python used in 3DXP.
+Running `slyml.py` requires only [a simple setup](harvard/minimal.sh) on the harvard cluster, but in this example we also [set up a virtual environment](harvard/environment.sh) with the libraries needed to run the python used in 3DXP.
