@@ -90,7 +90,7 @@ sbatch --job-name=A --output=$Logs/A/array_%a.out --error=~$Logs/A/array_%a.err 
 
 #### But this is so much more
 
-This particular demo runs [a python script](PYTHON/all_stl.py) from [a very general sbatch file](SLURM/many.sbatch). The YAML file sent to `slyml.py` can parallelize any command by exporting environment variables to any `sbatch` file. The general format of `my_config.yaml` is given by `python slyml.py -h`!
+This particular demo runs [a python script](/PYTHON/all_stl.py) from [a very general sbatch file](/SLURM/many.sbatch). The YAML file sent to `slyml.py` can parallelize any command by exporting environment variables to any `sbatch` file. The general format of `my_config.yaml` is given by `python slyml.py -h`!
 
 #### Extensibility
 
