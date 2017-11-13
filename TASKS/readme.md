@@ -70,20 +70,22 @@ Default:
 Running `python slyml.py my_config.yaml` acts like this:
 
 ```bash
-Workdir=`git rev-parse --show-toplevel`
 TODAY="2017-11-11"
-OUTPUT=~/data
 HD_IDS=~/data/ids.h5
-Logs=~/LOGS/$TODAY
+OUTPUT=~/data
 BLOCK_COUNT=4
+
+Workdir=`git rev-parse --show-toplevel`
+Slurm=$Workdir/SLURM/many.sbatch
+Logs=~/LOGS/$TODAY
 Runs=$((BLOCK_COUNT**3))
 
 MESH_IDS=$OUTPUT/$TODAY/many
 LIST_IDS="1:200:300"
 
-export python="$repo/PYTHON/all_stl.py"
+export python="$Workdir/PYTHON/all_stl.py"
 export args="-b $BLOCK_COUNT -l $LIST_IDS $HD_IDS $MESH_IDS"
-sbatch --job-name=A --output=$Logs/A/array_%a.out --error=~$Logs/A/array_%a.err --workdir=$Workdir --export=ALL --array=0-$((Runs-1)) $Workdir/SLURM/many.sbatch
+sbatch --job-name=A --output=$Logs/A/array_%a.out --error=~$Logs/A/array_%a.err --workdir=$Workdir --export=ALL --array=0-$((Runs-1)) $Slurm
 ```
 
 #### But this is so much more
