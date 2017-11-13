@@ -111,8 +111,8 @@ This particular demo runs [a python script](/PYTHON/all_stl.py) from [a very gen
 - Any key understands absolute paths (`/`), or paths relative to the `Workdir` (`.`) or home directory (`~`).
 	- The `Workdir` can be an existing directory or a valid shell command. No other keyword works like this.
 - The `Exports` key lists all keys to export to the `Slurm` file
-- The `Flags` key lists all keys to use as flags to sbatch
-- The `Evals` key lists all keys to evaluate as Python
+- The `Flags` key lists all keys to use as flags to `sbatch`
+- The `Evals` key lists all keys to evaluate as `python`
 	- By default, this is `[Runs, Sync]`
 
 #### Limitations
