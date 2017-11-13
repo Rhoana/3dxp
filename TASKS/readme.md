@@ -35,15 +35,15 @@ cp demos/many.yaml my_config.yaml
 
 In `Default.Constants`,
 
-- Set `OUTPUT` to wherever you want your meshes
-- Set `HD_IDS` to the path to your input HDF5 file
-- Set `TODAY` to the current date (for logging)
-- `BLOCK_COUNT: 4` breaks meshes into 64 blocks
-	- Each block is ¼×¼×¼ of the volume
+- Set `OUTPUT` to wherever you want your meshes.
+- Set `HD_IDS` to the path to your input HDF5 file.
+- Set `TODAY` to the current date (for logging).
+- `BLOCK_COUNT: 4` breaks meshes into 64 blocks.
+	- Each block is ¼×¼×¼ of the volume.
 
 In `Main.Inputs`,
 
-- Set `LIST_IDS` to select segments for stl generation
+- Set `LIST_IDS` to select segments for stl generation.
 
 ### Example my_config.yaml
 
@@ -106,25 +106,24 @@ This particular demo runs [a python script](/PYTHON/all_stl.py) from [a very gen
 	- The `Needs` inherit `Constants` and `Inputs` as `Default` values.
 	- Other keywords like `Slum`, `Workdir`, or user-defined keys are not inherited.
 - The `slyml.py` script takes optional keywords that can be set and unset directly in the yaml file.
-	- `python slyml.py -q` or `Default.Quiet` (only log errors or warnings)
-	- `python slyml.py -d` or `Default.Debug` (only log, without scheduling jobs)
+	- `python slyml.py -q` or `Default.Quiet` (only log errors or warnings).
+	- `python slyml.py -d` or `Default.Debug` (only log, without scheduling jobs).
 - Any key understands absolute paths (`/`), or paths relative to the `Workdir` (`.`) or home directory (`~`).
 	- The `Workdir` can be an existing directory or a valid shell command. No other keyword works like this.
-- The `Exports` key lists all keys to export to the `Slurm` file
-- The `Flags` key lists all keys to use as flags to `sbatch`
-- The `Evals` key lists all keys to evaluate as `python`
-	- By default, this is `[Runs, Sync]`
+- The `Exports` key lists all keys to export to the `Slurm` file.
+- The `Flags` key lists all keys to use as flags to `sbatch`.
+- The `Evals` key lists all keys to evaluate as `python`.
+	- By default, this is `[Runs, Sync]`.
 
 #### Limitations
 
 - The `Constants` and `Inputs` can format any value except `Workdir`, `Exports`, `Evals`, or `Flags`.
-	- But only the `Constants` can format the values for the `Inputs`
-	- The `Constants` cannot be formatted and must be literal
+	- But only the `Constants` can format the values for the `Inputs`.
+	- The `Constants` cannot be formatted and must be literal.
 - To run jobs, set `Slurm` to the path of a valid `sbatch` file.
 	- Based on `Runs`, the `sbatch` file can use `$SLURM_ARRAY_TASK_ID` and `SLURM_ARRAY_TASK_COUNT`
 - Internally, `slymyl.py` sets `sbatch` arguments `job-name`, `workdir`, `array`, `dependency`, `output`, `error`, and `export`.
-	- The `Flags` key selects any other `sbatch` flags required.
-	- Any flags must be given as keys and values for each task.
+	- The `Flags` key selects any other `sbatch` flags from the keys of each task.
 - Only Unix-like relative paths are expanded to absolute paths
 
 
