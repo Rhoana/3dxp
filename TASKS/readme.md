@@ -88,7 +88,7 @@ export args="-b $BLOCK_COUNT -l $LIST_IDS $HD_IDS $MESH_IDS"
 sbatch --job-name=A --output=$Logs/A/array_%a.out --error=~$Logs/A/array_%a.err --workdir=$Workdir --export=ALL --array=0-$((Runs-1)) $Slurm
 ```
 
-#### But this is so much more
+### But this is so much more
 
 This particular demo runs [a python script](/PYTHON/all_stl.py) from [a very general sbatch file](/SLURM/many.sbatch). The YAML file sent to `slyml.py` can parallelize any command by exporting environment variables to any `sbatch` file. The general format of `my_config.yaml` is given by `python slyml.py -h`!
 
