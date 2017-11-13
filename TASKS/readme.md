@@ -121,6 +121,7 @@ This particular demo runs [a python script](/PYTHON/all_stl.py) from [a very gen
 	- But only the `Constants` can format the values for the `Inputs`
 	- The `Constants` cannot be formatted and must be literal
 - To run jobs, `Slurm` to the path of a valid `sbatch` file.
+	- Based on `Runs`, the `sbatch` file can use `$SLURM_ARRAY_TASK_ID` and `SLURM_ARRAY_TASK_COUNT`
 - Internally, `slymyl.py` sets `sbatch` arguments `job-name`, `workdir`, `array`, `dependency`, `output`, `error`, and `export`.
 	- The `Flags` key selects any other `sbatch` flags required.
 	- Any flags must be given as keys and values for each task.
