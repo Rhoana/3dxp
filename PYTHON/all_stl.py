@@ -39,14 +39,16 @@ def start(_argv):
         print args['list']
 
         # Load ids and make stl files
-        if os.path.exists(DATA):
+        if not os.path.exists(DATA):
+            print 'Empty: {}'.format(DATA)
+            return
 
-            with h5py.File(DATA, 'r') as df:
-                vol = df[df.keys()[0]]
-                full_shape = np.array(vol.shape)
-                # Get number of blocks and block size
-                block_size = np.uint32(np.ceil(full_shape/BLOCK))
-                ntiles = np.uint32([BLOCK]*3)
+        with h5py.File(DATA, 'r') as df:
+            vol = df[df.keys()[0]]
+            full_shape = np.array(vol.shape)
+            # Get number of blocks and block size
+            block_size = np.uint32(np.ceil(full_shape/BLOCK))
+            ntiles = np.uint32([BLOCK]*3)
 
 
         # Get all possible tile offsets

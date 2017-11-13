@@ -1,29 +1,3 @@
-#####
-# Set the Main action
-#####
-Main:
-    Needs:
-        - <<: *demo_boss2hd_img
-        - <<: *demo_boss2stl_deep_ids
-    Inputs:
-        <<: *2017-08-23_88_88_14
-        LIST_IDS: "8058:65569:108795:133643:148205:148212:148290:224507:254041:317464:317936:565500:578177:594654:668606:759235:777238:784094:1275045:1478835:1820356:1899586:2002668:2086353:2481694:2600500:2684461:2850421:3012993:3099811:3215176:3233995:3523143:3855984:3869230:3976087:4348656:4390989:4859663:6217732:8237210:9039078"
-        STACK_IMG: "{OUTPUT}/img_stack"
-        STACK_IDS: "{OUTPUT}/ids_stack"
-        HD_IMG: "{OUTPUT}/img_stack.h5"
-        HD_IDS: "{OUTPUT}/ids_stack.h5"
-        MESH_ROOT: "{OUTPUT}/mesh"
-        IMG_FMT: "jpg"
-        IDS_FMT: "tif"
-        SCALE: "2:3:3"
-        N_IDS: "10"
-    Constants:
-        AUGUST_100: "/n/coxfs01/leek/results/2017-08-23_100um_cube"
-        OUTPUT: "/n/coxfs01/thejohnhoffer/mesh/2017-11-09"
-        HOME: "/n/coxfs01/thejohnhoffer"
-        LEEK: "/n/coxfs01/leek"
-        PYTHON: "/n/coxfs01/thejohnhoffer/2017/3dxp/PYTHON/"
-        SLURM: "/n/coxfs01/thejohnhoffer/2017/3dxp/SLURM/"
 slurms:
     - &one_sbatch
         Slurm: "{SLURM}/one.sbatch"
@@ -124,7 +98,34 @@ actions:
     #####
     # Option B: Mesh from Listed IDs in Boss files
     #####
-    - &demo_boss2stl_big_ids
-        <<: *hd2stl_big_ids
+    - &demo_boss2stl_list_ids
+        <<: *hd2stl_list_ids
         Needs:
             - <<: *demo_boss2hd_ids
+#####
+# Set the Main action
+#####
+Main:
+    Needs:
+        - <<: *demo_boss2hd_img
+        - <<: *demo_boss2stl_list_ids
+    Inputs:
+        <<: *2017-08-23_88_88_14
+        LIST_IDS: "8058:65569:108795:133643:148205:148212:148290:224507:254041:317464:317936:565500:578177:594654:668606:759235:777238:784094:1275045:1478835:1820356:1899586:2002668:2086353:2481694:2600500:2684461:2850421:3012993:3099811:3215176:3233995:3523143:3855984:3869230:3976087:4348656:4390989:4859663:6217732:8237210:9039078"
+        STACK_IMG: "{OUTPUT}/img_stack"
+        STACK_IDS: "{OUTPUT}/ids_stack"
+        HD_IMG: "{OUTPUT}/img_stack.h5"
+        HD_IDS: "{OUTPUT}/ids_stack.h5"
+        MESH_ROOT: "{OUTPUT}/mesh"
+        IMG_FMT: "jpg"
+        IDS_FMT: "tif"
+        SCALE: "2:3:3"
+        N_IDS: "10"
+    Constants:
+        AUGUST_100: "/n/coxfs01/leek/results/2017-08-23_100um_cube"
+        OUTPUT: "/n/coxfs01/thejohnhoffer/mesh/2017-11-09"
+        HOME: "/n/coxfs01/thejohnhoffer"
+        LEEK: "/n/coxfs01/leek"
+        PYTHON: "/n/coxfs01/thejohnhoffer/2017/3dxp/PYTHON/"
+        SLURM: "/n/coxfs01/thejohnhoffer/2017/3dxp/SLURM/"
+

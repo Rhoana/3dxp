@@ -268,29 +268,23 @@ def run_slurm(slurm_job):
     str_digits = (s for s in str_out if s.isdigit())
     return next(str_digits, 'ERROR')
 
-def default_joiner(_default, __default, quiet=False):
-    def join_default(k, v):
+def log_default(k, v, default, quiet=False):
+    if not quiet:
         add_default = {}
-        add_msg = 'Default {} added'.format(k)
-        # Actually add all new defaults
-        _default[k] = join_no_overwrite(v, __default[k])
-        # Handle fancy update logging
         for ki,vi in v.items():
-            if ki not in __default[k]:
+            if ki not in default[k]:
                 add_default[ki] = vi
                 continue
-            if _default[k] != __default[k]:
+            if default[k][ki] != v[ki]:
                 msg = 'Default {}[{}]'.format(k, ki)
-                details = {
-                    'from': __default[k],
-                    'to': _deafult[k],
-                }
-                log_yaml(msg, details, quiet)
-                continue
+                log_yaml(msg, {
+                    'from': default[k][ki],
+                    'to': new_v[ki],
+                })
         # Log added
         if len(add_default):
+            add_msg = 'Default {} added'.format(k)
             log_yaml(add_msg, add_default, quiet)
-    return join_default
 
 def tree_box(task_id, sym='', quiet=False):
     tree_len = len(task_id.split('/'))
@@ -344,10 +338,14 @@ def run_task(__default, __task, __i=0):
     # Cute nested task line
     start_tree(task_id, quiet)
 
-    # Update defaults for needs
-    join_default = default_joiner(_default, __default, quiet)
-    join_default('Constants', _constants)
-    join_default('Inputs', _inputs)
+    # Take unset constants and inputs from default
+    _constants = join_no_overwrite(_constants, _default['Constants'])
+    _inputs = join_no_overwrite(_inputs, _default['Inputs'])
+    log_default('Constants', _constants, _default, quiet)
+    log_default('Inputs', _inputs, _default, quiet)
+    # Update default for dependencies
+    _default['Constants'] = _constants
+    _default['Inputs'] = _inputs
 
     ####
     # Constants join and format inputs,

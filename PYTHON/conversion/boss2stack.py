@@ -65,12 +65,14 @@ if __name__ == '__main__':
     # Get all the spans
     all_spans = [z_span, y_span, x_span]
 
-    # Get the bounds over input z slices
-    trial, runs = args['trial'], args['runs']
-    trial_bounds = trial2span(trial, runs, *z_span)
-   
     # Get the input resolution
     resolution = fmt_colon(args['scale'], [2,3,3])
+    z_scale = 2**resolution[0]
+
+    # Get the bounds over input z slices
+    trial, runs = args['trial'], args['runs']
+    z_bound_full = trial2span(trial, runs, *z_span)
+    z_bound_scale = z_bound_full // z_scale
     #
     # IF A LIST OF IDS IS PASSED
     #
@@ -83,17 +85,16 @@ if __name__ == '__main__':
         else:
             LIST = [int(v) for v in args['list'].split(':')]
 
-    # Get the scaled trial_bounds
-    z_steps = mgmt.scale_bounds(trial_bounds, resolution)
     # Go through the scaled bounds
-    for s_z in z_steps:
-        
+    for scale_z in range(*z_bound_scale):
+        # Slice at full resolution 
+        full_z = scale_z * z_scale
         # Write the downsampled volume to a tiff stack
-        a = mgmt.scale_image(s_z, resolution, all_spans, LIST)
+        a = mgmt.scale_image(full_z, resolution, all_spans, LIST)
 
         image_fmt = args['fmt']
         # Create the png file path
-        image_path = '{:05d}.{}'.format(s_z, image_fmt)
+        image_path = '{:05d}.{}'.format(scale_z, image_fmt)
         image_path = os.path.join(out_path, image_path)
 
         if os.path.exists(image_path):
@@ -107,4 +108,4 @@ if __name__ == '__main__':
             np2opencv(image_path, a)
 
         msg = "Wrote layer {} to {}"
-        print(msg.format(s_z, image_path))
+        print(msg.format(scale_z, image_path))
