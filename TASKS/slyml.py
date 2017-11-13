@@ -313,9 +313,9 @@ def run_task(__default, __task, __i=0):
     _default = copy.deepcopy(__default)
     _task = join_no_overwrite(__task, __default)
     # Get special values from task
-    _needs = _task.get('Needs', [])
-    _inputs = _task.get('Inputs', {})
-    _constants = _task.get('Constants', {})
+    _needs = _task.get('Needs') or []
+    _inputs = _task.get('Inputs') or {}
+    _constants = _task.get('Constants') or {}
     # Define internal ID for this task
     _default['Slyml:ID'] +=  (ID_START + __i,)
     _task['Slyml:ID'] = _default['Slyml:ID']
@@ -338,6 +338,7 @@ def run_task(__default, __task, __i=0):
     # Cute nested task line
     start_tree(task_id, quiet)
 
+    print _constants == None
     # Take unset constants and inputs from default
     _constants = join_no_overwrite(_constants, _default['Constants'])
     _inputs = join_no_overwrite(_inputs, _default['Inputs'])
