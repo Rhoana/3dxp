@@ -89,7 +89,7 @@ Extensibility:
  		- So `python slymyl.py /demos/list.yaml` schedules [many jobs](TASKS/demos/list.yaml#L8) (from the `Main` entry.
  		- And `python slymyl.py /demos/list.yaml one` schedules [one job](TASKS/demos/list.yaml) (with different `Inputs`).
 	- With the power to anchor `&`, refer `*`, and extend `<<:` objects and lists, YAML allows the quick recombination of tasks and parameters.
-	- Here is a [great tutorial](http://blog.daemonl.com/2016/02/yaml.html) if you can already read JSON.
+		- Here is a [great tutorial](http://blog.daemonl.com/2016/02/yaml.html) if you can already read JSON.
 - The `slyml.py` script takes optional keywords that can be set and unset directly in the yaml file.
 	- `python slyml.py -q` or `Default.Quiet` (only log errors or warnings)
 	- `python slyml.py -d` or `Default.Debug` (show parsed commands without really scheduling jobs)
