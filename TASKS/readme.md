@@ -69,7 +69,7 @@ Default:
 
 Running `python slyml.py my_config.yaml` acts like this:
 
-```
+```bash
 Workdir=`git rev-parse --show-toplevel`
 TODAY="2017-11-11"
 OUTPUT=~/data
