@@ -55,16 +55,16 @@ Main:
         MESH_IDS: "{OUTPUT}/{TODAY}/many"
         LIST_IDS: "1:200:300"
 Default:
-    Workdir: "git rev-parse --show-toplevel"
-    Slurm: ./SLURM/many.sbatch
-    Exports: [python, args]
-    Logs: "./LOGS/{TODAY}"
-    Runs: "{BLOCK_COUNT}**3"
     Constants:
         TODAY: "2017-11-11"
         HD_IDS: ~/data/ids.h5
         OUTPUT: ~/data
         BLOCK_COUNT: 4
+    Workdir: "git rev-parse --show-toplevel"
+    Slurm: ./SLURM/many.sbatch
+    Exports: [python, args]
+    Logs: "./LOGS/{TODAY}"
+    Runs: "{BLOCK_COUNT}**3"
 ```
 
 Running `python slyml.py my_config.yaml` acts like this:
