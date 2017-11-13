@@ -60,14 +60,18 @@ def change_root(task, default):
         # Allow workdir as path literal
         if os.path.isdir(workdir):
             return workdir
+        # Try bash script
         try:
             return run_subprocess(workdir.split(' ')).rstrip()
         except subprocess.CalledProcessError as e:
-            log_yaml('Workdir error', e.output.rstrip())
+            fmt_args = [workdir, 'Workdir', 'script syntax']
+            raise EvalError(e.output.rstrip(), *fmt_args)
         except IOError as e:
+            fmt_args = [workdir, 'Workdir', 'script paths']
             log_yaml('IOError', e.strerror)
         except Exception as e:
-            log_yaml('Unknown Error', e)
+            fmt_args = [workdir, 'Workdir', 'script']
+            raise EvalError(repr(e), *fmt_args)
     # Default to original
     return root
 
@@ -106,19 +110,23 @@ def join_format_overwrite(root, parent, child):
     #####
     return result
 
+def eval_kv(k,v):
+    if isinstance(v, six.string_types):
+        try:
+            return eval(v)
+        except SyntaxError as e:
+            fmt_args = [v, k, 'syntax']
+            raise EvalError(e.args[0], *fmt_args)
+        except Exception as e:
+            fmt_args = [v, k, 'expression']
+            raise EvalError(repr(e), *fmt_args)
+    return v
+
 def eval_keys(task, evals=[]):
     for k in evals:
         v = task.get(k, 0)
-        if isinstance(v, six.string_types):
-            try:
-                task[k] = eval(v)
-            except SyntaxError as e:
-                fmt_args = [v, k, 'syntax']
-                raise EvalError(e.args[0], *fmt_args)
-            except Exception as e:
-                fmt_args = [v, k, 'expression']
-                raise EvalError(repr(e), *fmt_args)
-
+        task[k] = eval_kv(k,v)
+        
 def is_true(key, task, default={}):
     prior = str(default.get(key, ''))
     quiet_bool = str(task.get(key, prior))
@@ -314,14 +322,21 @@ def run_task(__default, __task, __i=0):
     _needs = _task.get('Needs', [])
     _inputs = _task.get('Inputs', {})
     _constants = _task.get('Constants', {})
-    # Set Special keys from default
+    # Define internal ID for this task
     _default['Slyml:ID'] +=  (ID_START + __i,)
     _task['Slyml:ID'] = _default['Slyml:ID']
-    _task['Workdir'] = change_root(_task, _default)
+    task_id = uniq_id(_task)
+    # Try to get working directory
+    try:
+        _task['Workdir'] = change_root(_task, _default)
+    except EvalError as e:
+        log_error(task_id, e)
+        end_tree(task_id)
+        return ['ERROR']
+    # Set Special keys from default
     _task['Debug'] = is_debug(_task, _default)
     _task['Quiet'] = is_quiet(_task, _default)
     # Unpack special variables
-    task_id = uniq_id(_task)
     root = _task['Workdir']
     debug = _task['Debug']
     quiet = _task['Quiet']
@@ -462,12 +477,14 @@ if __name__ == "__main__":
         mem: 9000
         ...
      Default:
-        x: "{A}/default.py"
-        Exports: [x, ... ]
-        Workdir: "echo /any/script/or/path"
-        Slurm: "{B}/caller.sbatch"
-        Logs: "{B}/called_log"
-        Evals: [Runs, Sync]
+        Evals: [Runs, Sync ]
+        Exports: []
+        Flags: []
+        Constants: {}
+        Inputs: {}
+        Workdir: "/root/path/to/this/YAML.yaml"
+        Logs: "./LOGS"
+        Slurm: ""
         Quiet: false
         Debug: false
         Runs: "{N}"
@@ -532,11 +549,11 @@ if __name__ == "__main__":
         'Evals': ['Runs','Sync'],
         'Quiet': parsed.quiet,
         'Debug': parsed.debug,
+        'Logs': './LOGS',
         'Constants': {},
         'Inputs': {},
         'Exports': [],
         'Flags': [],
-        'Logs': 'LOGS',
         'Sync': 1,
         'Runs': 1,
     }

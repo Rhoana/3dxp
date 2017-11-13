@@ -1,0 +1,8 @@
+Main:
+    Exports: [args]
+    Slurm: ../slurm/one.sbatch
+    args: hello {WHOM}
+    Inputs:
+        WHOM: world
+Default:
+    Workdir: "undefined"
