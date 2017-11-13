@@ -107,7 +107,7 @@ This particular demo runs [a python script](/PYTHON/all_stl.py) from [a very gen
 	- Other keywords like `Slum`, `Workdir`, or user-defined keys are not inherrited.
 - The `slyml.py` script takes optional keywords that can be set and unset directly in the yaml file.
 	- `python slyml.py -q` or `Default.Quiet` (only log errors or warnings)
-	- `python slyml.py -d` or `Default.Debug` (show parsed commands without really scheduling jobs)
+	- `python slyml.py -d` or `Default.Debug` (only log, without scheduling jobs)
 - Any key understands absolute paths (`/`), or paths relative to the `Workdir` (`.`) or home directory (`~`).
 	- The `Workdir` can be an existing directory or a valid shell command. No other keyword works like this.
 - The `Exports` key lists all keys to export to the `Slurm` file
