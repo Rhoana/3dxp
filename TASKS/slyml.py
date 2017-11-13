@@ -338,7 +338,6 @@ def run_task(__default, __task, __i=0):
     # Cute nested task line
     start_tree(task_id, quiet)
 
-    print _constants == None
     # Take unset constants and inputs from default
     _constants = join_no_overwrite(_constants, _default['Constants'])
     _inputs = join_no_overwrite(_inputs, _default['Inputs'])

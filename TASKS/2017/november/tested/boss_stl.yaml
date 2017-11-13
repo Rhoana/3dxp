@@ -1,7 +1,7 @@
-Main:
+Main: &main
     python: ./PYTHON/all_stl.py
     args: "-b 1 -l {LIST_IDS} {OUT}/id.h5 {OUT}"
-    Constants:
+    Constants: &mainConstants
         SCALE: "5:2:2"
         TODAY: "2017_11_11"
         NAME: Auguest_100/5_2_2
@@ -10,7 +10,6 @@ Main:
     Needs:
         - python: ./PYTHON/conversion/tif2hd.py
           args: "{OUT}/tif {OUT}/id.h5"
-          Constants:
           Needs:
             - python: ./PYTHON/conversion/boss2stack.py
               args: "{BOSS_IDS} -o {OUT}/tif -s {SCALE} -f tif"
@@ -18,6 +17,20 @@ Main:
               Runs: 30
               Inputs:
                   BOSS_IDS: "{BOSS}/boss/final-segmentation/boss.json"
+last-step:
+    <<: *main
+    Needs: []
+last-step-top-100:
+    <<: *main
+    Constants:
+        <<: *mainConstants
+        NAME: Auguest_100/5_2_2/top100
+    Needs:
+        - python: ./PYTHON/all_counts.py
+          args: "-b 1 -d 0 {OUT}/id.h5 {OUT}"
+        - python: ./PYTHON/all_counts.py
+          args: "-b 1 -d 1 {OUT}/id.h5 {OUT}"
+    args: "-b 1 -d 1 -n 100 {OUT}/id.h5 {OUT}"
 Default:
     Constants:
         OUT_ROOT: /n/coxfs01/thejohnhoffer/R0/render
