@@ -1,0 +1,25 @@
+Main:
+    Inputs:
+        A: 1
+    Needs:
+        - Needs: []
+        - Inputs: 
+            B: 2
+          Needs:
+            - Needs: []
+            - Needs: []
+            - Inputs:
+                C: 3
+              Needs:
+                - args: "It's easy as {A} {B} {C}"
+                - args: "As simple as {DO} {RE} {MI}"
+                - args: "A B C, {A} {B} {C}"
+        - Needs: []
+Default:
+    Slurm: ../slurm/one.sbatch
+    args: "hello world"
+    Exports: [args]
+    Constants:
+        DO: do
+        RE: re
+        MI: mi

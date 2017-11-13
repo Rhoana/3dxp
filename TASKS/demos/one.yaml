@@ -1,0 +1,15 @@
+Main:
+    python: ./PYTHON/all_stl.py
+    args: "-b 2 -l {LIST_IDS} {HD_IDS} {MESH_ROOT}"
+    Logs: "./LOGS/{TODAY}"
+    Inputs:
+        MESH_ROOT: "{OUTPUT}/{TODAY}/one"
+        LIST_IDS: "1:2:3"
+Default:
+    Workdir: "git rev-parse --show-toplevel"
+    Slurm: ./SLURM/one.sbatch
+    Exports: [python, args]
+    Constants:
+        HD_IDS: /n/coxfs01/data/test_sample/segmentation.h5
+        OUTPUT: /n/coxfs01/thejohnhoffer/R0/render
+        TODAY: "2017-11-11"

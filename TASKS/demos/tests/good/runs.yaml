@@ -1,0 +1,8 @@
+Main:
+    Exports: [args]
+    Slurm: ../slurm/many.sbatch
+    Runs: "{N}**2"
+    args: hello {WHOM}
+    Inputs:
+        WHOM: world
+        N: 4

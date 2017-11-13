@@ -1,0 +1,9 @@
+Error: could not find environment: 3DXP
+  File "<string>", line 1
+    "print
+         ^
+SyntaxError: EOL while scanning string literal
+
+real	0m0.026s
+user	0m0.012s
+sys	0m0.002s

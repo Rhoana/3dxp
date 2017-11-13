@@ -1,0 +1,130 @@
+#####
+# Set the Main action
+#####
+Main:
+    Needs:
+        - <<: *demo_boss2hd_img
+        - <<: *demo_boss2stl_deep_ids
+    Inputs:
+        <<: *2017-08-23_88_88_14
+        LIST_IDS: "8058:65569:108795:133643:148205:148212:148290:224507:254041:317464:317936:565500:578177:594654:668606:759235:777238:784094:1275045:1478835:1820356:1899586:2002668:2086353:2481694:2600500:2684461:2850421:3012993:3099811:3215176:3233995:3523143:3855984:3869230:3976087:4348656:4390989:4859663:6217732:8237210:9039078"
+        STACK_IMG: "{OUTPUT}/img_stack"
+        STACK_IDS: "{OUTPUT}/ids_stack"
+        HD_IMG: "{OUTPUT}/img_stack.h5"
+        HD_IDS: "{OUTPUT}/ids_stack.h5"
+        MESH_ROOT: "{OUTPUT}/mesh"
+        IMG_FMT: "jpg"
+        IDS_FMT: "tif"
+        SCALE: "2:3:3"
+        N_IDS: "10"
+    Constants:
+        AUGUST_100: "/n/coxfs01/leek/results/2017-08-23_100um_cube"
+        OUTPUT: "/n/coxfs01/thejohnhoffer/mesh/2017-11-09"
+        HOME: "/n/coxfs01/thejohnhoffer"
+        LEEK: "/n/coxfs01/leek"
+        PYTHON: "/n/coxfs01/thejohnhoffer/2017/3dxp/PYTHON/"
+        SLURM: "/n/coxfs01/thejohnhoffer/2017/3dxp/SLURM/"
+slurms:
+    - &one_sbatch
+        Slurm: "{SLURM}/one.sbatch"
+        Exports: ["python", "args"]
+    - &many_sbatch
+        Slurm: "{SLURM}/many.sbatch"
+        Exports: ["python", "args"]
+inputs:
+    - &2017-08-23_88_88_14
+        LOG: "{HOME}/logging/2017-08-23"
+        IMG_OFFSET: "-z 14:1728 -y 0:12288 -x 0:12288"
+        BOSS_IMG: "{LEEK}/dropbox/25k_201610_dataset_em.json"
+        BOSS_IDS: "{AUGUST_100}/88_88_14/boss/final-segmentation/boss.json"
+        BLOCK_COUNT: 4
+        BlOCK_RUNS: 64
+        Z_RUNS: 30
+tasks:
+    #####
+    # Step 0: boss json to image stack
+    #####
+    - &boss2stack_img
+        <<: *many_sbatch
+        python: "{PYTHON}/conversion/boss2stack.py"
+        args: "{BOSS_IMG} -o {STACK_IMG} -s {SCALE} -f {IMG_FMT} {IMG_OFFSET}"
+        Logs: "{LOG}/boss2stack_img"
+        Runs: "{Z_RUNS}"
+    - &boss2stack_ids
+        <<: *many_sbatch
+        python: "{PYTHON}/conversion/boss2stack.py"
+        args: "{BOSS_IDS} -o {STACK_IDS} -s {SCALE} -f {IDS_FMT}"
+        Logs: "{LOG}/boss2stack_ids"
+        Runs: "{Z_RUNS}"
+    #####
+    # Step 1: image stack to HDF5
+    #####
+    - &png2hd_img
+        <<: *one_sbatch
+        python: "{PYTHON}/conversion/png2hd.py"
+        args: "{STACK_IMG} {HD_IMG}"
+        Logs: "{LOG}/png2hd_img"
+    - &tif2hd_ids
+        <<: *one_sbatch
+        python: "{PYTHON}/conversion/tif2hd.py"
+        args: "{STACK_IDS} {HD_IDS} -c"
+        Logs: "{LOG}/tif2hd_ids"
+    #####
+    # Step 2A: (Optional) count top ids
+    #####
+    - &hd2big_ids
+        <<: *one_sbatch
+        python: "{PYTHON}/all_counts.py"
+        args: "-b {BLOCK_COUNT} -d 1 {HD_IDS} {MESH_OUT}"
+        Logs: "{LOG}/hd2big_ids"
+    - &hd2deep_ids
+        <<: *one_sbatch
+        python: "{PYTHON}/all_counts.py"
+        args: "-b {BLOCK_COUNT} -d 1 {HD_IDS} {MESH_OUT}"
+        Logs: "{LOG}/hd2deep_ids"
+    #####
+    # Step 2: HDF5 to STL
+    #####
+    - &hd2stl_deep_ids
+        <<: *many_sbatch
+        python: "{PYTHON}/all_stl.py"
+        args: "-b {BLOCK_COUNT} -d 1 -n {N_IDS} {HD_IDS} {MESH_OUT}"
+        Logs: "{LOG}/hd2stl_deep_ids"
+        Runs: "{BLOCK_RUNS}"
+    - &hd2stl_list_ids
+        <<: *many_sbatch
+        python: "{PYTHON}/all_stl.py"
+        args: "-b {BLOCK_COUNT} -l {LIST_IDS} {HD_IDS} {MESH_OUT}"
+        Logs: "{LOG}/hd2stl_list_ids"
+        Runs: "{BLOCK_RUNS}"
+#####
+# Actions run tasks on inputs
+#####
+actions:
+    #####
+    # HDF5 from Boss files
+    #####
+    - &demo_boss2hd_img
+        <<: *png2hd_img
+        Needs:
+            - <<: *boss2stack_img
+    - &demo_boss2hd_ids
+        <<: *tif2hd_ids
+        Needs:
+            - <<: *boss2stack_ids
+    #####
+    # Option A: Mesh from Deepest IDs in Boss files
+    #####
+    - &demo_boss2stl_deep_ids
+        <<: *hd2stl_deep_ids
+        Needs:
+            - <<: *demo_boss2hd_ids
+            - <<: *hd2deep_ids
+            - <<: *hd2big_ids
+    #####
+    # Option B: Mesh from Listed IDs in Boss files
+    #####
+    - &demo_boss2stl_big_ids
+        <<: *hd2stl_big_ids
+        Needs:
+            - <<: *demo_boss2hd_ids

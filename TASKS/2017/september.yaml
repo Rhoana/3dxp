@@ -1,10 +1,10 @@
 slurms:
     - &one_sbatch
-        slurm: "{SLURM}/one.sbatch"
-        exports: ["python", "args"]
+        Slurm: "{SLURM}/one.sbatch"
+        Exports: ["python", "args"]
     - &many_sbatch
-        slurm: "{SLURM}/many.sbatch"
-        exports: ["python", "args"]
+        Slurm: "{SLURM}/many.sbatch"
+        Exports: ["python", "args"]
 inputs:
     - &2017-08-28_soma
         LOG: "{HOME}/logging/2017-08-28"
@@ -22,134 +22,134 @@ inputs:
         PNG_IMG: "/n/coxfs01/data/JWR15_09_16_17_initial_preseg/grayscale_maps_cropped"
         HD_IDS: "/n/coxfs01/data/JWR15_09_16_17_initial_preseg/JWR-48K-1000-wshed.h5"
         Z_RUNS: 10
-tasks:
+needs:
     - &boss2mojo_img
         <<: *many_sbatch
         python: "{PYTHON}/conversion/boss2mojo.py"
         args: "{BOSS_IMG} -o {MOJO_PATH} -s {SCALE} {IMG_OFFSET}"
-        logs: "{LOG}/boss2mojo_img"
-        runs: "{Z_RUNS}"
+        Logs: "{LOG}/boss2mojo_img"
+        Runs: "{Z_RUNS}"
     - &boss2mojo_ids
         <<: *many_sbatch
         python: "{PYTHON}/conversion/boss2mojo.py"
         args: "{BOSS_IDS} -o {MOJO_PATH} -s {SCALE}"
-        logs: "{LOG}/boss2mojo_ids"
-        runs: "{Z_RUNS}"
+        Logs: "{LOG}/boss2mojo_ids"
+        Runs: "{Z_RUNS}"
     - &boss2stack_img
         <<: *many_sbatch
         python: "{PYTHON}/conversion/boss2stack.py"
         args: "{BOSS_IMG} -o {JPG_IMG} -s {SCALE} -f {IMG_FMT} {IMG_OFFSET}"
-        logs: "{LOG}/boss2stack_img"
-        runs: "{Z_RUNS}"
+        Logs: "{LOG}/boss2stack_img"
+        Runs: "{Z_RUNS}"
     - &boss2stack_ids
         <<: *many_sbatch
         python: "{PYTHON}/conversion/boss2stack.py"
         args: "{BOSS_IDS} -o {PNG_IDS} -s {SCALE} -f {IDS_FMT}"
-        logs: "{LOG}/boss2stack_ids"
-        runs: "{Z_RUNS}"
+        Logs: "{LOG}/boss2stack_ids"
+        Runs: "{Z_RUNS}"
     - &hd2mojo_img
         <<: *many_sbatch
         python: "{PYTHON}/conversion/hd2mojo.py"
         args: "{HD_IMG} {MOJO_PATH}"
-        logs: "{LOG}/hd2mojo_img"
-        runs: "{Z_RUNS}"
+        Logs: "{LOG}/hd2mojo_img"
+        Runs: "{Z_RUNS}"
     - &hd2mojo_ids
         <<: *many_sbatch
         python: "{PYTHON}/conversion/hd2mojo.py"
         args: "{HD_IDS} {MOJO_PATH}"
-        logs: "{LOG}/hd2mojo_ids"
-        runs: "{Z_RUNS}"
+        Logs: "{LOG}/hd2mojo_ids"
+        Runs: "{Z_RUNS}"
     - &db4mojo
         <<: *one_sbatch
         python: "{PYTHON}/conversion/db4mojo.py"
-        logs: "{LOG}/db4mojo"
+        Logs: "{LOG}/db4mojo"
         args: "{MOJO_PATH}"
     - &sides_z
         <<: *one_sbatch
         python: "{PYTHON}/scripts/sides.py"
         args: "{PNG_PATH} {HD_IMG} {HD_IDS} -i {ID} -o 0.25 -a z -z 5"
-        logs: "{LOG}/z5_id-{ID}"
+        Logs: "{LOG}/z5_id-{ID}"
     - &png2hd_img
         <<: *one_sbatch
         python: "{PYTHON}/conversion/png2hd.py"
         args: "{PNG_IMG} {HD_IMG}"
-        logs: "{LOG}/png2hd_img"
+        Logs: "{LOG}/png2hd_img"
 #####
 # Actions run tasks on inputs
 #####
 actions:
     - &slice_2017-09-07
-        inputs:
+        Inputs:
             <<: *2017-08-28_soma
             PNG_PATH: "{HOME}/R0/render/2017-08-28/"
             ID: 58146
-        tasks:
+        Needs:
             - <<: *sides_z
     - &mojo_2017-09-14
-        inputs:
+        Inputs:
             <<: *2017-08-28_soma
             MOJO_PATH: "{HOME}/mojo/2017_08_28/full/mojo"
-        tasks:
+        Needs:
             - <<: *db4mojo
-              needs:
+              Needs:
                 - <<: *hd2mojo_ids
             - <<: *hd2mojo_img
     - &stack_2017-09-14
-        inputs:
+        Inputs:
             <<: *2017-08-23_88_88_14
             JPG_IMG: "{HOME}/render/2017_08_23/all/4_16_16/jpg_img/88_88_14/"
             PNG_IDS: "{HOME}/render/2017_08_23/all/4_16_16/png_ids/88_88_14/"
             SCALE: "2:3:3"
             IMG_FMT: "jpg"
             IDS_FMT: "tif"
-        tasks:
+        Needs:
             - <<: *boss2stack_ids
             - <<: *boss2stack_img
     - &mojo_2017-09-15
-        inputs:
+        Inputs:
             <<: *2017-08-23_88_88_14
             MOJO_PATH: "{HOME}/mojo/2017_08_23/4_16_16/88_88_14/mojo/"
             SCALE: "2:3:3"
-        tasks:
+        Needs:
             - <<: *db4mojo
-              needs:
+              Needs:
                 - <<: *boss2mojo_ids
             - <<: *boss2mojo_img
     - &mojo_big_2017-09-15
         <<: *mojo_2017-09-15
-        inputs:
+        Inputs:
             <<: *2017-08-23_88_88_14
             MOJO_PATH: "{HOME}/mojo/2017_08_23/1_4_4/88_88_14/mojo/"
             SCALE: "0:2:2"
     - &mojo_small_2017-09-15
         <<: *mojo_2017-09-15
-        inputs:
+        Inputs:
             <<: *2017-08-23_88_88_14
             MOJO_PATH: "{HOME}/mojo/2017_08_23/32_16_16/88_88_14/mojo/"
             SCALE: "5:4:4"
             Z_RUNS: "5"
     - &mojo_first_2017-09-18
-        inputs:
+        Inputs:
             <<: *2017-09-16_preseg
             HD_IMG: "{HOME}/mojo/2017_09_16/1_1_1_img.h5"
             MOJO_PATH: "{HOME}/mojo/2017_09_16/1_1_1/preseg/mojo/"
-        tasks:
+        Needs:
             - <<: *db4mojo
-              needs:
+              Needs:
                 - <<: *hd2mojo_ids
             - <<: *hd2mojo_img
-              needs:
+              Needs:
                 - <<: *png2hd_img
         
 #####
 # Set the main action
 #####
-main:
+Main:
     <<: *mojo_first_2017-09-18
-    constants:
+    Constants:
         AUGUST_100: "/n/coxfs01/leek/results/2017-08-23_100um_cube"
+        PYTHON: "/n/coxfs01/thejohnhoffer/2017/3dxp/PYTHON"
+        SLURM: "/n/coxfs01/thejohnhoffer/2017/3dxp/SLURM"
         HOME: "/n/coxfs01/thejohnhoffer"
         COX_DATA: "/n/coxfs01/data"
         LEEK: "/n/coxfs01/leek"
-        PYTHON: "../PYTHON"
-        SLURM: "../SLURM"

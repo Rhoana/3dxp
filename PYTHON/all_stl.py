@@ -120,12 +120,12 @@ def parseArgv(argv):
     parser.add_argument('out', help=help['out'])
     parser.add_argument('-d','--deep',type=int, default=0, help=help['d'])
     parser.add_argument('-t','--trial', type=int, default=0, help=help['t'])
-    parser.add_argument('-b','--block', type=int, default=10, help=help['b'])
+    parser.add_argument('-b','--block', type=int, default=1, help=help['b'])
     parser.add_argument('-n','--number', type=int, default=1, help=help['n'])
     parser.add_argument('-l','--list', default='', help=help['l'])
 
-    # attain all arguments
-    return vars(parser.parse_args())
+    # Handle unknown arguments (for compatibility)
+    return vars(parser.parse_known_args()[0])
 
 def main(*_args, **_flags):
     return start(toArgv(*_args, **_flags))

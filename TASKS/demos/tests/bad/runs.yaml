@@ -1,0 +1,14 @@
+Main: &Main
+    Exports: [args]
+    Slurm: ../slurm/many.sbatch
+    Runs: "str({N})**2"
+    args: hello {WHOM}
+    Inputs:
+        WHOM: world
+        N: 4
+syntax:
+    <<: *Main
+    Runs: "{N}***2"
+number:
+    <<: *Main
+    Runs: "'N'+str({N})"

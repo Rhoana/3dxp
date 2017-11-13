@@ -1,0 +1,6 @@
+- Main:
+    Exports: [args]
+    slurm: ../slurm/one.sbatch
+    args: hello {WHOM}
+    Inputs:
+        WHOM: world

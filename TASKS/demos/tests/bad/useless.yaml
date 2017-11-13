@@ -1,0 +1,13 @@
+Main:
+    Inputs:
+        WHOM: world
+    Needs:
+        - Needs: []
+        - Needs:
+            - Needs: []
+            - Needs:
+                - Needs: []
+                - Needs: []
+Default:
+    args: hello {WHOM}
+    Exports: [args]

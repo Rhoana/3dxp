@@ -1,0 +1,6 @@
+Main:
+    Inputs:
+        WHO: world
+Default:
+    args: hello {WHOM}
+    Exports: [args]
