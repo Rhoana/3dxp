@@ -96,9 +96,9 @@ This particular demo runs [a python script](/PYTHON/all_stl.py) from [a very gen
 
 - If your data does not need to be parallelized, you can omit `Runs` to schedule a single job [one job](demos/one.yaml)
 	- Set `BLOCK_COUNT` to 1 to handle the whole volume.
-- We can write the examples for [one job](demos/one.yaml) and [many jobs](demos/many.yaml) with fewer total lines in a [combined file](demos/list.yaml).
+- We can write the examples for [one job](demos/one.yaml) and [many jobs](demos/many.yaml) with fewer lines in a [combined file](demos/list.yaml).
 	- The `slyml.py` script will use any entry (like `Main`) if passed as the second argument.
- 		- So `python slymyl.py /demos/list.yaml` schedules [many jobs](demos/list.yaml#L8) (from the `Main` entry.
+ 		- So `python slymyl.py /demos/list.yaml` schedules [many jobs](demos/list.yaml#L8) (from the `Main` entry).
  		- And `python slymyl.py /demos/list.yaml one` schedules [one job](demos/list.yaml) (with different `Inputs`).
 	- With the power to anchor `&`, refer `*`, and extend `<<:` objects and lists, YAML allows the quick [recombination](http://blog.daemonl.com/2016/02/yaml.html) of tasks and parameters.
 - `Main` can have `Needs` that must be completed before `Main` can start.
