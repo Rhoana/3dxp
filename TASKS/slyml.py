@@ -475,6 +475,7 @@ if __name__ == "__main__":
         x: "{A}/overwrites_default.py"
         y: "--new option"
         mem: 9000
+        Runs: "{N}"
         ...
      Default:
         Evals: [Runs, Sync ]
@@ -487,8 +488,8 @@ if __name__ == "__main__":
         Slurm: ""
         Quiet: false
         Debug: false
-        Runs: "{N}"
-        Sync: "{N}"
+        Runs: "1"
+        Sync: "1"
         """,
     }
     # Most important
@@ -554,7 +555,6 @@ if __name__ == "__main__":
         'Inputs': {},
         'Exports': [],
         'Flags': [],
-        'Sync': 1,
         'Runs': 1,
     }
     default = join_no_overwrite(empty_entry, _empty)
