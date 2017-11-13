@@ -5,13 +5,13 @@ Main:
         MESH_IDS: "{OUTPUT}/{TODAY}/many"
         LIST_IDS: "1:2:3"
 Default:
-    Workdir: "git rev-parse --show-toplevel"
-    Slurm: ./SLURM/many.sbatch
-    Exports: [python, args]
-    Logs: "./LOGS/{TODAY}"
-    Runs: "{BLOCK_COUNT}**3"
     Constants:
         HD_IDS: /n/coxfs01/data/test_sample/segmentation.h5
         OUTPUT: /n/coxfs01/thejohnhoffer/R0/render
         TODAY: "2017-11-11"
         BLOCK_COUNT: 4
+    Workdir: "git rev-parse --show-toplevel"
+    Slurm: ./SLURM/many.sbatch
+    Exports: [python, args]
+    Logs: "./LOGS/{TODAY}"
+    Runs: "{BLOCK_COUNT}**3"

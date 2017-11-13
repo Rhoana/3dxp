@@ -13,6 +13,6 @@ if [ -z "$VENV_INFO" ]; then
     conda create -n $VENV_NAME --clone="$PYTHON_HOME"
     source activate $VENV_NAME
     conda remove scikit-image
-    pip install -r $REPO/requirements.txt
+    pip install -r $REPO/PYTHON/requirements.txt
     source deactivate
 fi

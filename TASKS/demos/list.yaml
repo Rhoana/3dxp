@@ -13,12 +13,12 @@ Main:
         LIST_IDS: "1:2:3"
         BLOCK_COUNT: 4
 Default:
-    Workdir: "git rev-parse --show-toplevel"
-    Slurm: ./SLURM/one.sbatch
-    Exports: [python, args]
-    Logs: "./LOGS/{TODAY}"
     Constants:
         HD_IDS: /n/coxfs01/data/test_sample/segmentation.h5
         OUTPUT: /n/coxfs01/thejohnhoffer/R0/render
         TODAY: "2017-11-11"
         BLOCK_COUNT: 1
+    Workdir: "git rev-parse --show-toplevel"
+    Slurm: ./SLURM/one.sbatch
+    Exports: [python, args]
+    Logs: "./LOGS/{TODAY}"
