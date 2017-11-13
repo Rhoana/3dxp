@@ -14,7 +14,7 @@ cd 3dxp/TASKS
 
 Get set:
 
-_(for python on Harvard Odyssey Cluster)_[Note](#custom-setup)
+_(for python on Harvard Odyssey Cluster)[†](#custom-setup)_
 
 ```
 . harvard/environment.sh
@@ -85,7 +85,7 @@ Extensibility:
 - If your data does not need to be parallelized, you can omit `Runs` to schedule a single job
 	- [This example](TASKS/demos/one.yaml) attempts to mesh the full volume in one job if `BLOCK_COUNT` is 1.
 - We can write the examples for [one job](TASKS/demos/one.yaml) and [many jobs](TASKS/demos/many.yaml) with fewer total lines in a [combined file](TASKS/demos/list.yaml).
-        - The `slyml.py` script will use any entry (like `Main`) if passed as the second argument.
+	- The `slyml.py` script will use any entry (like `Main`) if passed as the second argument.
  		- So `python slymyl.py /demos/list.yaml` schedules [many jobs](TASKS/demos/list.yaml#L8) (from the `Main` entry.
  		- And `python slymyl.py /demos/list.yaml one` schedules [one job](TASKS/demos/list.yaml) (with different `Inputs`).
 	- With the power to anchor `&`, refer `*`, and extend `<<:` objects and lists, YAML allows the quick recombination of tasks and parameters.
