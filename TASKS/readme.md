@@ -28,7 +28,7 @@ python slyml.py my_config.yaml
 
 ### Wait, but first, write a config
 
-Please copy [the demo](demos/many.yaml) to run marching cubes on a segmentation volume in parallel over 64 blocks.
+Run marching cubes over [many jobs](demos/many.yaml) on a hdf5 volume handled in parallel in blocks.
 ```
 cp demos/many.yaml my_config.yaml
 ```
@@ -76,10 +76,10 @@ sbatch --job-name=A --output=$Logs/A/array_%a.out --error=~$Logs/A/array_%a.err 
 
 This particular demo runs [a python script](PYTHON/all_stl.py) from [a very general sbatch file](SLURM/many.sbatch). The YAML file sent to `slyml.py` can parallelize any command by exporting environment variables to any `sbatch` file. The general format of `my_config.yaml` is given by `python slyml.py -h`!
 
-Extensibility: 
+#### Extensibility
 
-- If your data does not need to be parallelized, you can omit `Runs` to schedule a single job
-	- Another example ttempts to mesh the full volume in one [one job](demos/one.yaml) if `BLOCK_COUNT` is 1.
+- If your data does not need to be parallelized, you can omit `Runs` to schedule a single job [one job](demos/one.yaml)
+	- Set `BLOCK_COUNT` to 1 to handle the whole volume.
 - We can write the examples for [one job](demos/one.yaml) and [many jobs](demos/many.yaml) with fewer total lines in a [combined file](demos/list.yaml).
 	- The `slyml.py` script will use any entry (like `Main`) if passed as the second argument.
  		- So `python slymyl.py /demos/list.yaml` schedules [many jobs](demos/list.yaml#L8) (from the `Main` entry.
@@ -99,7 +99,7 @@ Extensibility:
 - The `Evals` key lists all keys to evaluate as Python
 	- By default, this is `[Runs, Sync]`
 
-Limitations:
+#### Limitations
 
 - The `Constants` and `Inputs` can format any value except `Workdir`, `Exports`, `Evals`, or `Flags`.
 	- But only the `Constants` can format the values for the `Inputs`
