@@ -77,7 +77,7 @@ BLOCK_COUNT=4
 
 Workdir=`git rev-parse --show-toplevel`
 Slurm=$Workdir/SLURM/many.sbatch
-Logs=~/LOGS/$TODAY
+Logs=$Workdir/LOGS/$TODAY
 Runs=$((BLOCK_COUNT**3))
 
 MESH_IDS=$OUTPUT/$TODAY/many
@@ -94,7 +94,7 @@ This particular demo runs [a python script](/PYTHON/all_stl.py) from [a very gen
 
 #### Extensibility
 
-- If your data does not need to be parallelized, you can omit `Runs` to schedule a single job [one job](demos/one.yaml)
+- If your data does not need to be parallelized, you can omit `Runs` to schedule [one job](demos/one.yaml)
 	- Set `BLOCK_COUNT` to 1 to handle the whole volume.
 - We can write the examples for [one job](demos/one.yaml) and [many jobs](demos/many.yaml) with fewer lines in a [combined file](demos/list.yaml).
 	- The `slyml.py` script will use any entry (like `Main`) if passed as the second argument.
