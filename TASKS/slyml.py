@@ -279,7 +279,7 @@ def log_default(k, v, default, quiet=False):
                 msg = 'Default {}[{}]'.format(k, ki)
                 log_yaml(msg, {
                     'from': default[k][ki],
-                    'to': new_v[ki],
+                    'to': v[ki],
                 })
         # Log added
         if len(add_default):
