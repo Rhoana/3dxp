@@ -138,6 +138,9 @@ def is_debug(task, default={}):
 def is_quiet(task, default={}):
     return is_true('Quiet', task, default)
 
+def is_bash(task, default={}):
+    return is_true('Bash', task, default)
+
 def uniq_id(task):
     task_ids = task.get('Slyml:ID', [])
     log_ids = map("{:X}".format, task_ids)
@@ -200,6 +203,12 @@ def get_array(task):
     runs = max(0, output['Runs'] - 1)
     return "0-{}%{}".format(runs, sync)
 
+def get_bash(task):
+    output = ['bash']
+    get_exports(task)
+    output += [task.get("Slurm", '')]
+    return filter(bool, output)
+
 def get_slurm(task, dependency):
     output = ['sbatch']
     try:
@@ -238,6 +247,29 @@ def get_slurm(task, dependency):
     output += [task.get("Slurm", '')]
     return filter(bool, output)
 
+def run_bash(bash_job, task):
+    try:
+        submitted = run_subprocess(bash_job)
+        log_yaml('ran bash', job_meta(task), is_quiet(task))
+    except subprocess.CalledProcessError as e:
+        log_yaml('bash error', e.output.rstrip())
+    bash_log = get_logs(task, 'out').replace('%a','0')
+    with open(bash_log, 'w') as f:
+        f.write(submitted)
+    return ['BASH']
+
+def run_slurm(slurm_job):
+    submitted = 'ERROR'
+    # Submit and collect the job id
+    try:
+        submitted = run_subprocess(slurm_job)
+    except subprocess.CalledProcessError as e:
+        log_yaml('slurm error', e.output.rstrip())
+    # Return the id number identifying the job
+    str_out = submitted.rstrip().split(' ')
+    str_digits = (s for s in str_out if s.isdigit())
+    return next(str_digits, 'ERROR')
+
 def job_meta(task, full_slurm=''):
     if not task.get("Slurm"):
         if task.get("Needs"):
@@ -255,18 +287,6 @@ def job_meta(task, full_slurm=''):
             "All exports": exports,
         }
     return exports
-
-def run_slurm(slurm_job):
-    submitted = 'ERROR'
-    # Submit and collect the job id
-    try:
-        submitted = run_subprocess(slurm_job)
-    except subprocess.CalledProcessError as e:
-        log_yaml('slurm error', e.output.rstrip())
-    # Return the id number identifying the job
-    str_out = submitted.rstrip().split(' ')
-    str_digits = (s for s in str_out if s.isdigit())
-    return next(str_digits, 'ERROR')
 
 def log_default(k, v, default, quiet=False):
     if not quiet:
@@ -330,6 +350,7 @@ def run_task(__default, __task, __i=0):
     # Set Special keys from default
     _task['Debug'] = is_debug(_task, _default)
     _task['Quiet'] = is_quiet(_task, _default)
+    _task['Bash'] = is_bash(_task, _default)
     # Unpack special variables
     root = _task['Workdir']
     debug = _task['Debug']
@@ -393,12 +414,16 @@ def run_task(__default, __task, __i=0):
             need_jobs += n_job
 
     # If the task has errors in needs
-    if 'ERROR' in need_jobs:
+    if any(not j.isdigit() for j in need_jobs):
         log_yaml('Not trying', overview)
         end_tree(task_id, quiet)
         return ['ERROR']
     # If task has slurm command
     if 'Slurm' in task:
+        if is_bash(task):
+            bash_job = get_bash(task)
+            end_tree(task_id, quiet)
+            return run_bash(bash_job, task)
         # Write the slurm command
         dependency = get_dependency(need_jobs, debug)
         try:
@@ -447,6 +472,7 @@ if __name__ == "__main__":
         'quiet': 'Show output only if error',
         'debug': 'Do not actually schedule jobs',
         'entry': 'Parse entry in yaml (default Main)',
+        'bash': 'Use bash, no arrays or dependencies',
         'yaml': """A path to YAML file with optional keys...
     Main:
         Constants:
@@ -513,6 +539,12 @@ if __name__ == "__main__":
         "action": 'store_true',
         "default": False,
     })
+    parser.add_argument('-b', '--bash', **{
+        "help": help['bash'],
+        "action": 'store_true',
+        "default": False,
+    })
+    parsed = parser.parse_args()
     parsed = parser.parse_args()
     # Expand the input yaml path
     yaml_path = format_path(parsed.yaml)
@@ -548,6 +580,7 @@ if __name__ == "__main__":
         'Evals': ['Runs','Sync'],
         'Quiet': parsed.quiet,
         'Debug': parsed.debug,
+        'Bash': parsed.bash,
         'Logs': './LOGS',
         'Constants': {},
         'Inputs': {},
@@ -567,12 +600,16 @@ if __name__ == "__main__":
         ['NO BUGS', 'Parsed'],
     ]
     what_happened = happenings[is_debug(default)]
+    # If any job went to bash
+    if 'BASH' in need_jobs:
+        what_happened[1] = 'Ran (or Scheduled)'    
+    # Typical success message
     msg = """
 *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
  {0}: {1} all jobs.
 ______________________________
         """.format(*what_happened)
-
+    # If any job could not happen
     if 'ERROR' in need_jobs:
         msg = """
 |||||||||||||||||||||||||||||||
