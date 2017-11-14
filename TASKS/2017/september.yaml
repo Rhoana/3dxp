@@ -146,6 +146,9 @@ actions:
 #####
 Main:
     <<: *mojo_first_2017-09-18
+small:
+    <<: *mojo_small_2017-09-15
+Default:
     Constants:
         AUGUST_100: "/n/coxfs01/leek/results/2017-08-23_100um_cube"
         PYTHON: "/n/coxfs01/thejohnhoffer/2017/3dxp/PYTHON"
