@@ -8,6 +8,8 @@ from scripts import deepest
 from scripts import highest
 from scripts import widest
 
+from conversion import common
+
 def start(_argv):
 
     args = parseArgv(_argv)
@@ -20,6 +22,8 @@ def start(_argv):
     SAVE_DEEP = args['deep']
     ROOTOUT = realpath(args['out'])
     DATA = realpath(args['ids'])
+    # Make sure output path exists
+    common.make_path(ROOTOUT)
     # Count most spread or deep ids 
     if SAVE_DEEP == 1:
         deepest(DATA, sharepath(ROOTOUT,'deep_count.txt'), BLOCK)
