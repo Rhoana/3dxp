@@ -6,6 +6,6 @@ Main: &main
         WHOM: world
 git:
     <<: *main
-    workdir: "git rev-parse --show-toplevel"
+    Workdir: "git rev-parse --show-toplevel"
 Default:
     Workdir: "pwd"
