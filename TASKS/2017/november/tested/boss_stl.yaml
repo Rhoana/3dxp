@@ -1,13 +1,13 @@
 Main: &main
     python: ./PYTHON/all_stl.py
-    args: "-b 1 -l {LIST_IDS} {OUT}/id.h5 {OUT}"
-    Constants: &mainConstants
-        SCALE: "5:2:2"
+    args: "-b 1 -l {LIST_IDS} {OUT}/id.h5 {OUT_NEW}"
+    Constants: &main-constants
+        SCALE: "2:5:5"
+        LIST_IDS: "1:2:3"
         TODAY: "2017_11_11"
-        NAME: Auguest_100/5_2_2
+        NAME: Auguest_100/2_5_5
         BOSS: /n/coxfs01/leek/results/2017-08-23_100um_cube/88_88_14
-        LIST_IDS: "8058:65569:108795:133643:148205:148212:148290:224507:254041:317464:317936:565500:578177:594654:668606:759235:777238:784094:1275045:1478835:1820356:1899586:2002668:2086353:2481694:2600500:2684461:2850421:3012993:3099811:3215176:3233995:3523143:3855984:3869230:3976087:4348656:4390989:4859663:6217732:8237210:9039078"
-    Needs:
+    Needs: &main-needs
         - python: ./PYTHON/conversion/tif2hd.py
           args: "{OUT}/tif {OUT}/id.h5"
           Needs:
@@ -17,26 +17,35 @@ Main: &main
               Runs: 30
               Inputs:
                   BOSS_IDS: "{BOSS}/boss/final-segmentation/boss.json"
-last-step:
+bfly_1soma:
     <<: *main
     Needs: []
-last-step-top-100:
-    <<: *main
     Constants:
-        <<: *mainConstants
-        NAME: Auguest_100/5_2_2/top100
+        <<: *main-constants
+        NEW: 'bfly_1soma'
+        LIST_IDS: "58146"
+# Failed Experiment 2017-11-15
+# all_counts.py useless if only one block!!
+fail-top5:
+    <<: *main
+    args: "-b 1 -d 1 -n 5 {OUT}/id.h5 {OUT_NEW}"
+    Constants:
+        <<: *main-constants
+        NEW: 'top5'
     Needs:
         - python: ./PYTHON/all_counts.py
-          args: "-b 1 -d 0 {OUT}/id.h5 {OUT}"
+          args: "-b 1 -d 0 {OUT}/id.h5 {OUT_NEW}"
         - python: ./PYTHON/all_counts.py
-          args: "-b 1 -d 1 {OUT}/id.h5 {OUT}"
-    args: "-b 1 -d 1 -n 100 {OUT}/id.h5 {OUT}"
+          args: "-b 1 -d 1 {OUT}/id.h5 {OUT_NEW}"
+    args: "-b 1 -d 1 -n 5 {OUT}/id.h5 {OUT_NEW}"
 Default:
     Constants:
         OUT_ROOT: /n/coxfs01/thejohnhoffer/R0/render
+        NEW: 'main'
     Inputs:
         OUT: "{OUT_ROOT}/{TODAY}/{NAME}"
+        OUT_NEW: "{OUT_ROOT}/{TODAY}/{NAME}/{NEW}"
     Workdir: "git rev-parse --show-toplevel"
-    Logs: "./LOGS/{TODAY}/{NAME}"
+    Logs: "./LOGS/{TODAY}/{NAME}/{NEW}"
     Slurm: ./SLURM/one.sbatch
     Exports: [python, args]
