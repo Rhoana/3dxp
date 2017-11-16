@@ -413,8 +413,9 @@ def run_task(__default, __task, __i=0):
             need_names += n_name
             need_jobs += n_job
 
-    # If the task has errors in needs
-    if any(not j.isdigit() for j in need_jobs):
+    NO_GO = ['ERROR', 'BASH']
+    # If needs did not reliably complete
+    if any(j in NO_GO for j in need_jobs):
         log_yaml('Not trying', overview)
         end_tree(task_id, quiet)
         return ['ERROR']
