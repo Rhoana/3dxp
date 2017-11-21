@@ -1,8 +1,10 @@
 # vim
 *.swp
 .*.swo
+
+# Examples
+*.blend
 LOGS/
-BLENDER/
 
 # Python
 *.pyc

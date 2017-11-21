@@ -1,103 +1,33 @@
 import bpy
 import sys
-import shutil
 import argparse
-from operator import mul
-from functools import reduce
+from mathutils import Vector
 import fnmatch
 import glob
 import re
 import os
 
-class MeshPathError(TypeError):
-    pass
+DIRNAME = os.path.dirname(__file__)
+if not DIRNAME in sys.path:
+    sys.path.append(DIRNAME)
 
-class MeshLabelError(ValueError):
-    pass
+from common import semver
+from common import linker
+from common import pather
+from common import sizer
 
-class ListParseError(ValueError):
-    pass
+from common import err
+from common import log
 
-class TempPathError(OSError):
-    pass
-
-def make_path(out_path):
-    if not os.path.exists(out_path):
-        try:
-            os.makedirs(out_path)
-        except OSError: 
-            pass      
-
-def fake_yaml(i, y):
-    vals = str(y)
-    indent ="\n  "
-    if type(y) is dict:
-        vals = ""
-        for k,v in y.items():
-            vals += fake_yaml(k,v)+'\n'
-    out = "{}:\n{}".format(i, vals).rstrip('\n')
-    return out.replace('\n',indent)
-
-def log_yaml(i, y, quiet=False):
-    if not quiet:
-        print(fake_yaml(i,y)+'\n')
-
-def fake_dir(obj):
-    logging = {}
-    for k in dir(obj):
-        if '__' not in k:
-            logging[k] = str(getattr(obj,k,'???'))
-    return logging
-
-def log_dir(obj):
-    obj_n = getattr(obj, 'name', str(obj))
-    log_yaml(obj_n, fake_dir(obj))
-
-def log_diff(_a, _b):
-    difference = {}
-    a_n = getattr(_a, 'name', str(_a))
-    b_n = getattr(_b, 'name', str(_b))
-    a, b = map(fake_dir, [_a, _b])
-   
 def color_label(label):
     red = ((107 * int(label)) % 700) / 700.0
     green = ((509 * int(label)) % 900) / 600.0
     blue = ((200 * int(label)) % 777) / 777.0
     return red, green, blue
 
-def parse_list(_list, _len=None, _log=''):
-    LIST = []
-    for val in _list.split(':'):
-        if val.isdigit():
-            LIST += [int(val)]
-    if _len is not None:
-        if _len is not len(LIST):
-            msg = 'Must have {} numbers'.format(_len)
-            raise(ListParseError(msg, _log, LIST))
-    return LIST
-
-def format_path(details, key, *args):
-    val = details.get(key) or ''
-    try:
-        # Allow '/path/*/' % ()
-        # Allow '/path/%d' % (id,)
-        details[key] = val % args
-    except (TypeError, ValueError) as e:
-        # Disallow '/path/%d' % ()
-        if not len(args):
-            raise MeshPathError(e.args[0], key, val)
-        # Allow '/path/45' % (id,)
-        pass
-
-def format_details(_details, *args):
-    details = _details.copy()
-    for k in details.keys():
-        format_path(details, k, *args)
-    return details
-
-def read_id(filepath, idFinder, basic):
-    tmp_root = basic.get('tmp','tmp')
-    ext = filepath.split(".")[-1] 
+def read_id(_path, idFinder, _groups):
+    ext = _path.split(".")[-1] 
+    tmp_root = _groups['VOL'].tmp
     attributes = {
         '3ds': 'autodesk_3ds',
     }
@@ -105,14 +35,14 @@ def read_id(filepath, idFinder, basic):
     # Need to know name
     if ext in ['stl', 'ply']:
         try:
-            name = next(idFinder(filepath))
+            name = next(idFinder(_path))
         except StopIteration:
-            raise MeshLabelError('', filepath)
+            raise err.MeshLabelError('', _path)
         # Replicate bpy.ops.import_mesh.stl
-        log_yaml('Importing {}'.format(name), filepath)
+        log.yaml('Importing {}'.format(name), _path)
         importer =  getattr(bpy.ops.import_mesh, ext)
         # Create a symbolic link to change path name
-        tmp_link = make_link(filepath, tmp_root, name, ext)
+        tmp_link = pather.link(_path, tmp_root, name, ext)
         status = importer(filepath = tmp_link)
         if 'FINISHED' in status:
             # Set color for new object
@@ -124,21 +54,19 @@ def read_id(filepath, idFinder, basic):
 
     # Names and details in file
     if ext in ['autodesk_3ds', 'obj', 'x3d']:
-        log_yaml('Importing Scene', filepath)
+        log.yaml('Importing Scene', _path)
         importer =  getattr(bpy.ops.import_scene, ext)
-        return importer(filepath=filepath)
+        return importer(filepath=_path)
 
     # Cannot import
-    log_yaml('Warning, unknown extension', filepath)
+    log.yaml('Warning, unknown extension', _path)
     return {'CANCELLED'}
 
-def import_id(_details, basic, *_ids):
-    details = format_details(_details, *_ids)
-    idFinder = lambda x: map(str, _ids)
-    log_yaml('Importing', details)
-    # Test if any files exist
-    globber = details['filepath']
+def import_id(_glob, _groups, *_ids):
     status = set()
+    globber = pather.format_glob(_glob, *_ids)
+    idFinder = lambda x: map(str, _ids)
+    # Test if any files exist
     if not _ids:
         matcher = fnmatch.translate(globber) 
         grouper = matcher.replace('.*','(.*)')
@@ -151,15 +79,23 @@ def import_id(_details, basic, *_ids):
     for ifile in glob.iglob(globber):
         # Import and set mesh name based on id
         try:
-            status |= read_id(ifile, idFinder, basic)
-        except MeshLabelError:
-            raise MeshLabelError(globber, ifile)
+            status |= read_id(ifile, idFinder, _groups)
+        except err.MeshLabelError:
+            raise err.MeshLabelError(globber, ifile)
         # Set scale for newly imported mesh
         new_obj = bpy.context.active_object
-        new_obj.scale = basic.get('scale', [1,1,1])
-
+        new_obj.scale = _groups['SRC'].from_mesh
+        # Translate mesh by origin and offset
+        vol_origin = Vector(_groups['VOL'].origin)
+        sub_offset = Vector(_groups['SUB'].offset)
+        new_obj.location = vol_origin + sub_offset
+        # add to all groups
+        for g in _groups.values(): 
+            bpy.ops.object.group_link(group=g.name)
     if not status:
-        log_yaml('Warning, No files match', details)
+        log.yaml('Warning, No files match', globber)
+        return {'CANCELLED'}
+    log.yaml('Imported', globber)
     return status
 
 def remove_mesh(scene, k, v):
@@ -168,127 +104,88 @@ def remove_mesh(scene, k, v):
     bpy.data.objects.remove(obj)
     bpy.data.meshes.remove(v)
 
-def get_scale(arg):
-    given = { 
-        'quad/vol': [2,]*3,
-        'um/nm': [0.001,]*3,
-        'um/vol': parse_list(arg.vol, 3, 'vol'),
-        'nm/vox': parse_list(arg.nm, 3, 'nm'),
-        'vox/unit': parse_list(arg.vox, 3, 'vox'),
-    }
-    # um/unit := vox/unit * nm/vox * um/nm
-    # vol/unit := um/unit / um/vol
-    # quad/unit := vol/unit * quad/vol
-    result = [1, 1, 1]
-    denoms = ['um/vol']
-    mults = [
-        'vox/unit', 'nm/vox', 'um/nm', 'quad/vol',
-    ]
-    mz, my, mx = zip(*(given[m] for m in mults))
-    qz, qy, qx = zip(*(given[d] for d in denoms))
-    result[0] = reduce(mul, mz, 1) / reduce(mul, qz, 1)
-    result[1] = reduce(mul, my, 1) / reduce(mul, qy, 1)
-    result[2] = reduce(mul, mx, 1) / reduce(mul, qx, 1)
-    log_yaml('Render units / Mesh unit', result)
-    return result
+def import_all(versions, arg):
+    # Open if blend given
+    if arg.blend and os.path.exists(arg.blend):
+        log.yaml('Loading blend file', arg.blend)
+        bpy.ops.wm.open_mainfile(filepath=arg.blend)
 
-def import_all(arg):
-    unused = ['Cube']
-    scene = bpy.context.scene
-    matte = bpy.data.materials['Material']
-    # New mesh defaults
-    basic = {
-        'material': matte, 
-        'scale': get_scale(arg),
-        'tmp': arg.tmp,
-    }
+    # Get group matching arg
+    bpy.ops.object.mode_set(mode='OBJECT')
+    _groups = linker.get_groups(versions, arg)
 
     # Remove the default cube mesh
     for k,v in bpy.data.meshes.items():
-        if k in unused:
-            remove_mesh(scene, k, v)
-            log_yaml('Removed', k)
+        if k in ['Cube']:
+            remove_mesh(bpy.context.scene, k, v)
+            log.yaml('Removed', k)
 
     # Set default mesh paths
-    glob = os.path.join(arg.folder, arg.file)
-    mesh_paths = {
-        'filepath': glob,
-        'file': arg.file,
-    }
+    _glob = os.path.join(arg.folder, arg.file)
     status = set()
     if arg.list:
         # Try to import all given IDs
-        for _id in parse_list(arg.list):
-            status |= import_id(mesh_paths, basic, _id)
+        for _id in sizer.parse_list(arg.list):
+            status |= import_id(_glob, _groups, _id)
     else:
         # Try to import all IDs in folder
-        status |= import_id(mesh_paths, basic)
+        status |= import_id(_glob, _groups)
 
     # Warn if any imports did not finish
     unfinished = status - set(['FINISHED'])
     if len(unfinished):
-        log_yaml('Warning, some imports', unfinished)
+        log.yaml('Warning, some imports', unfinished)
 
     # Render if file given
     if arg.output:
         outdir = os.path.dirname(arg.output)
-        make_path(outdir)
+        pather.make(outdir)
         # Path as the output of the scene
-        scene.render.filepath = arg.output
-        log_yaml('Rendering', arg.output)
+        bpy.context.scene.render.filepath = arg.output
+        log.yaml('Rendering', arg.output)
         # Write a single image to the output
         bpy.ops.render.render(write_still=True)
 
     # Save if blend given
     if arg.blend:
         outdir = os.path.dirname(arg.blend)
-        make_path(outdir)
-        log_yaml('Saving blend file', arg.blend)
-        bpy.ops.wm.save_as_mainfile(filepath=arg.blend)
+        pather.make(outdir)
+        log.yaml('Saving blend file', arg.blend)
+        bpy.ops.wm.save_as_mainfile(**{
+            'filepath': arg.blend,
+            'check_existing': False,
+        })
 
-def make_link(filepath, tmp_root, name, ext):
-    # Create a temporary folder for this file
-    tmp_folders = filepath.replace('.','_').split(os.sep)
-    tmp_path = os.path.join(tmp_root, *tmp_folders)
-    tmp_link = os.path.join(tmp_path, '{}.{}'.format(name, ext))
-    make_path(tmp_path)
-    try:
-        if os.path.exists(tmp_link):
-            if os.path.isdir(tmp_link):
-                os.rmdir(tmp_link)
-            else:
-                os.unlink(tmp_link)
-    except OSError as e:
-        raise TempPathError(e.args[0], filepath, tmp_link)
-
-    # Link the path temporarily
-    os.symlink(filepath, tmp_link)
-    return tmp_link
-
-def clear_tmp(arg):
-    # Remove tmp directory
-    if os.path.exists(arg.tmp):
-        shutil.rmtree(arg.tmp)
+def main(parsed, versions):
+    # Clear before and after import
+    pather.unlink(parsed)
+    import_all(versions, parsed)
+    pather.unlink(parsed)
 
 if __name__ == "__main__":
-    COMMAND = 'blender -P '+__file__+' --'
+    FILENAME = os.path.basename(__file__)
+    COMMAND = 'blender -P '+FILENAME+' --'
 
     helps = {
-        'import': """Import STL files.
-The 'folder' and 'file' can take %d from --list %d:%d:%d. Exactly
-one * wildcard must find only digits if no --list is given.
-        """, 
-        'folder': '/folder/ or /id_%d/folder/',
-        'file': '*_segmentation_%d.stl (default *.stl)',
-        'list': '%d:%d:%d... list for %d in folder and file', 
+        'import': 'Import STL files.\n'
+'The "folder" and "file" can take %%d from --list %%d:%%d:%%d. At least one *'
+' wildcard must find only digits if no --list is given. --VOL and --ZYX set'
+' the scene in physical micrometers. The other spatial keywords simply allow'
+' consistency between sources.',
+        'folder': '/folder/ or /id_%%d/folder/',
+        'file': '*_segmentation_%%d.stl (default *.stl)',
+        'list': '%%d:%%d:%%d... list for %%d in folder and file', 
         'output': 'Output folder to render scene images',
         'blend': 'Blender file to save output',
         'tmp': 'Temporary folder (default ./tmp)',
-        'vol': 'z:y:x of full volume in μm (50:50:50)',
-        'vox': 'z:y:x of mesh units in voxels (1:1:1)',
-        'nm': 'z:y:z of voxels in nm (30:4:4)',
+        'um/VOL': 'Set D:H:W size of volume measured in μm (default 50:50:50)',
+        'um/ZYX': 'Set Z:Y:X origin of full volume in microns (default 0:0:0)',
+        'vol/VOL': 'Zn:Yn:Xn subvolumes in full volume (default 1:1:1)',
+        'vol/zyx': 'Zi:Yi:Xi # subvolumes offset from origin (default 0:0:0)',
+        'vox/mesh': 'd:h:w of voxels per mesh unit (default 1:1:1)',
+        'nm/vox': 'd:h:w of nm per voxel (default 30:4:4)',
     }
-
+    # Parse with defaults
     parser = argparse.ArgumentParser(**{
         'prog': COMMAND,
         'description': helps['import'],
@@ -300,67 +197,14 @@ one * wildcard must find only digits if no --list is given.
     parser.add_argument('-b', '--blend', help=helps['blend'])
     parser.add_argument('-o', '--output', help=helps['output'])
     parser.add_argument('--tmp', default='tmp', help=helps['tmp'])
-    parser.add_argument('--vol', default='50:50:50', help=helps['vol'])
-    parser.add_argument('--vox', default='1:1:1', help=helps['vox'])
-    parser.add_argument('--nm', default='30:4:4', help=helps['nm'])
-    # Parse all arguments after double dash
-    args = []
-    try:
-        arg0 = sys.argv.index('--')
-        args = list(sys.argv)[arg0+1:]
-    except ValueError as e:
-        log_yaml('Usage Error', {
-            'Missing -- in': ' '.join(sys.argv),
-            'Usage': parser.format_usage(),
-        })
-    try:
-        parsed = parser.parse_args(args)
-        clear_tmp(parsed)
-
-        # Main function
-        import_all(parsed)
-
-        clear_tmp(parsed)
-        print('Done')
-    except SystemExit as e:
-        helped = '-h' in args or '--help' in args
-        usage = parser.format_usage().split(' ')
-        log_yaml('EXIT', {
-            'Bad Usage': COMMAND+' '+' '.join(args),
-            'Usage': ' '.join(usage[1:]),
-        }, helped)
-    # Cannot format paths without giving integers
-    except MeshPathError as e:
-        error, k, v = e.args
-        log_yaml('Error', {
-            'Error': error,
-            'No ID in --list': {
-                '--list': helps['list'],
-            },
-            'Need ID to format "{}" argument'.format(k): v,
-        })
-    # Cannot infer ID from file path
-    except MeshLabelError as e:
-        search, path = e.args
-        log_yaml('Error', {
-            'Error': 'Cannot infer ID label from path',
-            'Search Path': search,
-            'Real Path': path,
-        })
-    # Cannot link temp file needed
-    except TempPathError as e:
-        error, real, symbol = e.args
-        log_yaml('Error', {
-            'Error': error,
-            'Cannot link': {
-                'From': real,
-                'To': symbol,
-            }
-        })
-    # Cannot read list
-    except ListParseError as e:
-        error, k, v = e.args
-        log_yaml('Error', {
-            error: helps.get(k,k),
-            k: v,
-        })
+    parser.add_argument('--ZYX', default='0:0:0', help=helps['um/ZYX'])
+    parser.add_argument('--VOL', default='50:50:50', help=helps['um/VOL'])
+    parser.add_argument('--zyx', default='0:0:0', help=helps['vol/zyx'])
+    parser.add_argument('--vol', default='1:1:1', help=helps['vol/VOL'])
+    parser.add_argument('--vox', default='1:1:1', help=helps['vox/mesh'])
+    parser.add_argument('--nm', default='30:4:4', help=helps['nm/vox'])
+    # Get most recent version
+    versions = semver.all()
+    semver.setup(versions)
+    # Run everything safely
+    err.wrap(parser, main, versions)

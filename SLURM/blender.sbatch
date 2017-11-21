@@ -14,7 +14,7 @@ export PYTHONDONTWRITEBYTECODE=1
 
 # we are working
 BLEND="-noaudio -b"
-RUNNING="blender $BLEND -P $python $blend -- $args"
+RUNNING="blender $BLEND -P $python -- $args"
 echo $RUNNING
 time $RUNNING
 

@@ -1,5 +1,5 @@
 Main: &main
-    Exports: [python, blend, args]
+    Exports: [python, args]
     python: ./PYTHON/BLENDER/import.py
     Slurm: ./SLURM/blender.sbatch
     args: "{STL}/bfly_1soma/stl/%d -o {RENDER} --vox {VOX}"
@@ -10,12 +10,38 @@ Main: &main
         LIST_STL: "58146" 
 bfly_1soma:
     <<: *main
-    args: "{STL} -f bfly_1soma/stl/*/*.stl -o {RENDER} --vox {VOX}"
+    args: "{STL} -f bfly_1soma/stl/*/*.stl -o {RENDER} --vox={VOX}"
+sub-1:
+    <<: *main
+    args: "{STL} -f bfly_1soma/stl/*/*.stl -o {RENDER} -b {BLEND} --vox={VOX} {BLOCK}"
+    Inputs:
+        BLOCK: "--VOL=100:100:100 --vol=2:2:2 --zyx=0:0:0 --ZYX=-40:-40:-40"
+sub-2:
+    <<: *main
+    args: "{STL} -f bfly_1soma/stl/*/*.stl -o {RENDER} -b {BLEND} --vox={VOX} {BLOCK}"
+    Inputs:
+        BLOCK: "--VOL=100:100:100 --vol=2:2:2 --zyx=1:1:1 --ZYX=-40:-40:-40"
+bad-zyx:
+    <<: *main
+    args: "{STL} -f bfly_1soma/stl/*/*.stl -o {RENDER} --vox={VOX} --zyx=1:1:1"
+no-vox:
+    <<: *main
+    args: "{STL} -f bfly_1soma/stl/*/*.stl -o {RENDER}"
 bad-vox:
     <<: *main
-    args: "{STL} -f bfly_1soma/stl/*/*.stl -o {RENDER} --vox {VOX}"
+    args: "{STL} -f bfly_1soma/stl/*/*.stl --vox={VOX}"
     Inputs:
         VOX: "{VOX}:{VOX}"
+bad-nm:
+    <<: *main
+    args: "{STL} -f bfly_1soma/stl/*/*.stl --nm={NM}"
+    Inputs:
+        NM: "30:0:0"
+bad-vol:
+    <<: *main
+    args: "{STL} -f bfly_1soma/stl/*/*.stl --VOL={VOL}"
+    Inputs:
+        VOL: "0:0:0"
 bad-infer:
     <<: *main
     args: "{STL} -f bfly_1soma/stl/58146/*.stl"
@@ -28,7 +54,6 @@ bad-path:
 x3d:
     <<: *main
     args: "{X3D} -f 682/*_*.x3d -o {RENDER} -b {BLEND}"
-    blend: "{BLEND}"
     Inputs:
         X3D: /n/coxfs01/thejohnhoffer/R0/ids-2017-07-12_final/meshes/x3d
 help:
@@ -41,4 +66,3 @@ Default:
         BLEND: "./BLENDER/{TODAY}/{NAME}.blend"
         RENDER: "./RENDER/{TODAY}/{NAME}"
     Logs: "./LOGS/{TODAY}/{NAME}"
-    blend: ''
