@@ -1,5 +1,7 @@
 import sys
 
+from . import log
+
 class MeshPathError(TypeError):
     pass
 
@@ -31,7 +33,7 @@ def wrap(parser, main, *args):
         helped = '-h' in argv or '--help' in argv
         usage = parser.format_usage().split(' ')
         log.yaml('EXIT', {
-            'Bad Usage': COMMAND+' '+' '.join(argv),
+            'Cannot parse': ' '.join(argv),
             'Usage': ' '.join(usage[1:]),
         }, helped)
     # Cannot format paths without giving integers

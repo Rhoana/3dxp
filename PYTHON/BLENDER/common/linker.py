@@ -30,7 +30,6 @@ def set_props(given, new_group, new_keys):
 def get_group(version, given, scope):
     msg = 'Using {} {}'
     # Name group by specific properties
-    name = get_group_name(version, given, scope)
 
     # Create new group if no group matches
     if name not in bpy.data.groups.keys():
@@ -48,11 +47,13 @@ def get_groups(versions, arg):
     given = sizer.get_scale(arg)
     # Add version number to given details
     version, v_name = semver.latest(versions)
+    given['tmp'] = getattr(arg,'tmp','tmp')
     given['version'] = v_name
-    given['tmp'] = arg.tmp
 
     groups = ['VOL', 'SUB', 'SRC']
-    getter = lambda g: get_group(version, given, g)
+    def getter(scope):
+        name = get_group_name(version, given, scope)
+        return get_group(version, given, g)
     return {g:getter(g) for g in groups}
 
 def log_scale(version, given, scope):

@@ -56,18 +56,18 @@ def get_scale(arg):
         'nm/vox': parse_list(arg.nm, 3, 'nm/vox'),
         'vox/mesh': parse_list(arg.vox, 3, 'vox/mesh'),
         'um/VOL': parse_list(arg.VOL, 3, 'um/VOL'),
-        'um/ZYX': parse_list(arg.ZYX, 3, 'um/ZYX', True),
+        'um/XYZ': parse_list(arg.XYZ, 3, 'um/XYZ', True),
         'vol/VOL': parse_list(arg.vol, 3, 'vol/VOL'),
-        'vol/zyx': parse_list(arg.zyx, 3, 'vol/zyx'),
+        'vol/xyz': parse_list(arg.xyz, 3, 'vol/xyz'),
     }
     # Define origin and volume size in world units
-    world_ZYX = convert(given, ['um/ZYX'], ['um/world'])
+    world_XYZ = convert(given, ['um/XYZ'], ['um/world'])
     world_VOL = convert(given, ['um/VOL'], ['um/world'])
     given['world/VOL'] = world_VOL
 
     # Calculate subvolume size and offset in world units
     given['world/vol'] = convert(given, ['world/VOL'], ['vol/VOL'])
-    world_zyx = convert(given, ['world/vol', 'vol/zyx'])
+    world_xyz = convert(given, ['world/vol', 'vol/xyz'])
     world_vol = given['world/vol']
 
     # World per mesh and vox per world
@@ -80,14 +80,14 @@ def get_scale(arg):
         raise_nonzero(key, given[key])
 
     # Assert subvolume offset within full volume
-    if any([v>=V for v,V in zip(world_zyx, world_VOL)]):
-        msg = 'vol/zyx must be below {}'.format(given['vol/VOL'])
-        raise err.ListParseError(msg, 'vol/zyx', given['vol/zyx'])
+    if any([v>=V for v,V in zip(world_xyz, world_VOL)]):
+        msg = 'vol/xyz must be below {}'.format(given['vol/VOL'])
+        raise err.ListParseError(msg, 'vol/xyz', given['vol/xyz'])
 
     # Relabel output 
     return {
-        'origin': world_ZYX,
-        'offset': world_zyx,
+        'origin': world_XYZ,
+        'offset': world_xyz,
         'volume': world_VOL,
         'subvolume': world_vol,
         'from_mesh': world_mesh,

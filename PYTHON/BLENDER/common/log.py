@@ -21,4 +21,4 @@ def yaml(i, y, quiet=False):
 
 def att(obj):
     obj_n = getattr(obj, 'name', str(obj))
-    yaml(obj_n, fake_dir(obj))
+    yaml(obj_n, fake_att(obj))
