@@ -24,6 +24,7 @@ def start(_argv):
     DATA = realpath(args['ids'])
     ROOTOUT = realpath(args['out'])
     STLFOLDER = sharepath(ROOTOUT, 'stl')
+    ORDER = ['zyx', 'xyz'][args['xyz']]
 
     #
     # IF A LIST OF IDS IS PASSED
@@ -56,7 +57,7 @@ def start(_argv):
 
         z,y,x = subvols[TRIAL]
 
-        ThreeD.run(DATA, z, y, x, STLFOLDER, block_size, LIST)
+        ThreeD.run(DATA, z, y, x, STLFOLDER, block_size, LIST, ORDER)
 
         print('All done with stl block {},{},{}'.format(z,y,x))
 
@@ -99,7 +100,7 @@ def start(_argv):
         found_counts = [len(glob.glob(re_file)) for re_file in re_path]
         top_stl_ids = top_ids[top_counts>found_counts]
         if len(top_stl_ids):
-            ThreeD.run(DATA, z, y, x, STLFOLDER, block_size, top_stl_ids)
+            ThreeD.run(DATA, z, y, x, STLFOLDER, block_size, top_stl_ids, [], ORDER)
 
         print('All done with stl block {},{},{}'.format(z,y,x))
 
@@ -114,12 +115,14 @@ def parseArgv(argv):
         't': 'Which of the b*b*b tiles to generate (default 0)',
         'n': 'make meshes for the top n ids (default 1)',
         'l': 'make meshes for : separated list of ids',
+        'xyz': 'Store meshes with xyz coordinates (default zyx)!',
         'help': 'Make an hdf5 file into stl meshes!'
     }
 
     parser = argparse.ArgumentParser(description=help['help'])
     parser.add_argument('ids', help=help['ids'])
     parser.add_argument('out', help=help['out'])
+    parser.add_argument('--xyz', action='store_true', help=help['xyz'])
     parser.add_argument('-d','--deep',type=int, default=0, help=help['d'])
     parser.add_argument('-t','--trial', type=int, default=0, help=help['t'])
     parser.add_argument('-b','--block', type=int, default=1, help=help['b'])

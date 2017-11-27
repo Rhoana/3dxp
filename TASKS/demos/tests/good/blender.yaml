@@ -2,28 +2,47 @@ Main: &main
     Exports: [python, args]
     python: ./PYTHON/BLENDER/import.py
     Slurm: ./SLURM/blender.sbatch
-    args: "{STL}/bfly_1soma/stl/%d -o {RENDER} --vox {VOX}"
+    args: "{STL} -f bfly_1soma/stl/*/*.stl -o {RENDER} --vox={VOX}"
     Constants:
         NAME: blend
-        VOX: "4:32:32"
+        VOX: "32:32:4"
         TODAY: "2017_11_11"
-        LIST_STL: "58146" 
-bfly_1soma:
-    <<: *main
-    args: "{STL} -f bfly_1soma/stl/*/*.stl -o {RENDER} --vox={VOX}"
-sub-1:
+sub-1: &sub-1
     <<: *main
     args: "{STL} -f bfly_1soma/stl/*/*.stl -o {RENDER} -b {BLEND} --vox={VOX} {BLOCK}"
     Inputs:
-        BLOCK: "--VOL=100:100:100 --vol=2:2:2 --zyx=0:0:0 --ZYX=-40:-40:-40"
+        BLOCK: "--VOL=100:100:100 --vol=2:2:2 --xyz=0:0:0 --XYZ=-40:-40:-40"
 sub-2:
     <<: *main
     args: "{STL} -f bfly_1soma/stl/*/*.stl -o {RENDER} -b {BLEND} --vox={VOX} {BLOCK}"
     Inputs:
-        BLOCK: "--VOL=100:100:100 --vol=2:2:2 --zyx=1:1:1 --ZYX=-40:-40:-40"
-bad-zyx:
+        BLOCK: "--VOL=100:100:100 --vol=2:2:2 --xyz=1:1:1 --XYZ=-40:-40:-40"
+slice-1: &slice-1
     <<: *main
-    args: "{STL} -f bfly_1soma/stl/*/*.stl -o {RENDER} --vox={VOX} --zyx=1:1:1"
+    python: ./PYTHON/BLENDER/slices.py
+    args: "{PNG} -f {SLICES}/*_in_z.png -o {RENDER} -b {BLEND} --vox {VOX} {BLOCK}"
+    Inputs:
+        SLICES: "bfly_1soma/png/617637"
+        BLOCK: "--VOL=100:100:100 --vol=2:2:2 --xyz=0:0:0 --XYZ=-40:-40:-40"
+slice-2:
+    <<: *main
+    python: ./PYTHON/BLENDER/slices.py
+    args: "{PNG} -f {SLICES}/*_in_z.png -o {RENDER} -b {BLEND} --vox {VOX} {BLOCK}"
+    Inputs:
+        SLICES: "bfly_1soma/png/617637"
+        BLOCK: "--VOL=100:100:100 --vol=2:2:2 --xyz=1:1:1 --XYZ=-40:-40:-40"
+run-1:
+    <<: *main
+    Needs:
+        - <<: *sub-1
+        - <<: *slice-1
+lighting:
+    <<: *main
+    python: ./PYTHON/BLENDER/lights.py
+    args: "-o {RENDER} -b {BLEND}"
+bad-xyz:
+    <<: *main
+    args: "{STL} -f bfly_1soma/stl/*/*.stl -o {RENDER} --vox={VOX} --xyz=1:1:1"
 no-vox:
     <<: *main
     args: "{STL} -f bfly_1soma/stl/*/*.stl -o {RENDER}"
@@ -63,6 +82,7 @@ Default:
     Workdir: "git rev-parse --show-toplevel"
     Inputs:
         STL: "./STL"
+        PNG: "./PNG"
         BLEND: "./BLENDER/{TODAY}/{NAME}.blend"
         RENDER: "./RENDER/{TODAY}/{NAME}"
     Logs: "./LOGS/{TODAY}/{NAME}"

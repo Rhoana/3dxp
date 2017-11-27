@@ -1,22 +1,32 @@
 Main: &main
     python: ./PYTHON/all_stl.py
-    args: "-b 1 -l {LIST_IDS} {OUT}/id.h5 {OUT_NEW}"
+    args: "--xyz -b 1 -l {LIST_IDS} {OUT}/id.h5 {OUT_NEW}"
     Constants: &main-constants
         SCALE: "2:5:5"
         LIST_IDS: "1:2:3"
         TODAY: "2017_11_11"
         NAME: Auguest_100/2_5_5
         BOSS: /n/coxfs01/leek/results/2017-08-23_100um_cube/88_88_14
+        DROPBOX: /n/coxfs01/leek/dropbox/for_thejohnhoffer
     Needs: &main-needs
         - python: ./PYTHON/conversion/tif2hd.py
-          args: "{OUT}/tif {OUT}/id.h5"
+          args: "{OUT}/tif_id {OUT}/id.h5"
           Needs:
             - python: ./PYTHON/conversion/boss2stack.py
-              args: "{BOSS_IDS} -o {OUT}/tif -s {SCALE} -f tif"
+              args: "{BOSS_IDS} -o {OUT}/tif_id -s {SCALE} -f tif"
               Slurm: ./SLURM/many.sbatch
               Runs: 30
               Inputs:
                   BOSS_IDS: "{BOSS}/boss/final-segmentation/boss.json"
+        - python: ./PYTHON/conversion/tif2hd.py
+          args: "{OUT}/tif_em {OUT}/em.h5 -x 0:384 -y 0:384 -z 1:430"
+          Needs:
+            - python: ./PYTHON/conversion/boss2stack.py
+              args: "{BOSS_IMG} -o {OUT}/tif_em -s {SCALE} -f tif"
+              Slurm: ./SLURM/many.sbatch
+              Runs: 30
+              Inputs:
+                  BOSS_IMG: "{DROPBOX}/2017-11-01/ECS_iarpa201610_image.json" 
 bfly_1soma:
     <<: *main
     Needs: []
@@ -24,6 +34,28 @@ bfly_1soma:
         <<: *main-constants
         NEW: 'bfly_1soma'
         LIST_IDS: "58146"
+        LIST_IDS: "617637"
+bfly_zstack:
+    <<: *main
+    Sync: 30
+    Runs: 429
+    Slurm: ./SLURM/many_z.sbatch
+    Exports: [python, args]
+    python: ./PYTHON/scripts/sides.py
+    args: "{OUT_NEW}/highlight/{ONE_ID} {OUT}/em.h5 {OUT}/id.h5 -i {ONE_ID} -a z -g 5 -o 0.25"
+    Needs: []
+    Constants:
+        <<: *main-constants
+        NEW: 'bfly_1soma'
+        ONE_ID: "58146"
+        ONE_ID: "617637"
+# Alternative 2017-11-21
+# The EM image is the full 100um
+fail-100:
+    <<: *main
+    python: ./PYTHON/conversion/tif2hd.py
+    args: "{OUT}/tif_em {OUT}/em_100.h5"
+    Needs: []
 # Failed Experiment 2017-11-15
 # all_counts.py useless if only one block!!
 fail-top5:
@@ -49,3 +81,5 @@ Default:
     Logs: "./LOGS/{TODAY}/{NAME}/{NEW}"
     Slurm: ./SLURM/one.sbatch
     Exports: [python, args]
+    Flags: [partition]
+    partition: holyseasgpu

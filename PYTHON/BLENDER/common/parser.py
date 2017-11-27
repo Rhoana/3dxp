@@ -35,7 +35,7 @@ def key(k):
 
     return keys
 
-def setup(_filename, _describe):
+def setup(_filename, _describe, _items=[]):
     COMMAND = 'blender -P '+_filename+' --'
     DETAILS = _describe + '\n'
     'The "folder" and "file" can take %%d'
@@ -52,16 +52,25 @@ def setup(_filename, _describe):
         'description': DETAILS,
         'formatter_class': argparse.RawTextHelpFormatter,
     })
-    cmd.add_argument('folder', **key('folder'))
-    cmd.add_argument('-f','--file', **key('file'))
-    cmd.add_argument('-l','--list', **key('list'))
-    cmd.add_argument('-b', '--blend', **key('blend'))
-    cmd.add_argument('-o', '--output', **key('output'))
-    cmd.add_argument('--XYZ', **key('um/XYZ'))
-    cmd.add_argument('--VOL', **key('um/VOL'))
-    cmd.add_argument('--xyz', **key('vol/xyz'))
-    cmd.add_argument('--vol', **key('vol/VOL'))
-    cmd.add_argument('--vox', **key('vox/mesh'))
-    cmd.add_argument('--nm', **key('nm/vox'))
+    flags = {
+        'file': ['-f','--file'],
+        'list': ['-l','--list'],
+        'blend': ['-b', '--blend'],
+        'output': ['-o', '--output'],
+        'um/XYZ': ['--XYZ'],
+        'um/VOL': ['--VOL'],
+        'vol/xyz': ['--xyz'],
+        'vol/VOL': ['--vol'],
+        'vox/mesh': ['--vox'],
+        'nm/vox': ['--nm'],
+    }
+    positional = ['folder']
+    items = positional + list(flags.keys())
+    # Allow custom items
+    if _items:
+        items = _items
+    for i in items:
+        words = flags.get(i,[i])
+        cmd.add_argument(*words, **key(i))
 
     return cmd

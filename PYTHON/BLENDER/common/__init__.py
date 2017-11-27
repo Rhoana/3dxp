@@ -44,18 +44,20 @@ class Starter(bpy.types.Operator):
                 remove_mesh(k, v)
                 log.yaml('Removed', k)
 
-        # Set up the sun
+        # Create the sun
         if 'Sun' not in bpy.data.lamps:
             sun = bpy.data.lamps.new(name='Sun', type='SUN')
             sun_obj = bpy.data.objects.new(name='Sun', object_data=sun)
             context.scene.objects.link(sun_obj)
-            sun.energy = 0.1
-            log.att(sun)
 
         # Set up the lamp
         if 'Lamp' in bpy.data.lamps:
             lamp = bpy.data.lamps['Lamp']
-            lamp.energy = 1
+            lamp.energy = 5
+
+        # Set up the sun
+        sun = bpy.data.lamps['Sun']
+        sun.energy = 0.5
 
         return {'FINISHED'}
 
@@ -75,7 +77,7 @@ class Stopper(bpy.types.Operator):
             outdir = os.path.dirname(self.output)
             pather.make(outdir)
             # Path as the output of the scene
-            context.scene.render.engine = 'CYCLES'
+#            context.scene.render.engine = 'CYCLES'
             context.scene.render.filepath = self.output
             log.yaml('Rendering', self.output)
             # Write a single image to the output

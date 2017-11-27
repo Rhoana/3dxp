@@ -1,16 +1,13 @@
+import os
+import sys
 import time
 import json
 import glob
 import h5py
 import random
-import mahotas as mh
-import math
 import numpy as np
-import os
 from stl import mesh
-import scipy
 from skimage import measure
-import sys
 from xml.etree import ElementTree
 
 
@@ -129,42 +126,6 @@ class ThreeD:
         out[arr == val] = 1
 
         return out
-
-    @staticmethod
-    def smoothen(vol, spline_resolution=1/16.):
-
-        out = np.zeros(vol.shape, dtype=np.bool)
-
-        for z in range(vol.shape[0]):
-
-            slice = vol[z]
-            out_slice = np.zeros(slice.shape, dtype=np.bool)
-
-            contours = measure.find_contours(slice, 0)
-
-            if len(contours) < 1:
-                continue
-
-            y,x = zip(*contours[0])
-            # get the cumulative distance along the contour
-            dist = np.sqrt((np.diff(x))**2 + (np.diff(y))**2).cumsum()[-1]
-            # build a spline representation of the contour
-            spline, u = scipy.interpolate.splprep([x, y])
-            res =  int(math.ceil(spline_resolution*dist))
-            sampler = np.linspace(0, u[-1], res)
-
-            # resample it at smaller distance intervals
-            interp_x, interp_y = scipy.interpolate.splev(sampler, spline)
-            iy,ix = [[int(math.floor(ii)) for ii in i] for i in [interp_x,interp_y]]
-
-            interp = [np.clip(point,[0,0], np.array(slice.shape)-1) for point in zip(ix,iy)]
-
-            mh.polygon.fill_polygon(interp, out_slice)
-
-            out[z] = out_slice
-
-        return out
-
     @staticmethod
     def create_stl(vol, filename, blockshape, Z=0, Y=0, X=0):
 
@@ -188,7 +149,14 @@ class ThreeD:
 
 
     @staticmethod
-    def run(datafile, Z, Y, X, outdir, blockshape=200, idlist=[]):
+    def run(datafile, Z, Y, X, outdir, blockshape=200, idlist=[], order='zyx'):
+
+        # Validate axis order
+        if set('zyx') != set(order):
+            order = 'zyx'
+        # Get axis order as numbers
+        axis_ids = dict(zip('zyx', [0,1,2]))
+        axis_order = list(map(axis_ids.get, order))
 
         # Get blockshape for all dimensions
         if not hasattr(blockshape, '__len__'):
@@ -224,8 +192,13 @@ class ThreeD:
         for id in using_ids:
 
             # Get the output name and folder
-            outname = str(Z) + '_' + str(Y) + '_' + str(X) +'.stl'
             outfolder = os.path.join(outdir, str(id))
+            name_fmt = '{{}}_{{}}_{{}}'.format(*axis_order)
+            name_fmt = '{}_{}.stl'.format(order, name_fmt)
+            # Simple name for old assumptions
+            if axis_order == [0,1,2]:
+                name_fmt = '{0}_{1}_{2}.stl'
+            outname = name_fmt.format(Z,Y,X)
             # Make outfolder if doesn't yet exist
             if not os.path.exists(outfolder):
                 os.makedirs(outfolder)
@@ -240,17 +213,16 @@ class ThreeD:
 
                 # 1. thresholding
                 thresholded = ThreeD.threshold(vol, id)
-                for z in range(thresholded.shape[0]):
-                    thresholded[z] = mh.close_holes(thresholded[z])
 
                 # 2. padding and swapping along Y
                 thresholded_swapped = np.swapaxes(thresholded, 0, 1)
-                thresholded_padded = np.pad(thresholded_swapped, 2, mode='constant')
-                smoothed = thresholded_padded
+                thresh_padded = np.pad(thresholded_swapped, 2, mode='constant')
 
                 # 3. marching cubes
-                smoothed = np.swapaxes(smoothed, 0, 1) # Z,Y,X
-                ThreeD.create_stl(smoothed, outpath, blockshape, Z=Z, Y=Y, X=X)
+                thresh_padded = np.swapaxes(thresh_padded, 0, 1) # Z,Y,X
+                final_padded = np.transpose(thresh_padded, axis_order)
+                # Create mesh with given axis order
+                ThreeD.create_stl(final_padded, outpath, blockshape, Z=Z, Y=Y, X=X)
 
                 print 'Stored {}/{}'.format(id, outname)
 

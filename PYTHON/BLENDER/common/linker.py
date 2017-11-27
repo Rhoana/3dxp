@@ -11,62 +11,65 @@ def to_name_hash(_format, _values):
     name_hash = base64.encodebytes(name_zip)
     return name_hash.decode('utf-8').rstrip('\n')
 
-def get_group_name(version, given, scope):
+def get_name(given, item):
     name_fmt = ''
     name_vals = []
     # Check all the groups
-    for key, new_fmt in semver.name(version, scope):
+    for key in item['Keys']['Name']:
         name_vals += given[key]
-        name_fmt += new_fmt
+        name_fmt += item['Types'][key]
     # Compress values into a unique name
     uniq = to_name_hash(name_fmt, name_vals)
-    return "{}:{}".format(scope, uniq)
+    return "{}:{}".format(item['Name'], uniq)
 
-def set_props(given, new_group, new_keys):
-    for key in new_keys:
-        value = given[key]
-        setattr(new_group, key, value)
+def keywords(version, arg):
+    given = sizer.get_scale(arg)
+    # Add version number to given details
+    given['tmp'] = getattr(arg,'tmp','tmp')
+    given['version'] = version['Name']
 
-def get_group(version, given, scope):
-    msg = 'Using {} {}'
-    # Name group by specific properties
+    return given
+    
+def groups(versions, arg):
 
+    version = versions[0]
+    given = keywords(version, arg)
+    # Get the size of world units
+    world_um = max(given['to_um'])
+
+    # Name, keys, values for all groups
+    for scope, item in version['Items'].items():
+        print (item['Type'])
+        # Name group, get all keys and vlues
+        props = {k:given[k] for k in item['Keys']['All']}
+        name = get_name(given, item)
+        if item['Type'] == 'Group':
+            make_group(name, props)
+            yield scope, name
+        # Log keys and values for scale 
+        for k in item['Keys']['SCALE']:
+            log_scale(k, given[k], '%d μm' % world_um)
+
+def make_group(name, props):
+    msg = 'Using {}'
     # Create new group if no group matches
     if name not in bpy.data.groups.keys():
         bpy.ops.group.create(name=name)
         new_group = bpy.data.groups[name]
-        new_keys = semver.keys(version, scope)
-        set_props(given, new_group, new_keys)
-        msg = 'Made new {} {}'
+        # Fill all properties in group   
+        for key, val in props.items():
+            setattr(new_group, key, val)
+        msg = 'Made new {}'
 
-    log.yaml('Debug', msg.format(scope, name))
-    log_scale(version, given, scope)
-    return bpy.data.groups[name]
+    log.yaml('Debug', msg.format(name))
 
-def get_groups(versions, arg):
-    given = sizer.get_scale(arg)
-    # Add version number to given details
-    version, v_name = semver.latest(versions)
-    given['tmp'] = getattr(arg,'tmp','tmp')
-    given['version'] = v_name
-
-    groups = ['VOL', 'SUB', 'SRC']
-    def getter(scope):
-        name = get_group_name(version, given, scope)
-        return get_group(version, given, g)
-    return {g:getter(g) for g in groups}
-
-def log_scale(version, given, scope):
-    messages = {
-        'from': '1 %s unit = {1:g},{2:g},{3:g} x {0}μm',
-        'to': '{0}μm = {1:g},{2:g},{3:g} × %s unit',
+def log_scale(k, v, world='1 BU'):
+    default_fmt = '{1:g},{2:g},{3:g} × {0}'
+    fmts = {
+        'from': '1 {u} unit = {1:g},{2:g},{3:g} x {0}',
+        'to': '{0} = {1:g},{2:g},{3:g} × {u} unit',
     }
-    to_um = given['to_um'][0]
-    for k in semver.keys(version, scope, 'SCALE'):
-        if k == 'to_um':
-            continue
-        keywords = k.split('_')
-        fmt = '{1:g},{2:g},{3:g} × {0}μm'
-        if keywords[0] in messages:
-            fmt = messages[keywords[0]] % keywords[-1]
-        log.yaml(k, fmt.format(to_um, *given[k]))
+    kw = k.split('_')
+    fmt = fmts.get(kw[0], default_fmt)
+    msg = fmt.format(world, *v, u=kw[-1])
+    log.yaml(k, msg)

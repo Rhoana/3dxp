@@ -21,7 +21,7 @@ if __name__ == '__main__':
         'z': 'The start and end Z slices to use',
         'y': 'The start and end Y slices to use',
         'x': 'The start and end X slices to use',
-        'l': 'make meshes for : separated list of ids',
+        'l': 'Mask for : separated list of values',
         'scale': 'Downsampling times in Z,Y,X (2:3:3)',
     }
     # Read the arguments correctly

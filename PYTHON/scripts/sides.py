@@ -43,9 +43,13 @@ def make_img(args, img_out, img_vol, ids_vol=''):
             if args['i'] > 0:
                 chosen_id = args['i']
                 # Get location of chosen id
-                chosen_xy = ids == chosen_id
+                chosen_xy = np.uint8(ids == chosen_id)
+                # Dilate coordinates
+                if args['g'] >0:
+                    kernel = np.ones((args['g'],)*2, np.uint8)
+                    chosen_xy = cv2.dilate(chosen_xy, kernel)
                 # Replace image with chosen id
-                image[chosen_xy] = color_id(chosen_id) 
+                image[chosen_xy > 0] = color_id(chosen_id) 
             # Get ids of black background
             black_xy = ids == 0
             # Convert the ids to color
@@ -100,7 +104,8 @@ def parseArgv(argv):
        'z': 'The position of the z slice (default 0)',
        'o': 'The opacity of the segmentation (default 0.5)',
        'i': 'The ID to highlight (default None)',
-       'a': 'The axes to use (default xy)',
+       'a': 'All slices to generate (default xyz)',
+       'g': 'Amount to grow highlight (default 0',
     }
 
     parser = argparse.ArgumentParser(description=help['help'])
@@ -112,7 +117,8 @@ def parseArgv(argv):
     parser.add_argument('-z', type=int, default=0, help=help['z'])
     parser.add_argument('-o', type=float, default=0.5, help=help['o'])
     parser.add_argument('-i', type=int, default=0, help=help['i'])
-    parser.add_argument('-a', default='xy', help=help['a'])
+    parser.add_argument('-g', type=int, default=0, help=help['g'])
+    parser.add_argument('-a', default='xyz', help=help['a'])
 
     return vars(parser.parse_args())
 

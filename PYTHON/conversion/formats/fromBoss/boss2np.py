@@ -1,16 +1,14 @@
-import os
-import cv2
-import json
-import h5py
-import time
-import argparse
 import numpy as np
-import tifffile as tiff
+
+from BossGrid import BossGrid
+from QueryLayer import BossQuery
+from QueryLayer.UtilityLayer import OUTPUT
+from QueryLayer.UtilityLayer import RUNTIME
 
 class Boss2np():
-    ALL = 'tiles'
-    PATH = 'location'
-    ZYX = ['z','row','column']
+
+    OUTPUT = OUTPUT()
+    RUNTIME = RUNTIME()
 
     def __init__(self, in_path):
         """ Load the json file
@@ -20,37 +18,29 @@ class Boss2np():
         in_path : str
             The path to the json file
         """
-        with open(in_path, 'r') as jd:
-            # Get all the filenames
-            boss_file = json.load(jd)
-            all = boss_file.get(self.ALL, []) 
-            # Get all the paths
-            def get_path(d):
-                return d.get(self.PATH, '')
-            all_path = map(get_path, all)
-            # Get all the offsets
-            def get_offset(d):
-                return map(d.get, self.ZYX)
-            # Get the offsets and the max offset
-            all_off = np.uint32(map(get_offset, all))
-            self.size = np.amax(all_off, 0) + 1
-            # Get the xy dimensions and product
-            self.size_xy = np.uint32(self.size[1:])
-            self.n_xy = np.prod(self.size_xy)
-            # Get the tile size from first tile
-            tile0 = self.imread(all_path[0])
-            self.tile_shape = np.uint32((1,) + tile0.shape)
-            # The size and datatype of the full volume
-            self.full_shape = self.tile_shape * self.size
-            self.slice_shape = np.r_[1, self.full_shape[1:]]
-            self.dtype = tile0.dtype
-            # Sort all paths by ordered offsets
-            def make_flat(pair):
-                return np.ravel_multi_index(pair[0], self.size)
-            # Sort paths by ordered offsets
-            pairs = sorted(zip(all_off, all_path), key=make_flat)
-            self.all_off, self.all_path = zip(*pairs)
-            self.all_off = np.uint32(self.all_off)
+        any_zyx = np.uint32([0,0,0])
+        query_0 = BossQuery(in_path, any_zyx)
+        # Bootstrap keywords from dummy query
+        keywords = BossGrid.preload_source(query_0)
+        # Get keyword constants
+        k_size = self.OUTPUT.INFO.SIZE.NAME
+        k_type = self.OUTPUT.INFO.TYPE.NAME
+        k_block = self.RUNTIME.IMAGE.BLOCK.NAME
+        # Get variables from keywords
+        full_shape = keywords[k_size]
+        block_shapes = keywords[k_block] 
+        # Store the shape of one block and slice
+        self.block_shape = block_shapes[0]
+        slice_shape = [1,]+list(full_shape[1:])
+        self.slice_shape = np.uint32(slice_shape)
+        # Store all the block offsets
+        n_zyx = self.slice_shape // self.block_shape
+        self.all_yx = zip(*np.where(np.ones(n_zyx[1:])))
+        # Store keywords
+        self.dtype = keywords[k_type]
+        self.full_shape = full_shape
+        self.keywords = keywords
+        self.in_path = in_path
 
     def scale_image(self, _z, _res, _spans=[[],[],[]], _list=[]):
         """ Downsample some tifs to a numpy array
@@ -78,22 +68,24 @@ class Boss2np():
         s_x0, s_x1 = spans[2] // scale[2]
         # Get the downsampled full / tile shape
         scale_slice = (self.slice_shape // scale)[1:] # per slice
-        scale_tile = (self.tile_shape // scale)[1:] # for 1 file
+        scale_tile = (self.block_shape // scale)[1:] # for 1 file
         msg = "Reading {}:{}, {}:{} from a {} section"
         print(msg.format( s_y0, s_y1, s_x0, s_x1, scale_slice ))
 
         # Create the slice image
         a = np.zeros(scale_slice, dtype=self.dtype)
+        # Get attributes from self
+        keywords = self.keywords
+        in_path = self.in_path
 
         # Open all tiff files in the stack
-        for f in range(self.n_xy):
+        for _y, _x in self.all_yx:
             # Get tiff file path and offset
-            f_id = int(_z * self.n_xy + f)
-            f_path = self.all_path[f_id]
-            f_offset = self.all_off[f_id]
+            f_offset = np.uint32([_z, _y, _x])
             # Read the file to a numpy volume
-            f_vol = self.imread(f_path)
-            scale_vol = f_vol[::scale[1],::scale[2]]
+            args = (in_path, f_offset, keywords)
+            f_vol = BossGrid.load_tile(BossQuery(*args))
+            scale_vol = f_vol[0, ::scale[1], ::scale[2]]
             # Get coordinates to fill the tile
             y0, x0 = scale_tile * f_offset[1:]
             y1, x1 = [y0, x0] + np.uint32(scale_vol.shape)
@@ -115,11 +107,3 @@ class Boss2np():
 
         # Return full section
         return a[s_y0:s_y1,s_x0:s_x1]
-
-    @staticmethod
-    def imread(_path):
-        if os.path.splitext(_path)[1] in ['.tiff', '.tif']:
-            return tiff.imread(_path)
-        else:
-            return cv2.imread(_path,0)
-
