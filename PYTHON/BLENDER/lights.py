@@ -16,14 +16,9 @@ bpy.ops.wm.addon_install(filepath=COMMON)
 bpy.ops.wm.addon_enable(module='common')
 bpy.ops.wm.save_userpref()
 
-from common import semver
 from common import parser
-from common import linker
-from common import pather
-from common import sizer
 
 from common import err
-from common import log
 
 def main(arg):
     # Open the scene
