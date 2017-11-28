@@ -142,7 +142,7 @@ if __name__ == "__main__":
     filename = os.path.basename(__file__)
     # Get argument parser
     cmd = parser.setup(filename, describe)
-    cmd.add_argument('--tmp', **parser.key('tmp'))
+    parser.add_argument(cmd, 'tmp')
     # Get most recent version
     versions = semver.all()
     semver.setup(versions)

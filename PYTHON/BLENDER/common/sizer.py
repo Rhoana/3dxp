@@ -3,6 +3,9 @@ from operator import mul
 
 from . import err
 
+# 10μm per world unit
+UM = 10
+
 def raise_nonzero(key, value):
     if 0 in value:
         msg = 'Cannot have zeros in {}'.format(key)
@@ -47,12 +50,10 @@ def convert(given, mults=[], denoms=[]):
     return result
 
 def get_scale(arg):
-    # 10μm
-    um_w = 10
-    nm_w = um_w * 1000
+    nm_w = UM * 1000
     given = { 
+        'um/world': [UM,] * 3,
         'nm/world': [nm_w,] * 3,
-        'um/world': [um_w,] * 3,
         'nm/vox': parse_list(arg.nm, 3, 'nm/vox'),
         'vox/mesh': parse_list(arg.vox, 3, 'vox/mesh'),
         'um/VOL': parse_list(arg.VOL, 3, 'um/VOL'),

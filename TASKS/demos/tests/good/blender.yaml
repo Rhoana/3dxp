@@ -40,6 +40,10 @@ lighting:
     <<: *main
     python: ./PYTHON/BLENDER/lights.py
     args: "-o {RENDER} -b {BLEND}"
+scroll:
+    <<: *main
+    python: ./PYTHON/BLENDER/scroll.py
+    args: "-o {RENDER} -b {BLEND} --VOL=100:100:100"
 bad-xyz:
     <<: *main
     args: "{STL} -f bfly_1soma/stl/*/*.stl -o {RENDER} --vox={VOX} --xyz=1:1:1"

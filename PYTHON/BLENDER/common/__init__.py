@@ -7,10 +7,12 @@ import os
 import bpy
 
 from bpy.props import StringProperty
+from bpy.props import BoolProperty
 
 from . import parser
 from . import semver
 from . import linker
+from . import mover
 from . import pather
 from . import sizer
 
@@ -70,18 +72,39 @@ class Stopper(bpy.types.Operator):
 
     blend = StringProperty()
     output = StringProperty()
+    movie = BoolProperty()
 
+    def render(self, context):
+        scene = context.scene
+        render = scene.render
+        # All frames in scene
+        frames = scene.frame_start, scene.frame_end
+        outdir = os.path.dirname(self.output)
+        pather.make(outdir)
+        # Path as the output of the scene
+        render.filepath = self.output
+        log.yaml('Rendering', self.output)
+        # Render images to the output files
+        if self.movie:
+            pather.make(self.output)
+            for i_fr in range(*frames):
+                file_fr = '{:010d}'.format(i_fr)
+                path_fr = self.output, file_fr
+                out_fr = os.path.join(*path_fr)
+                render.filepath = out_fr
+                # Set current frame and write
+                scene.frame_set(i_fr)
+                bpy.ops.render.render(**{
+                    'write_still': True
+                })
+            return
+        bpy.ops.render.render(**{
+            'write_still': True
+        })
     def execute(self, context): 
         # Render if file given
         if self.output:
-            outdir = os.path.dirname(self.output)
-            pather.make(outdir)
-            # Path as the output of the scene
-#            context.scene.render.engine = 'CYCLES'
-            context.scene.render.filepath = self.output
-            log.yaml('Rendering', self.output)
-            # Write a single image to the output
-            bpy.ops.render.render(write_still=True)
+            self.render(context)
 
         # Save if blend given
         if self.blend:

@@ -23,10 +23,16 @@ from common import semver
 from common import parser
 from common import linker
 from common import pather
+from common import mover
 from common import sizer
 
 from common import err
 from common import log
+
+def remove_obj(obj):
+    bpy.ops.object.select_all(action='DESELECT')
+    obj.select = True
+    bpy.ops.object.delete()
 
 def read_z(_path, zFinder, _groups):
     ext = _path.split(".")[-1] 
@@ -43,12 +49,12 @@ def read_z(_path, zFinder, _groups):
         pass
     return status
 
-def add_slice(_glob, _groups, *_z):
+def add_slice(_glob, _groups, *_zs):
     status = set()
-    globber = pather.format_glob(_glob, *_z)
-    zFinder = lambda x: map(str, _z)
+    globber = pather.format_glob(_glob, *_zs)
+    zFinder = lambda x: map(str, _zs)
     # Test if any files exist
-    if not _z:
+    if not _zs:
         matcher = fnmatch.translate(globber) 
         grouper = matcher.replace('.*','(.*)')
         rematch = re.compile(grouper).match
@@ -63,16 +69,35 @@ def add_slice(_glob, _groups, *_z):
             z_name = next(zFinder(ifile))
         except err.MeshLabelError:
             raise err.MeshLabelError(globber, ifile)
+        # Properly format zname
+        z_num = int(z_name)
+        z_name = '{:d}'.format(z_num)
         # Get volume and subvolume sizes
         new_obj = bpy.context.active_object
-        sub = Vector(_groups['SUB'].subvolume)
-        vol = Vector(_groups['VOL'].volume)
         # Get source image
         new_material = new_obj.active_material
-        log.yaml('go', new_material.texture_slots.keys())
         new_texture = new_material.active_texture
         new_image = new_texture.image
-        # dimensions from image size
+        # Set names to subvolume z index
+        new_material.name = z_name
+        new_texture.name = z_name
+        # SUB and VOL GROUPS
+        sub_vol = [_groups['SUB'], _groups['VOL']]
+        g_planes = mover.in_groups(sub_vol, 'Plane*')
+        g_plane = next(g_planes, None)
+        # Add to existing plane if needed
+        if g_plane:
+            # Add material to existing Plane
+            g_plane.data.materials.append(new_material)
+            g_materials = g_plane.material_slots
+            remove_obj(new_obj)
+            # Scale to current Z
+            mover.move_z(g_plane, z_num)
+            continue
+
+        # dimensions from subvolume
+        sub = Vector(_groups['SUB'].subvolume)
+        vol = Vector(_groups['VOL'].volume)
         new_obj.dimensions = sub
         # Set scale based on size of image
         pixels = tuple(new_image.size) + (0,)
@@ -81,6 +106,7 @@ def add_slice(_glob, _groups, *_z):
         scale_pixels.x *= scale.x
         scale_pixels.y *= scale.y
         new_obj.scale = scale_pixels
+
         # Translate image by origin and offset
         vol_origin = Vector(_groups['VOL'].origin)
         sub_offset = Vector(_groups['SUB'].offset)
@@ -88,18 +114,20 @@ def add_slice(_glob, _groups, *_z):
         # Origin of plane represents center
         sub_center = sub_origin + sub/2
         sub_center.z = sub_origin.z
-        # Translate in Z
-        stack = Vector((0,)*3)
-        stack.z = int(z_name) * scale.z
-        new_obj.location = sub_center + stack
+        new_obj.location = sub_center
+
         # add to all groups
         for g in _groups.values(): 
-            bpy.ops.object.group_link(group=g.name)
+            g.objects.link(new_obj)
 
         # Flip texture UV map
         for uv_map in new_obj.data.uv_layers:
             for k in uv_map.data:
                 k.uv = k.uv[0], 1-k.uv[1]
+
+        # Scale to current Z
+        mover.move_z(new_obj, z_num)
+
     if not status:
         log.yaml('Warning, No files match', globber)
         return {'CANCELLED'}

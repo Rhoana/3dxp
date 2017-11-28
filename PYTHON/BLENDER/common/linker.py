@@ -1,5 +1,6 @@
 import bpy
 import struct, base64, zlib
+from itertools import combinations
 
 from . import semver
 from . import sizer
@@ -11,16 +12,47 @@ def to_name_hash(_format, _values):
     name_hash = base64.encodebytes(name_zip)
     return name_hash.decode('utf-8').rstrip('\n')
 
-def get_name(given, item):
+def get_name(given, item, keys=[]):
     name_fmt = ''
     name_vals = []
-    # Check all the groups
-    for key in item['Keys']['Name']:
+    if not keys:
+        keys = item['Keys']['Name']
+    # Add all name keywords
+    for key in keys:
         name_vals += given[key]
         name_fmt += item['Types'][key]
     # Compress values into a unique name
     uniq = to_name_hash(name_fmt, name_vals)
     return "{}:{}".format(item['Name'], uniq)
+
+def match(given, item, att=[]):
+    # Attributes that may match
+    if not att:
+        att = item['Keys']['Name']
+    att = set(att) & set(given.keys())
+    n_att = len(att)
+    # All possible groups
+    bpy_groups = bpy.data.groups
+    group_keys = bpy_groups.keys()
+    def is_item(g):
+        return g.startswith(item['Name'])
+    group_keys = sorted(filter(is_item, group_keys))
+    unmatched = set(map(bpy_groups.get, group_keys))
+    # Check all combinations
+    for d in range(n_att):
+        # If combos differ by d attributes
+        for c in combinations(att, n_att-d):
+            name_c = get_name(given, item, c)
+            # Yield any group that matches
+            for g in unmatched:
+                name_g = get_name(g, item, c)
+                if name_g == name_c:
+                    yield g, (n_att-d, n_att)
+                    unmatched -= g
+    # Yield unmatched groups
+    for g in unmatched:
+        yield g, (0, n_att)
+    yield {}, (0, n_att)
 
 def keywords(version, arg):
     given = sizer.get_scale(arg)
@@ -39,7 +71,6 @@ def groups(versions, arg):
 
     # Name, keys, values for all groups
     for scope, item in version['Items'].items():
-        print (item['Type'])
         # Name group, get all keys and vlues
         props = {k:given[k] for k in item['Keys']['All']}
         name = get_name(given, item)
