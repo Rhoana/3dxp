@@ -54,10 +54,12 @@ def animate(arg, versions):
     groups = linker.match(given, vol_v, vol_k)
     group, likeness = next(groups)
     if not group:
+        log.yaml('Error', 'No group')
         return
     # Get planes in group
     planes = set(mover.in_groups([group], 'Plane*'))
     if not planes:
+        log.yaml('Error', 'No plane')
         return
     # Get sources for planes
     def plane_src(src, x):
@@ -66,6 +68,7 @@ def animate(arg, versions):
         return src | set(x_s)
     sources = reduce(plane_src, planes, set())
     if not sources:
+        log.yaml('Error', 'No source')
         return
 
     # World z min and max
@@ -74,36 +77,63 @@ def animate(arg, versions):
     # World z start and stop
     w_span = [w_min, w_max]
     def w_clamp(v):
-        return sorted(v/sizer.UM, w_min, w_max)[1]
+        return sorted([v/sizer.UM, w_min, w_max])[1]
     if arg.zspan:
         w_span = sizer.parse_list(arg.zspan, 2)
         w_span = [w_clamp(v) for v in w_span]
     # Get voxels per world unit
     all_vox_w = [s['to_vox'] for s in sources]
     vox_w = [sum(v) for v in zip(*all_vox_w)]
-    # Voxel z start and stop
+    # Voxel z start, stop
     z_span = [int(vox_w[-1]*v) for v in w_span]
-
-    # Get frames per z
+    # Rate must be positive
+    if arg.zps <= 0:
+        'zps {} must be >0'.format(arg.zps)
+        log.yaml('Error', msg)
+        return
+    # Voxel z step
+    z_span.append(arg.zps)
+    # Set frames per second
     scene = bpy.context.scene
-    frame_sec = scene.render.fps
-    frame_z = frame_sec / arg.zrate
-    frame_z = int(math.ceil(frame_z))
-
+    scene.render.fps = arg.fps
+    # Clear all keyframes
+    for p in planes:
+        p.animation_data_clear()
     # Actually animate
     current_frame = 0
     for vox_z in range(*z_span):
+        # Jump frames per z slice
+        current_frame += arg.fps
         scene.frame_set(current_frame)
         # Move slice and change texture
         keyframe(planes, vox_z)
-        # Jump frames per z slice
-        current_frame += frame_z
+    # Set first and last frame
+    scene.frame_start = arg.fps
+    scene.frame_end = current_frame
+    # Return planes for callbacks
+    return planes
+
+def register(on_frame):
+    bpy.app.handlers.frame_change_pre.append(on_frame)
+
+def unregister():
+    handlers = bpy.app.handlers.frame_change_pre
+    for h in handlers:
+        handlers.remove(h)
 
 def main(arg, versions):
     # Open the scene
     bpy.ops.common.start(blend=arg.blend)
+    unregister()
     # Animate
     animate(arg, versions)
+    def on_frame(scene):
+        all_obj = scene.objects
+        planes = mover.match_name(all_obj, 'Plane*')
+        for p in planes:
+            w_z =  p.location[-1]
+            mover.slice_w_z(p, w_z, 0)
+    register(on_frame)
     # Stop the scene
     bpy.ops.common.stop(**{
         'blend': arg.blend,
@@ -121,7 +151,8 @@ if __name__ == "__main__":
     ]
     cmd = parser.setup(filename, describe, items)
     parser.add_argument(cmd, 'zspan')
-    parser.add_argument(cmd, 'zrate')
+    parser.add_argument(cmd, 'zps')
+    parser.add_argument(cmd, 'fps')
     # Get most recent version
     versions = semver.all()
     semver.setup(versions)

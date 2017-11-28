@@ -14,7 +14,8 @@ flags = {
     # Nonstandard
     'tmp': ['--tmp'],
     'zspan': ['--zspan'],
-    'zrate': ['--zrate'],
+    'zps': ['--zps'],
+    'fps': ['--fps'],
 }
 
 def key(k):
@@ -33,20 +34,27 @@ def key(k):
         # Nonstandard
         'tmp': 'Temporary folder (default {})',
         'zspan': 'start:stop range in μm (default {})',
-        'zrate': 'z slices per second (default {})',
+        'zps': 'z slices per second (default {})',
+        'fps': 'frames per second (default {})',
     }
     defaults = {
         'file': '*.*',
+        'output': '',
+        'blend': '',
         'um/VOL': '50:50:50',
         'um/XYZ': '0:0:0',
         'vol/VOL': '1:1:1',
         'vol/xyz': '0:0:0',
         'vox/mesh': '1:1:1',
-        'nm/vox': '4:4:30',           
+        'nm/vox': '4:4:30',
         # Nonstandard
         'tmp': 'tmp',
         'zspan': '',
-        'zrate': 2,
+        'fps': 1,
+        'zps': 4,
+    }
+    choices = {
+        'fps': range(1,64),
     }
     keys = {
         'help': helps.get(k, '???'),
@@ -57,6 +65,8 @@ def key(k):
         keys['help'] = keys['help'].format(v)
         if type(v) is int:
             keys['type'] = int
+    if k in choices:
+        keys['choices'] = choices[k]
 
     return keys
 
@@ -84,7 +94,13 @@ def setup(_filename, _describe, _items=[]):
     })
 
     positional = ['folder']
-    items = positional + list(flags.keys())
+    optional = [
+        'file', 'list', 'blend',
+        'output', 'um/XYZ', 'um/VOL',
+        'vol/xyz', 'vol/VOL',
+        'vox/mesh', 'nm/vox',
+    ]
+    items = positional + optional
     # Allow custom items
     if _items:
         items = _items

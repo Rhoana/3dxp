@@ -12,6 +12,7 @@ from bpy.props import BoolProperty
 from . import parser
 from . import semver
 from . import linker
+from . import cycler
 from . import mover
 from . import pather
 from . import sizer
@@ -28,6 +29,9 @@ class Starter(bpy.types.Operator):
     blend = StringProperty()
 
     def execute(self, context): 
+        # Cycles
+        context.scene.render.engine = 'CYCLES' 
+
         def remove_mesh(k, v):
             scene = context.scene
             obj = scene.objects[k]
@@ -86,6 +90,7 @@ class Stopper(bpy.types.Operator):
         log.yaml('Rendering', self.output)
         # Render images to the output files
         if self.movie:
+            log.yaml('Frames', frames)
             pather.make(self.output)
             for i_fr in range(*frames):
                 file_fr = '{:010d}'.format(i_fr)
