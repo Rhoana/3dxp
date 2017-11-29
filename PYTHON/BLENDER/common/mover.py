@@ -1,3 +1,4 @@
+from mathutils import Vector
 import fnmatch
 
 from . import cycler
@@ -66,7 +67,7 @@ def move_z(obj, mesh_z):
     # Set texture to specified Z
     slice_z(obj, mesh_z)
 
-def move_world_z(obj, w_z):
+def move_w_z(obj, w_z):
     """ Move to slice z (in blender units)
     """
     groups = obj.users_group
@@ -86,14 +87,12 @@ def move_world_z(obj, w_z):
     else:
         obj.hide = True
 
-def move_vox_z(obj, vox_z):
-    """ Move to slice z (in voxel units)
+def move_w_vol(vol, obj, w_off):
+    """ Move relative to vol (blender units)
     """
-    print('v_z', vox_z)
-    groups = obj.users_group
-    SRC = next(match_name(groups, 'SRC*'))
-    w_z = vox_z / SRC.to_vox[-1]
-    print('w_z', w_z)
-    print('')
-    move_world_z(obj, w_z)
-
+    origin = Vector(vol.origin)
+    volume = Vector(vol.volume)
+    center = origin + volume/2
+    center.z = origin.z
+    # Move object from the center of slice 0
+    obj.location = center + Vector(w_off)

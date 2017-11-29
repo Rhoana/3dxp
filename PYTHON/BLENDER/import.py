@@ -32,6 +32,7 @@ def color_label(label):
     return red/256, green/256, blue/256
 
 def read_id(_path, idFinder, _groups):
+    context = bpy.context
     ext = _path.split(".")[-1] 
     tmp_root = _groups['VOL'].tmp
     attributes = {
@@ -51,7 +52,7 @@ def read_id(_path, idFinder, _groups):
         status = importer(filepath = tmp_link)
         if 'FINISHED' in status:
             # Set color for new object
-            new_obj = bpy.context.active_object
+            new_obj = context.active_object
             mat = bpy.data.materials.new(name=name)
             mat.diffuse_color = color_label(name) 
             new_obj.data.materials.append(mat) 
@@ -69,6 +70,7 @@ def read_id(_path, idFinder, _groups):
 
 def import_id(_glob, _groups, *_ids):
     status = set()
+    context = bpy.context
     globber = pather.format_glob(_glob, *_ids)
     idFinder = lambda x: map(str, _ids)
     # Test if any files exist
@@ -87,12 +89,24 @@ def import_id(_glob, _groups, *_ids):
         except err.MeshLabelError:
             raise err.MeshLabelError(globber, ifile)
         # Set scale for newly imported mesh
-        new_obj = bpy.context.active_object
+        new_obj = context.active_object
         new_obj.scale = _groups['SRC'].from_mesh
         # Translate mesh by origin and offset
         vol_origin = Vector(_groups['VOL'].origin)
         sub_offset = Vector(_groups['SUB'].offset)
         new_obj.location = vol_origin + sub_offset
+        # add modifiers
+        mod0 = new_obj.modifiers.new('Simple', 'DECIMATE')
+        mod1 = new_obj.modifiers.new('Smooth', 'SUBSURF')
+        mod1.render_levels = 2
+        mod0.ratio = 0.12
+        # Apply modifiers
+        full_mesh = new_obj.data
+        applier = context.scene, True, 'RENDER'
+        new_mesh = new_obj.to_mesh(*applier)
+        new_obj.modifiers.clear()
+        new_obj.data = new_mesh
+        bpy.data.meshes.remove(full_mesh)
         # add to all groups
         for g in _groups.values(): 
             bpy.ops.object.group_link(group=g.name)

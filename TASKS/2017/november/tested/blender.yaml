@@ -1,0 +1,80 @@
+K_58146: &K_58146
+    ID_A: "58146" 
+blender: &blender
+    Exports: [python, args]
+    Slurm: ./SLURM/blender.sbatch
+stack-1: &stack-1
+    Sync: 30
+    Runs: 429
+    Exports: [python, args]
+    Slurm: ./SLURM/many_z.sbatch
+    python: ./PYTHON/scripts/sides.py
+    args: "{PNG}/{ID_A} {EM_H5} {ID_H5} -i {ID_A} {HILITE}"
+    Constants:
+        <<: *K_58146
+        HILITE: "-a z -g 5 -o 0.25"
+stl-1: &stl-1
+    Exports: [python, args]
+    Slurm: ./SLURM/one.sbatch
+    python: ./PYTHON/all_stl.py
+    args: "--xyz -b 1 -l {ID_A} {ID_H5} {OUT}"
+    Constants:
+        <<: *K_58146
+        HILITE: "-a z -g 5 -o 0.25"
+sub-1: &sub-1
+    <<: *blender
+    python: ./PYTHON/BLENDER/import.py
+    args: "{OUT}/stl -f */*.stl -o {RENDER} -b {BLEND} {BLOCK}"
+    Inputs:
+        BLOCK: "--vox={XYZ_VOX} --VOL=50:50:50 --XYZ=-20:-20:-20"
+slice-1: &slice-1
+    <<: *blender
+    python: ./PYTHON/BLENDER/slices.py
+    args: "{PNG}/{ID_A} -f *_in_z.png -o {RENDER} -b {BLEND} {BLOCK}"
+    Inputs:
+        <<: *K_58146
+        BLOCK: "--vox={XYZ_VOX} --VOL=50:50:50 --XYZ=-20:-20:-20"
+Main: &main
+    <<: *slice-1
+    Needs:
+        - <<: *sub-1
+          Needs:
+            - <<: *stack-1
+            - <<: *stl-1
+del-blend: &del-blend
+    Exports: [args]
+    Slurm: ./SLURM/bash.sbatch
+    args: 'rm {BLEND}*'
+new-scene:
+    <<: *slice-1
+    Needs:
+        - <<: *sub-1
+          Needs:
+            - *del-blend
+make-scene:
+    <<: *slice-1
+    Needs:
+        - <<: *sub-1
+scroll:
+    <<: *blender
+    python: ./PYTHON/BLENDER/scroll.py
+    args: "-o {RENDER} -b {BLEND} {RANGE} --zps=100 --fps=6"
+    Inputs:
+        RANGE: "--VOL={XYZ_VOL} --zspan=0:1000"
+Default:
+    Workdir: "git rev-parse --show-toplevel"
+    Constants:
+        OUT_ROOT: /n/coxfs01/thejohnhoffer/R0/render
+        IN_ROOT: /n/coxfs01/thejohnhoffer/R0/ids-2017-08-23_50um/images
+        XYZ_VOL: "50:50:50"
+        XYZ_VOX: "16:16:4"
+        TODAY: "2017_11_28"
+        NAME: johanna
+    Inputs:
+        ID_H5: "{IN_ROOT}/4_16_16_ids_all.h5"
+        EM_H5: "{IN_ROOT}/4_16_16_raw_all.h5"
+        OUT: "{OUT_ROOT}/{TODAY}/{NAME}"
+        PNG: "{OUT_ROOT}/{TODAY}/{NAME}/png"
+        BLEND: "./BLENDER/{TODAY}/{NAME}.blend"
+        RENDER: "./RENDER/{TODAY}/{NAME}"
+    Logs: "./LOGS/{TODAY}/{NAME}"

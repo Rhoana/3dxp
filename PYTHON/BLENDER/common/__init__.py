@@ -32,38 +32,87 @@ class Starter(bpy.types.Operator):
         # Cycles
         context.scene.render.engine = 'CYCLES' 
 
-        def remove_mesh(k, v):
+        def remove_object(o):
+            iters = {
+                'MESH': bpy.data.meshes,
+                'LAMP': bpy.data.lamps,
+            }
+            o_data = o.data
+            o_iter = iters.get(o.type, None)
             scene = context.scene
-            obj = scene.objects[k]
-            scene.objects.unlink(obj)
-            bpy.data.objects.remove(obj)
-            bpy.data.meshes.remove(v)
+            scene.objects.unlink(o)
+            bpy.data.objects.remove(o)
+            if o_iter:
+                o_iter.remove(o_data)
 
         # Open if blend given
         if self.blend and os.path.exists(self.blend):
             log.yaml('Loading blend file', self.blend)
             bpy.ops.wm.open_mainfile(filepath=self.blend)
-
+        bad_mesh = {'Cube'}
+        bad_lamp = {'Lamp'}
+        bad = bad_mesh | bad_lamp
         # Remove the default cube mesh
-        for k,v in bpy.data.meshes.items():
-            if k in ['Cube']:
-                remove_mesh(k, v)
-                log.yaml('Removed', k)
+        for o in bpy.data.objects:
+            names = {o.name, o.data.name}
+            if names & bad:
+                log.yaml('Removed', o.name)
+                remove_object(o)
 
         # Create the sun
         if 'Sun' not in bpy.data.lamps:
-            sun = bpy.data.lamps.new(name='Sun', type='SUN')
-            sun_obj = bpy.data.objects.new(name='Sun', object_data=sun)
-            context.scene.objects.link(sun_obj)
+            bpy.ops.object.lamp_add(**{
+                'type': 'SUN',
+            })
+            sun = bpy.context.active_object
+            sun.data.name = 'Sun'
+            sun.name = 'Sun'
 
-        # Set up the lamp
-        if 'Lamp' in bpy.data.lamps:
-            lamp = bpy.data.lamps['Lamp']
-            lamp.energy = 5
+        area_locs = {
+            'Area': (2.0, 2.0, 10.0),
+            'Over': (0.0, 0.0, 1.0),
+            'Under': (0.0, 0.0, -1.0),
+        }
+        area_size = {
+            'Area': 0.5,
+            'Over': 0.5,
+            'Under': 0.5,
+        }
+        area_bright = {
+            'Area': 10000,
+            'Over': 100,
+            'Under': 100,
+        }
+
+        # Create an area lamp
+        def make_area(_name, _location):
+            if _name in bpy.data.lamps:
+                return
+            bpy.ops.object.lamp_add(**{
+                'location': _location,
+                'type': 'AREA',
+            })
+            area = bpy.context.active_object
+            area.data.name = _name
+            area.name = _name
+
+        # Set up some area lamps
+        for name,loc in area_locs.items():
+            make_area(name, loc)
+            area = bpy.data.lamps[name]
+            area.shadow_buffer_soft = 100
+            area.size = area_size[name]
+            a_bright = area_bright[name]
+            a_pow = a_bright * (loc[-1] ** 2)
+            area.energy = a_pow * (area.size ** 2)
 
         # Set up the sun
         sun = bpy.data.lamps['Sun']
-        sun.energy = 0.5
+        sun.cycles.cast_shadow = False
+        sun.energy = 2
+
+        #remove_lamp('Area')
+        #remove_lamp('Sun')
 
         return {'FINISHED'}
 
@@ -92,16 +141,18 @@ class Stopper(bpy.types.Operator):
         if self.movie:
             log.yaml('Frames', frames)
             pather.make(self.output)
-            for i_fr in range(*frames):
-                file_fr = '{:010d}'.format(i_fr)
-                path_fr = self.output, file_fr
-                out_fr = os.path.join(*path_fr)
-                render.filepath = out_fr
-                # Set current frame and write
-                scene.frame_set(i_fr)
-                bpy.ops.render.render(**{
-                    'write_still': True
-                })
+            # Set frame to first frame
+            scene.frame_set(frames[0])
+            render.ffmpeg.codec = 'H264'
+            render.ffmpeg.format = 'MPEG4'
+            render.fps_base = render.fps / 24
+            render.resolution_x = 900 * 2
+            render.resolution_y = 500 * 2
+            render.image_settings.file_format = 'FFMPEG'
+            # Animate movie
+            bpy.ops.render.render(**{
+                'animation': True
+            })
             return
         bpy.ops.render.render(**{
             'write_still': True

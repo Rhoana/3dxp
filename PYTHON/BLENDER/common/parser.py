@@ -33,7 +33,7 @@ def key(k):
         'nm/vox': 'w:h:d of nm per voxel (default {})',
         # Nonstandard
         'tmp': 'Temporary folder (default {})',
-        'zspan': 'start:stop range in μm (default {})',
+        'zspan': 'start:stop slices (default all)',
         'zps': 'z slices per second (default {})',
         'fps': 'frames per second (default {})',
     }

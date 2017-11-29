@@ -26,15 +26,43 @@ from common import mover
 from common import err
 from common import log
 
-def keyframe(planes, vox_z):
+def keyframe(vol, planes, w_z):
+    scene = bpy.context.scene
+    movement = {
+        'data_path': 'location',
+        'index': -1
+    }
+    # Set light above volume
+    if 'Area' in scene.objects:
+        vx, vy, vz = vol.volume
+        area = scene.objects['Area']
+        off = (0.1*vx, 0.1*vy, 0.1+vz)
+        mover.move_w_vol(vol, area, off)
+    # Move the light just above slice
+    if 'Over' in scene.objects:
+        off = (0.0, 0.0, w_z + 2.0)
+        over = scene.objects['Over']
+        mover.move_w_vol(vol, over, off)
+        over.keyframe_insert(**movement)
+    # Move the light just below slice
+    if 'Under' in scene.objects:
+        off = (0.0, 0.0, w_z - 2.0)
+        under = scene.objects['Over']
+        mover.move_w_vol(vol, under, off)
+        under.keyframe_insert(**movement)
+    # Move the planes to the z position
     for p in planes:
-        mover.move_vox_z(p, vox_z)
-        p.keyframe_insert(**{
-            'data_path': 'location',
-            'index': -1
-        })
+        mover.move_w_z(p, w_z)
+        p.keyframe_insert(**movement)
 
 def animate(arg, versions):
+    context = bpy.context
+    scene = context.scene
+    # Rate must be positive
+    if arg.zps <= 0:
+        'zps {} must be >0'.format(arg.zps)
+        log.yaml('Error', msg)
+        return
     # Convert inputs to world units
     known = {
         'um/w': [sizer.UM,] * 3,
@@ -56,6 +84,15 @@ def animate(arg, versions):
     if not group:
         log.yaml('Error', 'No group')
         return
+    # Select all meshes
+    for o in scene.objects:
+        o.select = False
+    for o in group.objects:
+        if o.type == 'MESH':
+            o.select = True
+    # Focus camera on meshes
+    bpy.ops.view3d.camera_to_view_selected()
+
     # Get planes in group
     planes = set(mover.in_groups([group], 'Plane*'))
     if not planes:
@@ -70,43 +107,46 @@ def animate(arg, versions):
     if not sources:
         log.yaml('Error', 'No source')
         return
+    # Convert between world and voxels
+    any_source = next(iter(sources))
+    vox_w = list(any_source['to_vox'])
+    zvox_w = vox_w[-1]
 
-    # World z min and max
+    # World resolution
     w_min = w_XYZ[-1]
     w_max = w_XYZ[-1] + w_VOL[-1]
-    # World z start and stop
-    w_span = [w_min, w_max]
-    def w_clamp(v):
-        return sorted([v/sizer.UM, w_min, w_max])[1]
+    # Voxel resolution
+    v_min = int(w_min * zvox_w)
+    v_max = int(w_max * zvox_w)
     if arg.zspan:
-        w_span = sizer.parse_list(arg.zspan, 2)
-        w_span = [w_clamp(v) for v in w_span]
-    # Get voxels per world unit
-    all_vox_w = [s['to_vox'] for s in sources]
-    vox_w = [sum(v) for v in zip(*all_vox_w)]
-    # Voxel z start, stop
-    z_span = [int(vox_w[-1]*v) for v in w_span]
-    # Rate must be positive
-    if arg.zps <= 0:
-        'zps {} must be >0'.format(arg.zps)
-        log.yaml('Error', msg)
-        return
-    # Voxel z step
-    z_span.append(arg.zps)
+        def v_clamp(v):
+            return sorted([v, v_min, v_max])[1]
+        zspan = sizer.parse_list(arg.zspan, 2)
+        v_span = [v_clamp(v) for v in zspan]
+        w_min, w_max = [v/zvox_w for v in v_span]
+        v_min, v_max = v_span
+    # World step size and step count
+    w_step = arg.zps / zvox_w
+    slices = len(range(v_min, v_max, arg.zps))
+    slicer = lambda i: w_min + w_step*i
+
     # Set frames per second
-    scene = bpy.context.scene
     scene.render.fps = arg.fps
     # Clear all keyframes
     for p in planes:
         p.animation_data_clear()
+
     # Actually animate
     current_frame = 0
-    for vox_z in range(*z_span):
+    msg = '{1} seconds × {0} × %dμm' % sizer.UM
+    log.yaml('Debug', msg.format(w_step, slices))
+    # Use world Z value for all slices
+    for world_z in map(slicer, range(slices)):
         # Jump frames per z slice
         current_frame += arg.fps
         scene.frame_set(current_frame)
         # Move slice and change texture
-        keyframe(planes, vox_z)
+        keyframe(group, planes, world_z)
     # Set first and last frame
     scene.frame_start = arg.fps
     scene.frame_end = current_frame
