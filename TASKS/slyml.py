@@ -328,6 +328,13 @@ def end_tree(task_id, quiet=False):
         if line:
             print(line)
 
+def flatten(*args):
+    def flat_1(a):
+        if isinstance(a, (tuple, list)):
+            return flatten(*a)
+        return (a,)
+    return (val for a in args for val in flat_1(a))
+
 def run_task(__default, __task, __i=0):
     # Take defaults for task
     _default = copy.deepcopy(__default)
@@ -403,10 +410,11 @@ def run_task(__default, __task, __i=0):
     # Get all needed jobs
     need_names = []
     need_jobs = []
-
-    if _needs:
+    # Flatten needs
+    all_needs = flatten(_needs)
+    if all_needs:
         # Recursively run all jobs needed
-        for ni, n in enumerate(_needs):
+        for ni, n in enumerate(all_needs):
             # Run task and keep job
             n_job = run_task(_default, n, ni)
             n_name = map("Job {}".format, n_job)
