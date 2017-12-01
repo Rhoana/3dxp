@@ -1,12 +1,14 @@
+from itertools import groupby
 import subprocess
 import argparse
+import string
 import copy
 import yaml
 import sys
 import six
 import os
 
-ID_START = int('A', 16)
+ID_START = 0
 
 class FormatError(KeyError):
     pass
@@ -143,8 +145,20 @@ def is_bash(task, default={}):
 
 def uniq_id(task):
     task_ids = task.get('Slyml:ID', [])
-    log_ids = map("{:X}".format, task_ids)
-    return os.sep.join(log_ids)
+    human_ids = [] 
+    def to_word(n):
+        abc = string.ascii_uppercase
+        (d, m) = divmod(n, len(abc))
+        return (to_word(d).lower() if d else '') + abc[m]
+    # Count any repetitions
+    for v,g in groupby(task_ids):
+        count = sum(1 for _ in (g)) - 1
+        pre = 1 + count if count else ''
+        human_ids.append(str(pre) + to_word(v))
+    return os.sep.join(human_ids)
+
+def uniq_short(task):
+    return ''.join(uniq_id(task).split(os.sep))
 
 def get_logs(task, ext='out'):
     # Get log or default to id string
@@ -216,7 +230,7 @@ def get_slurm(task, dependency):
     except EvalError as e:
         raise
     default_list = [
-        ['job-name', uniq_id(task)],
+        ['job-name', uniq_short(task)],
         ['output', get_logs(task, 'out')],
         ['error', get_logs(task, 'err')],
         ['dependency', dependency],
@@ -307,7 +321,7 @@ def log_default(k, v, default, quiet=False):
             log_yaml(add_msg, add_default, quiet)
 
 def tree_box(task_id, sym='', quiet=False):
-    tree_len = len(task_id.split('/'))
+    tree_len = len(task_id.split(os.sep))
     tree_lines = sym[:2]*tree_len
     tree_label = task_id+sym[-1]
     tree_border = ''
@@ -482,7 +496,7 @@ if __name__ == "__main__":
         'debug': 'Do not actually schedule jobs',
         'entry': 'Parse entry in yaml (default Main)',
         'bash': 'Use bash, no arrays or dependencies',
-        'yaml': """A path to YAML file with optional keys...
+        'yaml': """A/path/to/file.yaml with optional keys...
     Main:
         Constants:
             A: ./EXAMPLE/0
@@ -511,12 +525,12 @@ if __name__ == "__main__":
         Runs: "{N}"
         ...
      Default:
-        Evals: [Runs, Sync ]
+        Evals: [Runs, Sync]
         Exports: []
         Flags: []
         Constants: {}
         Inputs: {}
-        Workdir: "/root/path/to/this/YAML.yaml"
+        Workdir: "A/path/to/file.yaml"
         Logs: "./LOGS"
         Slurm: ""
         Quiet: false
