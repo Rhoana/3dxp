@@ -3,8 +3,9 @@
 .*.swo
 
 # Examples
-*.blend
 LOGS/
+BLENDER/
+RENDER/
 
 # Python
 *.pyc
