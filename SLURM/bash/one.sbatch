@@ -8,13 +8,8 @@
 #SBATCH --mem=16000
 #SBATCH -t 3-12:00
 
-source new-modules.sh
-module load python/2.7.11-fasrc01
-source activate 3DXP
-
 # we are working
-IN_ARRAY="-t $SLURM_ARRAY_TASK_ID -r $SLURM_ARRAY_TASK_COUNT"
-RUNNING="python -u $python $args $IN_ARRAY"
+RUNNING="$args"
 echo $RUNNING
 time $RUNNING
 

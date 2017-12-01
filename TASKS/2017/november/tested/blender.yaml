@@ -1,75 +1,111 @@
-K_58146: &K_58146
-    ID_A: "58146" 
-blender: &blender
-    Exports: [python, args]
-    Slurm: ./SLURM/blender.sbatch
+# slyml.py v2.1
+#
 stack-1: &stack-1
     Sync: 30
     Runs: 429
-    Exports: [python, args]
     Slurm: ./SLURM/many_z.sbatch
     python: ./PYTHON/scripts/sides.py
-    args: "{PNG}/{ID_A} {EM_H5} {ID_H5} -i {ID_A} {HILITE}"
-    Constants:
-        <<: *K_58146
+    args: "{PNG}/{ID} {EM_H5} {ID_H5} -i {ID} {HILITE}"
+    Inputs:
+        ID: "{ID-A}"
         HILITE: "-a z -g 5 -o 0.25"
 stl-1: &stl-1
     Exports: [python, args]
     Slurm: ./SLURM/one.sbatch
     python: ./PYTHON/all_stl.py
-    args: "--xyz -b 1 -l {ID_A} {ID_H5} {OUT}"
-    Constants:
-        <<: *K_58146
-        HILITE: "-a z -g 5 -o 0.25"
-sub-1: &sub-1
-    <<: *blender
-    python: ./PYTHON/BLENDER/import.py
-    args: "{OUT}/stl -f */*.stl -o {RENDER} -b {BLEND} {BLOCK}"
+    args: "--xyz -b 1 -l {ID} {ID_H5} {OUT}"
     Inputs:
+        ID: "{ID-A}"
+        HILITE: "-a z -g 5 -o 0.25"
+del-log: &del-log
+    Bash: true
+    Exports: [args]
+    Slurm: ./SLURM/bash/one.sbatch
+    args: 'rm {LOG}*'
+########
+# For blender
+del-blend: &del-blend
+    <<: *del-log
+    args: 'rm {BLEND}*'
+light: &light
+    Slurm: ./SLURM/blender/one.sbatch
+    python: ./PYTHON/BLENDER/lights.py
+    args: "-b {BLEND}"
+sub-1: &sub-1
+    Slurm: ./SLURM/blender/one.sbatch
+    python: ./PYTHON/BLENDER/import.py
+    args: "{OUT}/stl {STL_FILES} -b {BLEND} {BLOCK}"
+    Inputs:
+        STL_FILES: "-f %d/*.stl -l {ID-A}" 
         BLOCK: "--vox={XYZ_VOX} --VOL=50:50:50 --XYZ=-20:-20:-20"
 slice-1: &slice-1
-    <<: *blender
+    Slurm: ./SLURM/blender/one.sbatch
     python: ./PYTHON/BLENDER/slices.py
-    args: "{PNG}/{ID_A} -f *_in_z.png -o {RENDER} -b {BLEND} {BLOCK}"
+    args: "{PNG} {PNG_FILES} -b {BLEND} {BLOCK}"
     Inputs:
-        <<: *K_58146
+        PNG_FILES: "-f %d/*.stl -l {ID-A}" 
         BLOCK: "--vox={XYZ_VOX} --VOL=50:50:50 --XYZ=-20:-20:-20"
-Main: &main
-    <<: *slice-1
-    Needs:
-        - <<: *sub-1
-          Needs:
-            - <<: *stack-1
-            - <<: *stl-1
-del-blend: &del-blend
-    Exports: [args]
-    Slurm: ./SLURM/bash.sbatch
-    args: 'rm {BLEND}*'
-new-scene:
-    <<: *slice-1
-    Needs:
+scroll-1: &scroll-1
+    Slurm: ./SLURM/blender/one.sbatch
+    python: ./PYTHON/BLENDER/scroll.py
+    args: "-b {BLEND} {Z_RANGE} {Z_RATE}"
+    Inputs:
+        Z_RANGE: "--VOL={XYZ_VOL} --zspan=100:801"
+        Z_RATE: "--zps=100 --fps=24"
+render-1: &render-1
+    Runs: 10
+    Slurm: ./SLURM/blender/many.sbatch
+    python: ./PYTHON/BLENDER/render.py
+    args: "-o {RENDER} -b {BLEND}"
+########
+# Command logic
+Misc-1:
+    - &make-data
+      Needs:
+        - <<: *stack-1
+        - <<: *stl-1
+    - &new-scene
+      <<: *slice-1
+      Needs:
         - <<: *sub-1
           Needs:
             - *del-blend
-make-scene:
-    <<: *slice-1
-    Needs:
+    - &new-scene-data
+      <<: *slice-1
+      Needs:
         - <<: *sub-1
-scroll:
-    <<: *blender
-    python: ./PYTHON/BLENDER/scroll.py
-    args: "-o {RENDER} -b {BLEND} {RANGE} --zps=100 --fps=6"
-    Inputs:
-        RANGE: "--VOL={XYZ_VOL} --zspan=0:1000"
+          Needs:
+            - *make-data
+            - *del-blend
+    - &new-scroll-scene
+      <<: *scroll-1
+      Needs:
+         - *new-scene
+    - &new-scroll-clean
+      <<: *scroll-1
+      Needs:
+         - *new-scene-data
+########
+# Commands
+test:
+    <<: *render-1
+    Needs:
+        - *new-scroll-scene
+Main:
+    <<: *render-1
+    Needs:
+        - *new-scroll-clean
 Default:
     Workdir: "git rev-parse --show-toplevel"
+    Exports: [python, args]
     Constants:
         OUT_ROOT: /n/coxfs01/thejohnhoffer/R0/render
         IN_ROOT: /n/coxfs01/thejohnhoffer/R0/ids-2017-08-23_50um/images
         XYZ_VOL: "50:50:50"
         XYZ_VOX: "16:16:4"
-        TODAY: "2017_11_28"
-        NAME: johanna
+        TODAY: "2017_11_30"
+        NAME: parallel
+        ID-A: "58146" 
     Inputs:
         ID_H5: "{IN_ROOT}/4_16_16_ids_all.h5"
         EM_H5: "{IN_ROOT}/4_16_16_raw_all.h5"
