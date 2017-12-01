@@ -32,24 +32,32 @@ def keyframe(vol, planes, w_z):
         'data_path': 'location',
         'index': -1
     }
+    vx, vy, vz = vol.volume
     # Set light above volume
     if 'Area' in scene.objects:
-        vx, vy, vz = vol.volume
         area = scene.objects['Area']
-        off = (0.1*vx, 0.1*vy, 0.1+vz)
+        off = (0.1*vx, 0.1*vy, vz)
         mover.move_w_vol(vol, area, off)
     # Move the light just above slice
     if 'Over' in scene.objects:
-        off = (0.0, 0.0, w_z + 2.0)
+        off = (0.0, 0.0, w_z + vz/2)
         over = scene.objects['Over']
         mover.move_w_vol(vol, over, off)
         over.keyframe_insert(**movement)
+        # Static
+        o_d = over.data
+        o_d.size = max(vx, vy)/2
+        o_d.energy = mover.energy(o_d, vz/2)
     # Move the light just below slice
     if 'Under' in scene.objects:
-        off = (0.0, 0.0, w_z - 2.0)
-        under = scene.objects['Over']
+        off = (0.0, 0.0, w_z - vz/2)
+        under = scene.objects['Under']
         mover.move_w_vol(vol, under, off)
         under.keyframe_insert(**movement)
+        # Static
+        u_d = under.data
+        u_d.size = max(vx, vy)/2
+        u_d.energy = mover.energy(u_d, vz/2)
     # Move the planes to the z position
     for p in planes:
         mover.move_w_z(p, w_z)
@@ -84,15 +92,6 @@ def animate(arg, versions):
     if not group:
         log.yaml('Error', 'No group')
         return
-    # Select all meshes
-    for o in scene.objects:
-        o.select = False
-    for o in group.objects:
-        if o.type == 'MESH':
-            o.select = True
-    # Focus camera on meshes
-    bpy.ops.view3d.camera_to_view_selected()
-
     # Get planes in group
     planes = set(mover.in_groups([group], 'Plane*'))
     if not planes:
@@ -118,6 +117,7 @@ def animate(arg, versions):
     # Voxel resolution
     v_min = int(w_min * zvox_w)
     v_max = int(w_max * zvox_w)
+    log.yaml('Voxel bounds', [v_min, v_max])
     if arg.zspan:
         def v_clamp(v):
             return sorted([v, v_min, v_max])[1]
@@ -125,6 +125,7 @@ def animate(arg, versions):
         v_span = [v_clamp(v) for v in zspan]
         w_min, w_max = [v/zvox_w for v in v_span]
         v_min, v_max = v_span
+        log.yaml('Voxel span', [v_min, v_max])
     # World step size and step count
     w_step = arg.zps / zvox_w
     slices = len(range(v_min, v_max, arg.zps))
@@ -138,7 +139,7 @@ def animate(arg, versions):
 
     # Actually animate
     current_frame = 0
-    msg = '{1} seconds × {0} × %dμm' % sizer.UM
+    msg = '{1} seconds × {0:.3g} × %dμm' % sizer.UM
     log.yaml('Debug', msg.format(w_step, slices))
     # Use world Z value for all slices
     for world_z in map(slicer, range(slices)):
@@ -150,8 +151,8 @@ def animate(arg, versions):
     # Set first and last frame
     scene.frame_start = arg.fps
     scene.frame_end = current_frame
-    # Return planes for callbacks
-    return planes
+    # Return group for callbacks
+    return group
 
 def register(on_frame):
     bpy.app.handlers.frame_change_pre.append(on_frame)
@@ -166,14 +167,26 @@ def main(arg, versions):
     bpy.ops.common.start(blend=arg.blend)
     unregister()
     # Animate
-    animate(arg, versions)
-    def on_frame(scene):
-        all_obj = scene.objects
-        planes = mover.match_name(all_obj, 'Plane*')
+    group = animate(arg, versions)
+    def handle_frame(scene):
+        # Select all meshes
+        is_mesh = lambda x: x.type == 'MESH'
+        selected = [o for o in group.objects if is_mesh(o)]
+        # Guide the camera
+        camera = scene.camera
+        volume = Vector(group.offset)
+        offset = Vector(group.offset)
+        camera.location.x = offset.x + volume.x / 2.0
+        camera.location.y = offset.y + volume.y + 6.0
+        camera.location.z = offset.z + volume.z + 3.0
+        mover.look_at(scene, selected)
+        # Move all planes
+        planes = mover.match_name(scene.objects, 'Plane*')
         for p in planes:
             w_z =  p.location[-1]
             mover.slice_w_z(p, w_z, 0)
-    register(on_frame)
+
+    register(handle_frame)
     # Stop the scene
     bpy.ops.common.stop(**{
         'blend': arg.blend,

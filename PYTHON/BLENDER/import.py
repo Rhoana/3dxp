@@ -99,7 +99,7 @@ def import_id(_glob, _groups, *_ids):
         mod0 = new_obj.modifiers.new('Simple', 'DECIMATE')
         mod1 = new_obj.modifiers.new('Smooth', 'SUBSURF')
         mod1.render_levels = 2
-        mod0.ratio = 0.12
+        mod0.ratio = 0.16
         # Apply modifiers
         full_mesh = new_obj.data
         applier = context.scene, True, 'RENDER'

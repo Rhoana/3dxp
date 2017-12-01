@@ -16,6 +16,8 @@ flags = {
     'zspan': ['--zspan'],
     'zps': ['--zps'],
     'fps': ['--fps'],
+    'task': ['-t', '--task'],
+    'runs': ['-r', '--runs'],
 }
 
 def key(k):
@@ -36,6 +38,8 @@ def key(k):
         'zspan': 'start:stop slices (default all)',
         'zps': 'z slices per second (default {})',
         'fps': 'frames per second (default {})',
+        'task': 'order in the list of jobs (default {})',
+        'runs': 'length of the list of jobs (default {})',
     }
     defaults = {
         'file': '*.*',
@@ -52,9 +56,11 @@ def key(k):
         'zspan': '',
         'fps': 1,
         'zps': 4,
+        'task': 0,
+        'runs': 1,
     }
     choices = {
-        'fps': range(1,64),
+        'fps': range(4,64),
     }
     keys = {
         'help': helps.get(k, '???'),

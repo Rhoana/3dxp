@@ -1,5 +1,6 @@
 from mathutils import Vector
 import fnmatch
+import bpy
 
 from . import cycler
 from . import log
@@ -96,3 +97,39 @@ def move_w_vol(vol, obj, w_off):
     center.z = origin.z
     # Move object from the center of slice 0
     obj.location = center + Vector(w_off)
+
+def energy(area, dist, bright=0):
+    brights = {
+        'Area': 10000,
+        'Over': 100,
+        'Under': 100,
+    }
+    if not bright:
+        a_bright = brights.get(area.name, 0)
+    # Calculate power per square unit
+    a_pow = a_bright * (dist ** 2)
+    return a_pow * (area.size ** 2)
+
+def in_box(o):
+    bounds = (Vector(b) for b in o.bound_box)
+    center = sum(bounds, Vector()) / 8.0
+    return  o.matrix_world * center
+
+def look_at(scene, objs):
+    
+    c_center = scene.camera.matrix_world.to_translation()
+    o_center = sum(map(in_box, objs), Vector()) / len(objs)
+
+    direction = o_center - c_center
+    # point the cameras '-Z' and use its 'Y' as up
+    rot_quat = direction.to_track_quat('-Z', 'Y')
+
+    # assume we're using euler rotation
+    scene.camera.rotation_euler = rot_quat.to_euler()
+
+def look(scene):
+    # Select mesh
+    is_mesh = lambda x: x.type == 'MESH'
+    selected = [o for o in scene.objects if is_mesh(o)]
+    look_at(scene, selected)
+
