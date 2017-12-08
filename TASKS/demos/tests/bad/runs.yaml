@@ -1,3 +1,5 @@
+# slyml.py v2.0
+#
 Main: &Main
     Exports: [args]
     Slurm: ../slurm/many.sbatch

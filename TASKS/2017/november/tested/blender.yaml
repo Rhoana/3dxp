@@ -1,6 +1,6 @@
 # slyml.py v2.1
 #
-stack-1: &stack-1
+stack-0: &stack-0
     Sync: 30
     Runs: 429
     Slurm: ./SLURM/many_z.sbatch
@@ -9,7 +9,7 @@ stack-1: &stack-1
     Inputs:
         ID: "{ID-A}"
         HILITE: "-a z -g 5 -o 0.25"
-stl-1: &stl-1
+stl-0: &stl-0
     Exports: [python, args]
     Slurm: ./SLURM/one.sbatch
     python: ./PYTHON/all_stl.py
@@ -17,7 +17,7 @@ stl-1: &stl-1
     Inputs:
         ID: "{ID-A}"
         HILITE: "-a z -g 5 -o 0.25"
-del-log: &del-log
+del-logs: &del-logs
     Bash: true
     Exports: [args]
     Slurm: ./SLURM/bash/one.sbatch
@@ -25,76 +25,90 @@ del-log: &del-log
 ########
 # For blender
 del-blend: &del-blend
-    <<: *del-log
+    <<: *del-logs
     args: 'rm {BLEND}*'
 light: &light
     Slurm: ./SLURM/blender/one.sbatch
     python: ./PYTHON/BLENDER/lights.py
     args: "-b {BLEND}"
-sub-1: &sub-1
+block-0: &block-0
     Slurm: ./SLURM/blender/one.sbatch
     python: ./PYTHON/BLENDER/import.py
     args: "{OUT}/stl {STL_FILES} -b {BLEND} {BLOCK}"
     Inputs:
         STL_FILES: "-f %d/*.stl -l {ID-A}" 
         BLOCK: "--vox={XYZ_VOX} --VOL=50:50:50 --XYZ=-20:-20:-20"
-slice-1: &slice-1
+slice-0: &slice-0
     Slurm: ./SLURM/blender/one.sbatch
     python: ./PYTHON/BLENDER/slices.py
     args: "{PNG} {PNG_FILES} -b {BLEND} {BLOCK}"
     Inputs:
         PNG_FILES: "-f %d/*.stl -l {ID-A}" 
         BLOCK: "--vox={XYZ_VOX} --VOL=50:50:50 --XYZ=-20:-20:-20"
-scroll-1: &scroll-1
+scroll-0: &scroll-0
     Slurm: ./SLURM/blender/one.sbatch
     python: ./PYTHON/BLENDER/scroll.py
     args: "-b {BLEND} {Z_RANGE} {Z_RATE}"
     Inputs:
         Z_RANGE: "--VOL={XYZ_VOL} --zspan=100:801"
         Z_RATE: "--zps=100 --fps=24"
-render-1: &render-1
+render-0: &render-0
     Runs: 10
     Slurm: ./SLURM/blender/many.sbatch
     python: ./PYTHON/BLENDER/render.py
     args: "-o {RENDER} -b {BLEND}"
 ########
 # Command logic
-Misc-1:
-    - &make-data
+logic:
+    - &data
       Needs:
-        - <<: *stack-1
-        - <<: *stl-1
-    - &new-scene
-      <<: *slice-1
+        - *stack-0
+        - *stl-0
+    - &scene
+      <<: *slice-0
       Needs:
-        - <<: *sub-1
-          Needs:
-            - *del-blend
-    - &new-scene-data
-      <<: *slice-1
+        - <<: *block-0
+scene:
+    - &scene-new
+      <<: *del-blend
+      For:
+        - *scene
+    - &scene-data
+      <<: *data
+      For:
+        - *scene-new
+scroll:
+    - &scroll-scene
+      <<: *scroll-0
       Needs:
-        - <<: *sub-1
-          Needs:
-            - *make-data
-            - *del-blend
-    - &new-scroll-scene
-      <<: *scroll-1
+        - *scene- 
+    - &scroll-data
+      <<: *scroll-0
       Needs:
-         - *new-scene
-    - &new-scroll-clean
-      <<: *scroll-1
+        - *scene-data
+render:
+    - &render-scroll
+      <<: *render-0
       Needs:
-         - *new-scene-data
+        - *scroll-0
+    - &render-scene
+      <<: *render-0
+      Needs:
+        - *scroll-scene
+    - &render-data
+      <<: *render-0
+      Needs:
+        - *scroll-data
 ########
 # Commands
 test:
-    <<: *render-1
-    Needs:
-        - *new-scroll-scene
+    <<: *del-logs
+    For:
+        - *render-scroll
 Main:
-    <<: *render-1
-    Needs:
-        - *new-scroll-clean
+    <<: *del-logs
+    For:
+        - *render-data
 Default:
     Workdir: "git rev-parse --show-toplevel"
     Exports: [python, args]

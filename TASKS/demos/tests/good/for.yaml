@@ -1,0 +1,39 @@
+# slyml.py v2.2
+# 
+Code:
+    - &a-0
+      args: "It's easy as {A} {B} {C}."
+    - &b-0
+      args: "As simple as {DO} {RE} {MI}"
+    - &c-0
+      args: "A B C, {A} {B} {C}. That's {THAT}"
+      Inputs:
+          THAT: "how easy {IT} can be."
+          A: 1
+          B: 2
+          C: 3
+Logic:
+    - &a-b
+      <<: *a-0
+      Constants:
+          DO: do
+          RE: re
+          MI: mi
+      For:
+        - *b-0
+    - &a-b-c
+      <<: *c-0
+      Needs:
+        - *a-b
+Main: *a-b-c
+Default:
+    Slurm: ../slurm/one.sbatch
+    args: "hello world"
+    Exports: [args]
+    Flags: [partition]
+    partition: holyseasgpu
+    Constants:
+        IT: "love"
+        A: A
+        B: B
+        C: C

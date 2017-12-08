@@ -1,3 +1,5 @@
+# slyml.py v2.0
+#
 slurms:
     - &one_sbatch
         Slurm: "{SLURM}/one.sbatch"

@@ -1,15 +1,12 @@
-# slyml.py v2.0
+# slyml.py v2.2
 #
 Main:
     Inputs:
         A: 1
     Needs:
-        - Needs: []
         - Inputs: 
             B: 2
           Needs:
-            - Needs: []
-            - Needs: []
             - Inputs:
                 C: 3
               Needs:
@@ -18,10 +15,13 @@ Main:
                 - args: "A B C, {A} {B} {C}"
         - Needs: []
 Default:
-    Slurm: ../slurm/one.sbatch
+    Slurm: ../slurm/many.sbatch
+    Exports: [args, partition]
+    partition: holyseasgpu
     args: "hello world"
-    Exports: [args]
+    Runs: "{N}**2"
     Constants:
         DO: do
         RE: re
         MI: mi
+        N: 3

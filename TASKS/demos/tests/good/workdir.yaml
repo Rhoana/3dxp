@@ -1,11 +1,12 @@
+# slyml.py v2.0
+#
 Main: &main
     Exports: [args]
     Slurm: ../slurm/one.sbatch
     args: hello {WHOM}
     Inputs:
-        WHOM: world
+        WHOM: workdir
 git:
     <<: *main
     Workdir: "git rev-parse --show-toplevel"
-Default:
-    Workdir: "pwd"
+    Slurm: ./SLURM/bash/one.sbatch

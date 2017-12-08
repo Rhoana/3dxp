@@ -1,3 +1,5 @@
+# slyml.py v2.0
+#
 Main: &main
     python: ./PYTHON/all_stl.py
     args: "--xyz -b 1 -l {LIST_IDS} {OUT}/id.h5 {OUT_NEW}"
