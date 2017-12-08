@@ -83,6 +83,8 @@ Main:
 Default:
     Workdir: "git rev-parse --show-toplevel"
     Exports: [python, args]
+    Flags: [partition]
+    partition: holyseasgpu
     Constants:
         OUT: ./DATA/bfly_1soma
         XYZ_VOL: "50:50:50"
