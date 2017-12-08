@@ -1,5 +1,5 @@
 ## SlyML
-__Version 2.0.0__
+__Version 2.2.0__
 
 A python script to run slum jobs from yaml config files.
 
