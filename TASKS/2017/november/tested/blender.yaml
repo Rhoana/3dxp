@@ -127,4 +127,5 @@ Default:
         PNG: "{OUT_ROOT}/{TODAY}/{NAME}/png"
         BLEND: "./BLENDER/{TODAY}/{NAME}.blend"
         RENDER: "./RENDER/{TODAY}/{NAME}"
-    Logs: "./LOGS/{TODAY}/{NAME}"
+        LOG: "./LOGS/{TODAY}/{NAME}"
+    Logs: "{LOG}"
