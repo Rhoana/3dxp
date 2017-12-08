@@ -73,7 +73,8 @@ bash:
        - *block-0
        - *slice-0
        - *scroll-0
-       - *render-0
+       - <<: *render-0
+         Runs: 1
     Constants:
         NAME: bash_render
 Main:
@@ -96,4 +97,4 @@ Default:
         BLEND: "./BLENDER/{TODAY}/{NAME}.blend"
         RENDER: "./RENDER/{TODAY}/{NAME}"
         LOG: "./LOGS/{TODAY}/{NAME}"
-    Logs: "LOG"
+    Logs: "{LOG}"
