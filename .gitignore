@@ -1,6 +1,6 @@
 # vim
-*.swp
-.*.swo
+*.sw*
+.nfs*
 
 # Examples
 LOGS/

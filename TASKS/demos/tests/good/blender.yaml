@@ -1,22 +1,5 @@
 # slyml.py v2.1
 #
-stack-0: &stack-0
-    Sync: 30
-    Runs: 429
-    Slurm: ./SLURM/many_z.sbatch
-    python: ./PYTHON/scripts/sides.py
-    args: "{PNG}/{ID} {EM_H5} {ID_H5} -i {ID} {HILITE}"
-    Inputs:
-        ID: "{ID-A}"
-        HILITE: "-a z -g 5 -o 0.25"
-stl-0: &stl-0
-    Exports: [python, args]
-    Slurm: ./SLURM/one.sbatch
-    python: ./PYTHON/all_stl.py
-    args: "--xyz -b 1 -l {ID} {ID_H5} {OUT}"
-    Inputs:
-        ID: "{ID-A}"
-        HILITE: "-a z -g 5 -o 0.25"
 del-logs: &del-logs
     Bash: true
     Exports: [args]
@@ -41,7 +24,7 @@ block-0: &block-0
 slice-0: &slice-0
     Slurm: ./SLURM/blender/one.sbatch
     python: ./PYTHON/BLENDER/slices.py
-    args: "{PNG} {PNG_FILES} -b {BLEND} {BLOCK}"
+    args: "{OUT}/png {PNG_FILES} -b {BLEND} {BLOCK}"
     Inputs:
         PNG_FILES: "-f %d/*.stl -l {ID-A}" 
         BLOCK: "--vox={XYZ_VOX} --VOL=50:50:50 --XYZ=-20:-20:-20"
@@ -60,10 +43,6 @@ render-0: &render-0
 ########
 # Command logic
 logic:
-    - &data
-      Needs:
-        - *stack-0
-        - *stl-0
     - &scene
       <<: *slice-0
       Needs:
@@ -73,19 +52,11 @@ scene:
       <<: *del-blend
       For:
         - *scene
-    - &scene-data
-      <<: *data
-      For:
-        - *scene-new
 scroll:
     - &scroll-scene
       <<: *scroll-0
       Needs:
-        - *scene-new
-    - &scroll-data
-      <<: *scroll-0
-      Needs:
-        - *scene-data
+        - *scene-new 
 render:
     - &render-scroll
       <<: *render-0
@@ -95,36 +66,31 @@ render:
       <<: *render-0
       Needs:
         - *scroll-scene
-    - &render-data
-      <<: *render-0
-      Needs:
-        - *scroll-data
 ########
 # Commands
-test:
-    <<: *del-logs
-    For:
-        - *render-scroll
+bash:
+    Needs:
+       - *block-0
+       - *slice-0
+       - *scroll-0
+       - *render-0
+    Constants:
+        NAME: bash_render
 Main:
     <<: *del-logs
     For:
-        - *render-data
+        - *render-scene
 Default:
     Workdir: "git rev-parse --show-toplevel"
     Exports: [python, args]
     Constants:
-        OUT_ROOT: /n/coxfs01/thejohnhoffer/R0/render
-        IN_ROOT: /n/coxfs01/thejohnhoffer/R0/ids-2017-08-23_50um/images
+        OUT: ./DATA/bfly_1soma
         XYZ_VOL: "50:50:50"
-        XYZ_VOX: "16:16:4"
-        TODAY: "2017_11_30"
-        NAME: parallel
-        ID-A: "58146" 
+        XYZ_VOX: "32:32:4"
+        TODAY: "2017_12_07"
+        ID-A: "617637" 
+        NAME: render
     Inputs:
-        ID_H5: "{IN_ROOT}/4_16_16_ids_all.h5"
-        EM_H5: "{IN_ROOT}/4_16_16_raw_all.h5"
-        OUT: "{OUT_ROOT}/{TODAY}/{NAME}"
-        PNG: "{OUT_ROOT}/{TODAY}/{NAME}/png"
         BLEND: "./BLENDER/{TODAY}/{NAME}.blend"
         RENDER: "./RENDER/{TODAY}/{NAME}"
     Logs: "./LOGS/{TODAY}/{NAME}"
