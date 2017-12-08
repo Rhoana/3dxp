@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from itertools import groupby
 from threading import Thread
+from pydoc import pipepager
 import subprocess
 import argparse
 import termios
@@ -194,7 +195,7 @@ def get_safe(task, k, d=None):
 
 def get_watch_log(task, _i=0):
     w_list = []
-    w_cmd = ['tail']
+    w_cmd = ['cat']
     log_list = ['out', 'err']
     log_max = len(log_list)
     # Get logfile indices
@@ -244,32 +245,27 @@ def get_watch(_task, _i=0):
         return get_watch_job(_task, _i)
     return '', []
 
-def get_watch_flags(_dir, _task, _i=0):
-    in_tmp = get_logs(_task, 'in.tmp', _i) 
+def index_proc(_task, _i):
+    _dir, _cmd, _max = get_watch(_task, _i)
     out_tmp = get_logs(_task, 'out.tmp', _i) 
-    # Handle input files
-    watch_flags = {
+    # Set up watch subproccess
+    w_flags = {
         'stdout': open(out_tmp, 'a+', 0),
-        'stdin': open(in_tmp, 'w+', 0),
-        'cwd': _dir,
     }
-    if not _dir:
-        del watch_flags['cwd']
-    return watch_flags
-
-def index_proc(*_args):
-    _dir, _cmd, _max = get_watch(*_args)
+    if _dir:
+        w_flags['cwd'] = _dir
     w_cmd = ['watch', '-n', '1'] + _cmd
-    w_flags = get_watch_flags(_dir, *_args)
     return w_cmd, w_flags, _max
 
-def start_proc(w_cmd, w_flags):
+def start_proc(proc_args):
+    w_cmd = proc_args['cmd']
+    w_flags = proc_args['flags']
     w_proc = psutil.Popen(w_cmd, **w_flags)
-    w_in = w_flags['stdin']
+    # Return watch process and less output
     w_out = w_flags['stdout']
-    return w_proc, w_in, w_out
+    return w_proc, w_out
 
-def watch_proc(_p, _in, _out):
+def watch_proc(_p, _out):
     ti = 0.1
     pause_set = {'stopped'}
     short_name = os.path.basename(_out.name)
@@ -294,12 +290,11 @@ def watch_proc(_p, _in, _out):
                 sys.stdout.write(c)
                 sys.stdout.flush()
     # Delete temp files
-    for _f in [_in, _out]:
-        _f.close()
-        try:
-            os.remove(_f.name)
-        except OSError:
-            pass
+    _out.close()
+    try:
+        os.remove(_out.name)
+    except OSError:
+        pass
     sys.stdout.flush()
 
 def watch_user():
@@ -307,16 +302,21 @@ def watch_user():
         reader = lambda: sys.stdin.read(1)
         for key in iter(reader, chr(27)):
             if 'q' in key:
-                return []
+                return False
+            if key in ',<':
+                return (), -1
+            if key in '.>':
+                return (), +1
         if '[' not in reader():
-            return []
+            return False
         # Arrow keys
-        return {
-            'A': (1, 0),
+        delta = {
+            'A': (+1, 0),
             'B': (-1, 0),
-            'C': (0, 1),
+            'C': (0, +1),
             'D': (0, -1),
         }.get(reader(), (0,0))
+        return delta, 0
 
 def cycle_rel(v, min, max):
     return (v - min) % (max - min) + min
@@ -329,29 +329,6 @@ def index_task(_task, _ba, _i):
     # Get task from bounded j index
     tasks = before + [_task] + after
     return tasks[i - i_min], i_min, i_max
-
-def get_proc(_task, _ba, o_ij, cache={}, loc=(0,0)):
-    # Interpret all indices
-    t_i, i_min, i_max = index_task(_task, _ba, o_ij[0])
-    _cmd, _flags, j_max = index_proc(t_i, o_ij[1])
-    o_clamp = [
-        [i_min, i_max],
-        [0, j_max],
-    ]
-    # Get existing process
-    if loc in cache:
-        o_proc = cache.get(loc)
-        return o_proc, o_clamp
-    # Make a new process
-    o_proc, o_in, o_out = start_proc(_cmd, _flags)
-    cache[loc] = o_proc
-    # Stream output of task
-    Thread(**{
-        'target': watch_proc,
-        'args': (o_proc, o_in, o_out),
-    }).start()
-    o_proc.suspend()
-    return o_proc, o_clamp
 
 def get_edge(_idx, _k, _p, _n):
     ndim = len(_k)
@@ -455,26 +432,72 @@ def update_proc(cache, *args):
     # Return next values
     return n_ij
 
-def read_in(_task, _ba, o_ij=(0,0), cache={}):
-    o_proc, c_ij = get_proc(_task, _ba, o_ij, cache)
+def prep_proc(_task, _ba, o_ij):
+    # Interpret all indices
+    t_i, i_min, i_max = index_task(_task, _ba, o_ij[0])
+    _cmd, _flags, j_max = index_proc(t_i, o_ij[1])
+    proc_args = {
+        'cmd': _cmd,
+        'flags': _flags,
+    }
+    clamp = [
+        [i_min, i_max],
+        [0, j_max],
+    ]
+    return proc_args, clamp
+
+def get_proc(proc_args, state, loc=(0,0)):
+    cache = state['cache']
+    # Get existing process
+    if loc in cache:
+        o_proc = cache.get(loc)
+        return o_proc
+    # Make a new process
+    o_proc, o_out = start_proc(proc_args)
+    cache[loc] = o_proc
+    # Stream output of task
+    Thread(**{
+        'target': watch_proc,
+        'args': (o_proc, o_out),
+    }).start()
+    o_proc.suspend()
+    return o_proc
+
+def set_line(scroll={}, line=0):
+    pass
+
+def read_in(_task, _ba, o_ij=(0,0), state={}):
+    state = state or {
+        'scroll': {},
+        'cache': {},
+    }
+    # Get command parameters and bounds
+    proc_args, c_ij = prep_proc(_task, _ba, o_ij)
+    o_proc = get_proc(proc_args, state)
     os.system('stty sane')
     o_proc.resume()
     def sys_kill(*_):
-        for k in cache:
-            p = cache.get(k)
+        for k in state['cache']:
+            p = state['cache'].get(k)
             p.kill()
         raise KeyboardInterrupt()
     signal.signal(signal.SIGINT, sys_kill)
     # Respond to standard input
-    delta = watch_user()
-    if delta:
+    for delta, line in iter(watch_user, False):
+        if line:
+            set_line(state['scroll'], line)
+            continue
+        if not delta:
+            break
+        # Chanege file input
         o_proc.suspend()
         # Update if any change
-        n_ij = update_proc(cache, delta, o_ij, c_ij)
+        n_ij = update_proc(state['cache'], delta, o_ij, c_ij)
         # Change watched command
-        read_in(_task, _ba, n_ij, cache=cache)
-    # Done
+        return read_in(_task, _ba, n_ij, state)
+    # Exit
     sys_kill()
+
 
 def run_watch(_task, *args):
     watch_t = _task['Slyml']['WATCH']
@@ -761,8 +784,7 @@ def do_before(_default, _needs):
 def do_after(_tasks, _default, _before, _for):
     after = []
     # Run all jobs needing us
-    for fi, f in enumerate(_for):
-        fid = len(_before) + fi
+    for fid, f in enumerate(_for, len(_before)):
         after += run_task(_default, f, fid, _tasks)
     return after
 

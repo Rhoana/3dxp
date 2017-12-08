@@ -90,9 +90,9 @@ Default:
         OUT: ./DATA/bfly_1soma
         XYZ_VOL: "50:50:50"
         XYZ_VOX: "32:32:4"
-        TODAY: "2017_12_07"
+        TODAY: "2017_12_08"
         ID-A: "617637" 
-        NAME: render
+        NAME: demo_render
     Inputs:
         BLEND: "./BLENDER/{TODAY}/{NAME}.blend"
         RENDER: "./RENDER/{TODAY}/{NAME}"
