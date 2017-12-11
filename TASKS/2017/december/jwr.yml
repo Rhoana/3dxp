@@ -1,0 +1,42 @@
+# slyml.py v2.0
+#
+boss_h5: &boss_h5
+    Needs:
+        - python: ./PYTHON/conversion/tif2hd.py
+          args: "{OUT}/tif_id {OUT}/id.h5"
+          Debug: True 
+          Needs:
+            - python: ./PYTHON/conversion/boss2stack.py
+              args: "{BOSS_IDS} -o {OUT}/tif_id {CROP} -f tif"
+              Slurm: ./SLURM/many.sbatch
+              Runs: 30
+        - python: ./PYTHON/conversion/tif2hd.py
+          args: "{OUT}/tif_em {OUT}/em.h5"
+          Needs:
+            - python: ./PYTHON/conversion/boss2stack.py
+              args: "{BOSS_IMG} -o {OUT}/tif_em {CROP} -f tif"
+              Slurm: ./SLURM/many.sbatch
+              Runs: 30
+Main:
+    Needs:
+        - <<: *boss_h5
+          Inputs:
+              OUT: "{OUT_ROOT}/{TODAY}/{NAME}/1500_300"
+              CROP: "-x 0:1500 -y 0:1500 -z 300:600"
+        - <<: *boss_h5
+          Inputs:
+              OUT: "{OUT_ROOT}/{TODAY}/{NAME}/2000_500"
+              CROP: "-x 0:2000 -y 0:2000 -z 14:514"
+Default:
+    Constants:
+        BOSS_IMG: /n/coxfs01/leek/data/JWR_boss-no-duplicates.json
+        BOSS_IDS: /n/coxfs01/leek/results/2017-12-04_100um-cube/14/boss/final-segmentation/14/boss.json
+        OUT_ROOT: /n/coxfs01/thejohnhoffer/R0/render
+        TODAY: '2017_12_11'
+        NAME: 'daniel_v2'
+    Workdir: "git rev-parse --show-toplevel"
+    Logs: "./LOGS/{TODAY}/{NAME}"
+    Slurm: ./SLURM/one.sbatch
+    partition: holyseasgpu
+    Exports: [python, args]
+    Flags: [partition]
