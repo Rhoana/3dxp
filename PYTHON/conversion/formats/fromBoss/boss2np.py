@@ -63,6 +63,8 @@ class Boss2np():
 
         # Downsampling constant
         scale = 2 ** np.uint32(_res)
+        print scale
+        return
         # Scale and expand the spans
         s_y0, s_y1 = spans[1] // scale[1]
         s_x0, s_x1 = spans[2] // scale[2]
@@ -85,6 +87,10 @@ class Boss2np():
             # Read the file to a numpy volume
             args = (in_path, f_offset, keywords)
             f_vol = BossGrid.load_tile(BossQuery(*args))
+            # Continue if no volume
+            if not f_vol:
+                print('Error: no {} at {}'.format(in_path, f_offset))
+                continue
             scale_vol = f_vol[0, ::scale[1], ::scale[2]]
             # Get coordinates to fill the tile
             y0, x0 = scale_tile * f_offset[1:]

@@ -1,5 +1,13 @@
 import numpy as np
 
+# Format colon arguments properly
+def format_colon(k, default=[]):
+    span = list(map(int, k.split(':')))
+    # Default full span in Z
+    if len(span) != len(default):
+        return list(default)
+    return span
+
 def to_scale_spans(_spans, _res):
     """ Return scaled spans
     _spans: [[int,int],[int,int],[int,int]]

@@ -8,6 +8,7 @@ from formats.common import format_path
 from formats.common import trial2span
 from formats.common import from_scale_z
 from formats.common import to_scale_spans
+from formats.common import format_colon
 from formats.fromBoss import Boss2np
 from formats.toMojo import MojoImg
 from formats.toMojo import MojoSeg
@@ -24,7 +25,7 @@ if __name__ == '__main__':
         'y': 'The start and end Y slices to use',
         'x': 'The start and end X slices to use',
         'l': 'make meshes for : separated list of ids',
-        'scale': 'Downsampling times in Z,Y,X (2:3:3)',
+        'scale': 'Downsampling times in Z,Y,X (0:0:0)',
     }
     # Read the arguments correctly
     parser = argparse.ArgumentParser(description=help['boss2mojo'])
@@ -32,7 +33,7 @@ if __name__ == '__main__':
     parser.add_argument('files', help=help['files'])
     parser.add_argument('--trial','-t', default=0, type=int, help=help['trial'])
     parser.add_argument('--runs', '-r', default=1, type=int, help=help['runs'])
-    parser.add_argument('--scale', '-s', default='', help=help['scale'])
+    parser.add_argument('--scale', '-s', default='0:0:0', help=help['scale'])
     parser.add_argument('--out', '-o', default='mojo', help=help['out'])
     parser.add_argument('-l','--list', default='', help=help['l'])
     parser.add_argument('-z', default='0', help=help['z'])
@@ -46,15 +47,8 @@ if __name__ == '__main__':
     out_path = format_path(args['out'])
     make_path(out_path)
 
-    # Format colon arguments properly
-    def fmt_colon(k, default):
-        span = map(int, k.split(':'))
-        # Default full span in Z
-        if len(span) != len(default):
-            return default
-        return span
     def fmt_span(k, size):
-        return fmt_colon(k, [0, size])
+        return format_colon(k, [0, size])
    
     # Create a file manager
     mgmt = Boss2np(in_path)
@@ -70,7 +64,7 @@ if __name__ == '__main__':
     full_spans = [z_span, y_span, x_span]
 
     # Get the input resolution
-    resolution = fmt_colon(args['scale'], [2,3,3])
+    resolution = format_colon(args['scale'])
     # Get the scaled spans and shape
     scale_spans = to_scale_spans(full_spans, resolution)
     out_shape = np.squeeze(np.diff(scale_spans))
