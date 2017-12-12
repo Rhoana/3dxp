@@ -4,7 +4,6 @@ boss_h5: &boss_h5
     Needs:
         - python: ./PYTHON/conversion/tif2hd.py
           args: "{OUT}/tif_id {OUT}/id.h5"
-          Debug: True 
           Needs:
             - python: ./PYTHON/conversion/boss2stack.py
               args: "{BOSS_IDS} -o {OUT}/tif_id {CROP} -f tif"
@@ -31,9 +30,9 @@ Default:
     Constants:
         BOSS_IMG: /n/coxfs01/leek/data/JWR_boss-no-duplicates.json
         BOSS_IDS: /n/coxfs01/leek/results/2017-12-04_100um-cube/14/boss/final-segmentation/14/boss.json
-        OUT_ROOT: /n/coxfs01/thejohnhoffer/R0/render
+        OUT_ROOT: /n/coxfs01/thejohnhoffer/JWR/render
         TODAY: '2017_12_11'
-        NAME: 'daniel_v2'
+        NAME: 'daniel'
     Workdir: "git rev-parse --show-toplevel"
     Logs: "./LOGS/{TODAY}/{NAME}"
     Slurm: ./SLURM/one.sbatch
