@@ -23,7 +23,7 @@ def parse_list(_list, _len=None, _log='', _neg=False):
     if _len is not None:
         if _len is not len(LIST):
             msg = 'Must have {} numbers'.format(_len)
-            raise(err.ListParseError(msg, _log, LIST))
+            raise err.ListParseError(msg, _log, LIST)
     return LIST
 
 def convert(given, mults=[], denoms=[]):

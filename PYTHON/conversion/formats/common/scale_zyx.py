@@ -1,12 +1,15 @@
 import numpy as np
 
-# Format colon arguments properly
-def format_colon(k, default=[]):
-    span = list(map(int, k.split(':')))
-    # Default full span in Z
-    if len(span) != len(default):
-        return list(default)
-    return span
+def parse_list(_list, _len=None):
+    LIST = []
+    for val in _list.split(':'):
+        if val.isdigit():
+            LIST += [int(val)]
+    if _len is not None:
+        if _len is not len(LIST):
+            get_msg = '{} Must have {} numbers'.format
+            raise ValueError(get_msg(_list, _len))
+    return LIST
 
 def to_scale_spans(_spans, _res):
     """ Return scaled spans
