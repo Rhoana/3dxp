@@ -1,22 +1,33 @@
 # slyml.py v2.0
 #
-boss_h5: &boss_h5
-    Needs:
-        - python: ./PYTHON/conversion/tif2hd.py
-          args: "{OUT}/tif_id {OUT}/id.h5"
-          Needs:
-            - python: ./PYTHON/conversion/boss2stack.py
-              args: "{BOSS_IDS} -o {OUT}/tif_id {CROP} -f tif"
-              Slurm: ./SLURM/many.sbatch
-              Runs: 30
-        - python: ./PYTHON/conversion/tif2hd.py
-          args: "{OUT}/tif_em {OUT}/em.h5"
-          Needs:
-            - python: ./PYTHON/conversion/boss2stack.py
-              args: "{BOSS_IMG} -o {OUT}/tif_em {CROP} -f tif"
-              Slurm: ./SLURM/many.sbatch
-              Runs: 30
-Main:
+Misc:
+    - &boss_tif-0
+      python: ./PYTHON/conversion/boss2stack.py
+      Slurm: ./SLURM/many.sbatch
+      Runs: 30
+    - &boss_mojo-0
+      python: ./PYTHON/conversion/boss2mojo.py
+      Slurm: ./SLURM/many.sbatch
+      Runs: 30
+    - &boss_h5
+      Needs:
+#          - python: ./PYTHON/conversion/tif2hd.py
+#            args: "{OUT}/tif_id {OUT}/id.h5"
+#            Needs:
+#              - <<: *boss_tif-0
+#                args: "{BOSS_ID} -o {OUT}/tif_id {CROP} -f tif"
+          - python: ./PYTHON/conversion/tif2hd.py
+            args: "{OUT}/tif_em {OUT}/em.h5"
+            Needs:
+              - <<: *boss_tif-0
+                args: "{BOSS_EM} -o {OUT}/tif_em {CROP} {EM_OFF} -f tif"
+    - &boss_mojo
+      Needs:
+          - <<: *boss_mojo-0 
+            args: "{BOSS_ID} -o {OUT}/mojo {CROP}"
+          - <<: *boss_mojo-0 
+            args: "{BOSS_EM} -o {OUT}/mojo {CROP}"
+Daniel:
     Needs:
         - <<: *boss_h5
           Inputs:
@@ -26,16 +37,40 @@ Main:
           Inputs:
               OUT: "{OUT_ROOT}/{TODAY}/{NAME}/2000_500"
               CROP: "-x 0:2000 -y 0:2000 -z 14:514"
-Default:
     Constants:
-        BOSS_IMG: /n/coxfs01/leek/data/JWR_boss-no-duplicates.json
-        BOSS_IDS: /n/coxfs01/leek/results/2017-12-04_100um-cube/14/boss/final-segmentation/14/boss.json
-        OUT_ROOT: /n/coxfs01/thejohnhoffer/JWR/render
+        EM_OFF: "-d 1056:1008:0"
         TODAY: '2017_12_11'
         NAME: 'daniel'
+vast:
+    <<: *boss_tif-0
+    args: "{BOSS_ID} -o {OUT}/tif_id {CROP} -l {ID_A} -f tif"
+#    For:
+#        - <<: *boss_tif-0
+#          args: "{BOSS_EM} -o {OUT}/tif_em {CROP} -f tif"
+    Inputs:
+        OUT: "{OUT_ROOT}/{TODAY}/{NAME}/soma/14_zyx_2_16_16"
+    Constants:
+        ID_A: "1008713:1059563:1092699:122314:1224982:1240555:1325:1367151:1388513:153808:1572398:204227:2162496:274374:353731:3775919:427990:438824:439048:440669:489669:5693001:5712659:588823:6477056:665421:78713:822430:907212:931842:955734:975040:995210"
+        TODAY: '2017_12_15'
+        CROP: "-s 1:4:4"
+        NAME: 'vvv'
+mojo:
+    <<: *boss_mojo
+    Inputs:
+        OUT: "{OUT_ROOT}/{TODAY}/{NAME}/14_zyx_1_16_16"
+        CROP: "-s 0:4:4"
+    Constants:
+        TODAY: '2017_12_14'
+        NAME: 'vast'
+
+Default:
+    Constants:
+        BOSS_EM: /n/coxfs01/leek/data/JWR_boss-no-duplicates.json
+        BOSS_ID: /n/coxfs01/leek/results/2017-12-04_100um-cube/14/boss/final-segmentation/14/boss.json
+        OUT_ROOT: /n/coxfs01/thejohnhoffer/JWR/render
     Workdir: "git rev-parse --show-toplevel"
     Logs: "./LOGS/{TODAY}/{NAME}"
     Slurm: ./SLURM/one.sbatch
-    partition: holyseasgpu
+    partition: general
     Exports: [python, args]
     Flags: [partition]

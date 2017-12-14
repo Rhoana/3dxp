@@ -3,13 +3,24 @@
 cube-424: &cube-424
     Sync: 30
     Runs: 53
-    Slurm: ./SLURM/many.swatch
+    Slurm: ./SLURM/many.sbatch
     python: ./PYTHON/conversion/boss2stack.py
     args: "{ID_BOSS} -o {OUT}/tif -f tif {SCALE} {CROP}"
-    Inputs:
+    Constants:
         CROP: "-x 0:3392 -y 0:3392 -z 2970:3394"
-        SCALE: "1:8:8"
-Main: *cube-424
+        SCALE: "-s 0:3:3"
+        NAME: cube_424
+
+cube-848: &cube-848
+    <<: *cube-424
+    Constants:
+        CROP: "-x 0:6784 -y 0:6784 -z 2546:3394"
+        SCALE: "-s 0:3:3"
+        NAME: cube_848
+Main:
+    <<: *cube-424
+    For:
+        - *cube-848
 Default:
     Workdir: "git rev-parse --show-toplevel"
     partition: holyseasgpu
@@ -18,9 +29,7 @@ Default:
     Constants:
         OUT_ROOT: /n/coxfs01/thejohnhoffer/R0/render
         ID_BOSS: /n/coxfs01/leek/results/2017-05-11_R0/boss/boss.json 
-        TODAY: "2017_12_05"
-        NAME: cube_424
-        ID-A: "58146" 
+        TODAY: "2017_12_14"
     Inputs:
         OUT: "{OUT_ROOT}/{TODAY}/{NAME}"
     Logs: "./LOGS/{TODAY}/{NAME}"
@@ -36,6 +45,6 @@ Meta: |
     Data Microns, x y z, 13.57 13.57 12.72
     Cropped Microns, x y z, 13.57 13.57 12.72
     Original Microns, x y z, 106.5 106.5 101.8
-    Cropped Date, y-m-d, 2017-12-05
+    Cropped Date, y-m-d, 2017-12-12
     Original Date, y-m-d, 2017-05-06
     Microscope Date, y-m-d, 2016-10-01
