@@ -15,12 +15,12 @@ Misc:
             args: "{OUT}/tif_id {OUT}/id.h5"
             Needs:
               - <<: *boss_tif-0
-                args: "{BOSS_ID} -o {OUT}/tif_id {CROP} -f tif"
+                args: "{BOSS_ID} -o {OUT}/tif_id {CROP} {ID_OFF} -f tif"
           - python: ./PYTHON/conversion/tif2hd.py
             args: "{OUT}/tif_em {OUT}/em.h5"
             Needs:
               - <<: *boss_tif-0
-                args: "{BOSS_EM} -o {OUT}/tif_em {CROP} {EM_OFF} -f tif"
+                args: "{BOSS_EM} -o {OUT}/tif_em {CROP} -f tif"
     - &boss_mojo
       Needs:
           - <<: *boss_mojo-0 
@@ -32,13 +32,13 @@ Daniel:
         - <<: *boss_h5
           Inputs:
               OUT: "{OUT_ROOT}/{TODAY}/{NAME}/1500_300"
-              CROP: "-x 0:1500 -y 0:1500 -z 300:600"
-        - <<: *boss_h5
-          Inputs:
-              OUT: "{OUT_ROOT}/{TODAY}/{NAME}/2000_500"
-              CROP: "-x 0:2000 -y 0:2000 -z 14:514"
+              CROP: "-x 96:1596 -y 96:1596 -z 314:614"
+#        - <<: *boss_h5
+#          Inputs:
+#              OUT: "{OUT_ROOT}/{TODAY}/{NAME}/2000_500"
+#              CROP: "-x 96:2096 -y 96:2096 -z 14:514"
     Constants:
-        EM_OFF: "-d 14:1008:1056"
+        ID_OFF: "-d 0:1008:1056"
         TODAY: '2017_12_15'
         NAME: 'daniel'
 vast:
