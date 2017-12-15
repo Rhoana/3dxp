@@ -64,14 +64,14 @@ if __name__ == '__main__':
     z_off, y_off, x_off = parse_list(args['delta'], 3)
 
     # Get the span across Z
-    z_span = fmt_span(args['z'], z_max)
-    y_span = fmt_span(args['y'], y_max)
-    x_span = fmt_span(args['x'], x_max)
+    z_span = np.int64(fmt_span(args['z'], z_max))
+    y_span = np.int64(fmt_span(args['y'], y_max))
+    x_span = np.int64(fmt_span(args['x'], x_max))
     # Get all the spans
     full_spans = [
-        min(z_span + z_off, z_max),
-        min(y_span + y_off, y_max),
-        min(x_span + x_off, x_max),
+        list(np.clip(z_span + z_off, 0, z_max)),
+        list(np.clip(y_span + y_off, 0, y_max)),
+        list(np.clip(x_span + x_off, 0, x_max)),
     ]
 
     # Get the input resolution
@@ -99,7 +99,7 @@ if __name__ == '__main__':
         # Slice at full resolution 
         full_z = scale_z * z_scale
         # Write the downsampled volume to a tiff stack
-        a = mgmt.scale_image(full_z, resolution, all_spans, LIST)
+        a = mgmt.scale_image(full_z, resolution, full_spans, LIST)
         if not len(a):
             continue
 
