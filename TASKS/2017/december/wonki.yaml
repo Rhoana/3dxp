@@ -23,13 +23,13 @@ Main:
         - *cube-848
 Default:
     Workdir: "git rev-parse --show-toplevel"
-    partition: holyseasgpu
+    partition: general
     Exports: [python, args]
     Flags: [partition]
     Constants:
         OUT_ROOT: /n/coxfs01/thejohnhoffer/R0/render
         ID_BOSS: /n/coxfs01/leek/results/2017-05-11_R0/boss/boss.json 
-        TODAY: "2017_12_14"
+        TODAY: "2017_12_15"
     Inputs:
         OUT: "{OUT_ROOT}/{TODAY}/{NAME}"
     Logs: "./LOGS/{TODAY}/{NAME}"

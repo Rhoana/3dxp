@@ -11,11 +11,11 @@ Misc:
       Runs: 30
     - &boss_h5
       Needs:
-#          - python: ./PYTHON/conversion/tif2hd.py
-#            args: "{OUT}/tif_id {OUT}/id.h5"
-#            Needs:
-#              - <<: *boss_tif-0
-#                args: "{BOSS_ID} -o {OUT}/tif_id {CROP} -f tif"
+          - python: ./PYTHON/conversion/tif2hd.py
+            args: "{OUT}/tif_id {OUT}/id.h5"
+            Needs:
+              - <<: *boss_tif-0
+                args: "{BOSS_ID} -o {OUT}/tif_id {CROP} -f tif"
           - python: ./PYTHON/conversion/tif2hd.py
             args: "{OUT}/tif_em {OUT}/em.h5"
             Needs:
@@ -38,8 +38,8 @@ Daniel:
               OUT: "{OUT_ROOT}/{TODAY}/{NAME}/2000_500"
               CROP: "-x 0:2000 -y 0:2000 -z 14:514"
     Constants:
-        EM_OFF: "-d 1056:1008:0"
-        TODAY: '2017_12_11'
+        EM_OFF: "-d 14:1008:1056"
+        TODAY: '2017_12_15'
         NAME: 'daniel'
 vast:
     <<: *boss_tif-0
