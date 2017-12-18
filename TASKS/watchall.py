@@ -75,7 +75,7 @@ def color_diff(seqm):
     GREEN, YELLO = 92,93
     for opcode, a0, a1, b0, b1 in seqm.get_opcodes():
         if opcode == 'equal':
-            output.append(seqm.b[b0:b1])
+            yield seqm.b[b0:b1]
         elif opcode == 'insert':
             yield fmt_color(GREEN, seqm.b[b0:b1])
         elif opcode == 'replace':
@@ -87,19 +87,27 @@ def color_diff(seqm):
 class Watchall(object):
 
     def __init__(self, args):
-        in_thread = Thread(**{
-            'target': self.run_scroll,
-        })
-        in_thread.daemon = True
-        in_thread.start()
+        # Handle keyboard interrupt
+        signal.signal(signal.SIGINT, self.stop)
         # Prepare internal state
         self.differences = args.differences
         self.interval = args.interval
         self.header = args.header
         self.cmd = args.command
+        # Check for input
         self.key_q = Queue.Queue()
-        # Handle keyboard interrupt
-        signal.signal(signal.SIGINT, self.stop)
+        key_thread = Thread(**{
+            'target': self.run_scroll,
+        })
+        key_thread.daemon = True
+        key_thread.start()
+        # Check for output
+        self.cmd_q = Queue.Queue()
+        cmd_thread = Thread(**{
+            'target': self.run_cmd,
+        })
+        cmd_thread.daemon = True
+        cmd_thread.start()
 
     def stop(self, *_):
         getch(True)   
@@ -126,7 +134,7 @@ class Watchall(object):
             if delta:
                 self.key_q.put(delta)
 
-    def get_scroll(self, _t):
+    def get_scroll(self, _t=0):
         debounce = 0
         while True:
             try:
@@ -136,6 +144,12 @@ class Watchall(object):
                 debounce += delta
             except Queue.Empty:
                 return debounce
+    
+    def get_output(self, _t=0):
+        try:
+            return self.cmd_q.get(timeout=_t)
+        except Queue.Empty:
+            return None
 
     def crop_view(self, _view, _delta):
         empty = abs(_delta)*['']
@@ -152,17 +166,24 @@ class Watchall(object):
         header = self.header
         color = self.differences
         timeout = min(0.01, self.interval)
-        height = self.get_term_y(header)
+        height = self.get_term_y()
         y_stop = height
         y_start = 0
         delta = 0
         msg = ''
+        # Get first command result
+        cur_lines = None
+        while cur_lines is None:
+            cur_lines = self.get_output(timeout)
+        # Continue to update command
         while True:
-            # Run the commands
-            cur_lines = self.execute_cmd()
+            # Check new command output
+            new_lines = self.get_output()
+            if new_lines is not None:
+                cur_lines = new_lines
+            y_max = len(cur_lines)
             pre_view = self.crop_view(cur_view, delta)
             cur_view = cur_lines[y_start:y_stop]
-            y_max = len(cur_lines)
             # Only update if the view changed
             if is_scroll or pre_view != cur_view:
                 msg = self.get_msg(y_start, y_max, header)
@@ -186,7 +207,7 @@ class Watchall(object):
                     break
             # Recalculate start, stop, and height
             y_range = (0, y_start + delta, y_max)
-            height = self.get_term_y(header)
+            height = self.get_term_y()
             new_start = sorted(y_range)[1]
             new_stop = new_start + height
             # Is new if view changed
@@ -213,45 +234,53 @@ class Watchall(object):
         output, stderr = process.communicate()
         retcode = process.poll()
         if retcode:
-            print('ERROR')
-            self.stop()
-            raise subprocess.CalledProcessError(retcode, self.cmd, output=output[0])
+            return stderr.splitlines()
 
         return output.splitlines()
 
-    def get_term_y(self, header=0):
+    def run_cmd(self):
+        while True:
+            if not self.cmd_q.empty():
+                continue
+            self.cmd_q.put(self.execute_cmd())
+
+    def get_term_y(self):
         # We could try this for cross-platform support:
         # https://gist.github.com/jtriley/1108174
         w = curses.initscr()
         y, x = w.getmaxyx()
         curses.endwin()
-        return y - header
+        return y
 
     def get_msg(self, y_start, y_max, header=True):
         if not header:
-            return ''
+            return []
         cmd_state = self.interval, ' '.join(self.cmd)
-        status_msg = "\r\nEvery {2}s: {3}, first line: {0}/{1}\r\n"
-        return status_msg.format(y_start, y_max, *cmd_state)
+        status_msg = "Every {2}s: {3}, first line: {0}/{1}"
+        return [status_msg.format(y_start, y_max, *cmd_state)]
 
-    def show_text(self, pre_view, cur_view, height=0, msg='', color=False):
-        # Write status
-        sys.stdout.write(msg)
-
-        # Color changes
-        pre_text = '\r\n'.join(pre_view)
-        cur_text = '\r\n'.join(pre_view)
-        text = cur_text
-        if color:
-            diff = difflib.ndiff(pre_text, cur_ext)
-            view = ''.join(color_diff(diff))
-
+    def get_text(self, view, height, msg_len=0):
         # Add empty lines
         n_empty = height - len(view)
         if n_empty > 0:
             view += ['']*n_empty
-            
-        text = '\r\n'.join(view[:2])
+ 
+        return '\r\n'.join(view[:-msg_len])
+
+    def show_text(self, pre_view, cur_view, height=0, msg='', color=False):
+        # Write status
+        if len(msg):
+            msg_text = '\r\n'.join(['']+msg+[''])
+            sys.stdout.write(msg_text)
+
+        # Color changes
+        pre_text = self.get_text(pre_view, height, len(msg))
+        cur_text = self.get_text(cur_view, height, len(msg))
+        text = cur_text
+        if color:
+            diff = difflib.SequenceMatcher(None, pre_text, cur_text)
+            text = ''.join(color_diff(diff))
+
         sys.stdout.write(text)
         sys.stdout.flush()
 
