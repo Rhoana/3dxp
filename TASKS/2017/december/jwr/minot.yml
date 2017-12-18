@@ -1,0 +1,41 @@
+# slyml.py v2.0
+#
+Misc:
+    - &boss_mojo-0
+      python: ./PYTHON/conversion/boss2mojo.py
+      Slurm: ./SLURM/many.sbatch
+      Runs: 30
+    - &boss_mojo
+      Needs:
+          - <<: *boss_mojo-0 
+            args: "{BOSS_ID} -o {OUT}/mojo {CROP} {ID_OFF}"
+          - <<: *boss_mojo-0 
+            args: "{BOSS_EM} -o {OUT}/mojo {CROP}"
+daniel:
+    <<: *boss_mojo
+    Inputs:
+        OUT: "{OUT_ROOT}/{TODAY}/{NAME}/2000_500"
+        CROP: "-x 96:2096 -y 96:2096 -z 14:514"
+    Constants:
+        ID_OFF: "-d 0:1024:1024"
+        TODAY: '2017_12_18'
+        NAME: 'daniel'
+all:
+    <<: *boss_mojo
+    Inputs:
+        OUT: "{OUT_ROOT}/{TODAY}/{NAME}/14_zyx_1_16_16"
+        CROP: "-s 0:4:4"
+    Constants:
+        TODAY: '2017_12_18'
+        NAME: 'overview'
+Default:
+    Constants:
+        BOSS_EM: /n/coxfs01/leek/data/JWR_boss-no-duplicates.json
+        BOSS_ID: /n/coxfs01/leek/results/2017-12-04_100um-cube/boss/final-segmentation/boss.json
+        OUT_ROOT: /n/coxfs01/thejohnhoffer/JWR/minot
+    Workdir: "git rev-parse --show-toplevel"
+    Logs: "./LOGS/{TODAY}/{NAME}"
+    Slurm: ./SLURM/one.sbatch
+    partition: general
+    Exports: [python, args]
+    Flags: [partition]

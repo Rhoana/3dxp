@@ -33,12 +33,12 @@ Daniel:
           Inputs:
               OUT: "{OUT_ROOT}/{TODAY}/{NAME}/1500_300"
               CROP: "-x 96:1596 -y 96:1596 -z 314:614"
-#        - <<: *boss_h5
-#          Inputs:
-#              OUT: "{OUT_ROOT}/{TODAY}/{NAME}/2000_500"
-#              CROP: "-x 96:2096 -y 96:2096 -z 14:514"
+        - <<: *boss_h5
+          Inputs:
+              OUT: "{OUT_ROOT}/{TODAY}/{NAME}/2000_500"
+              CROP: "-x 96:2096 -y 96:2096 -z 14:514"
     Constants:
-        ID_OFF: "-d 0:1008:1056"
+        ID_OFF: "-d 0:1024:1024"
         TODAY: '2017_12_15'
         NAME: 'daniel'
 vast:
