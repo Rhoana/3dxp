@@ -1,41 +1,104 @@
 # slyml.py v2.0
 #
 Misc:
+    - &stl_blend-0
+      Slurm: ./SLURM/blender/one.sbatch
+      python: ./PYTHON/BLENDER/import.py
+      args: "{STL_IN} -l {LIST} -b {BLEND} {BLOCK}"
+      Inputs:
+          STL_IN: "{OUT}/stl -f %d/*.stl" 
+          BLOCK: "--vox={XYZ_VOX} --VOL={XYZ_VOL}"
+    - &h5_stl-0
+      Slurm: ./SLURM/many.sbatch
+      python: ./PYTHON/all_stl.py
+      args: "{ID_H5} {OUT} --xyz -b {N_BOX} -l {LIST}"
+      Runs: "{N_BOX}**3"
+    - &tif_h5-0
+      Slurm: ./SLURM/one.sbatch
+      python: ./PYTHON//tif2hd.py
+      args: "{OUT}/tif/id {OUT}/id.h5"
+    - &boss_tif-0
+      python: ./PYTHON/conversion/boss2stack.py
+      Slurm: ./SLURM/many.sbatch
+      Runs: 40
     - &boss_mojo-0
       python: ./PYTHON/conversion/boss2mojo.py
       Slurm: ./SLURM/many.sbatch
-      Runs: 30
+      Runs: 40
+    - &boss_tif
+      Needs:
+          - <<: *boss_tif-0 
+            args: "{BOSS_ID} -o {OUT}/tif/id {CROP} {ID_OFF} -f tif"
+          - <<: *boss_tif-0 
+            args: "{BOSS_EM} -o {OUT}/tif/em {CROP} -f tif"
     - &boss_mojo
       Needs:
           - <<: *boss_mojo-0 
             args: "{BOSS_ID} -o {OUT}/mojo {CROP} {ID_OFF}"
           - <<: *boss_mojo-0 
             args: "{BOSS_EM} -o {OUT}/mojo {CROP}"
+    - &del-logs-0
+      Bash: true
+      Exports: [args]
+      Slurm: ./SLURM/bash/one.sbatch
+      args: 'rm {LOG}*'
+    - &del-blend-0
+      <<: *del-logs-0
+      args: 'rm {BLEND}*'
 daniel:
     <<: *boss_mojo
     Inputs:
         OUT: "{OUT_ROOT}/{TODAY}/{NAME}/2000_500"
         CROP: "-x 96:2096 -y 96:2096 -z 14:514"
-    Constants:
         ID_OFF: "-d 0:1024:1024"
+    Constants:
         TODAY: '2017_12_18'
         NAME: 'daniel'
-all:
+60nm:
     <<: *boss_mojo
     Inputs:
-        OUT: "{OUT_ROOT}/{TODAY}/{NAME}/14_zyx_1_16_16"
-        CROP: "-s 0:4:4"
+        OUT: "{OUT_ROOT}/{TODAY}/{NAME}"
     Constants:
+        CROP: "-s 1:4:4"
+        NAME: 'nm_zx_60_64'
         TODAY: '2017_12_18'
-        NAME: 'overview'
+        ID_OFF: "-d 0:1024:1024"
+120nm:
+    <<: *boss_tif
+    Inputs:
+        OUT: "{OUT_ROOT}/{TODAY}/{NAME}"
+    Constants:
+        CROP: "-s 2:5:5"
+        NAME: 'nm_zx_120_128'
+        TODAY: '2017_12_18'
+        ID_OFF: "-d 0:1024:1024"
+########
+# Command logic
+logic:
+    - &scene-new
+      <<: *del-blend-0
+      For:
+        - *stl_blend-0
+##########
+# 3D commands
+stl+blend:
+    <<: *scene-new
+    Constants:
+        N_BOX: 2
+        XYZ_VOX: "128:128:120"
+        XYZ_VOL: "100:100:100"
+        LIST: "11453:13585038:65394:172955:1189113:29986374:13567221:77946:13935828:4:13520886:13495907:28813414:52805:5599:175632:28871358:200975:6570805:29235946:14783982:28931131:29041642:28809927:13539797:22981120:13500868:11320:52804:13504255:16133:28919346:203238:13699970:13544286:13517145:13500869:2143257:28838324:29249774:5583:28974526:13495909:13567220:28831450:13574576:28948863:28857381:11321:13550416:65244:32512:72913:11337:34709:13301:13520887:241023:28849791:13504254:28871356:28846404:13495923:28809924:13603049:29024297:29181732:882960:28813400"
+    Needs:
+        - *h5_stl-0
 Default:
     Constants:
         BOSS_EM: /n/coxfs01/leek/data/JWR_boss-no-duplicates.json
         BOSS_ID: /n/coxfs01/leek/results/2017-12-04_100um-cube/boss/final-segmentation/boss.json
         OUT_ROOT: /n/coxfs01/thejohnhoffer/JWR/minot
+    Inputs:
+        BLEND: "./BLENDER/{TODAY}/{NAME}.blend"
     Workdir: "git rev-parse --show-toplevel"
     Logs: "./LOGS/{TODAY}/{NAME}"
-    Slurm: ./SLURM/one.sbatch
-    partition: general
     Exports: [python, args]
     Flags: [partition]
+    partition: general
