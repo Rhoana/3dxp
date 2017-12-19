@@ -176,10 +176,18 @@ def is_quiet(task):
 def is_bash(task):
     return get_safe(task, 'Bash')
 
+def to_list(x=[]):
+    if isinstance(x, dict):
+        return [x]
+    return list(x)
+
 def get_safe(task, k, d=None):
     # Handle python evaluation
     evals = task.get('Evals') or []
     typer = get_typer(task, k, d)
+    # Convert dictionaries to lists
+    if typer is list:
+        typer = to_list
     quiet = d is not None
     if not quiet:
         d = typer()
