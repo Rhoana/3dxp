@@ -4,7 +4,6 @@ from itertools import groupby
 from threading import Thread
 from threading import current_thread
 from pydoc import pipepager
-import subprocess
 import argparse
 import tempfile
 import termios
@@ -52,34 +51,28 @@ def index_proc(_task, _i):
     if _dir:
         w_flags['cwd'] = _dir
     w_cmd = ['python', 'watchall.py'] + _cmd
-#    w_cmd = ['watch'] + _cmd
     return w_cmd, w_flags, _max
 
 def start_proc(proc_args):
     w_cmd = proc_args['cmd']
     w_flags = proc_args['flags']
+    # Debug
+    #w_flags['stdout'] = -1
     return psutil.Popen(w_cmd, **w_flags)
 
 def watch_user():
     with raw_in(sys.stdin):
-        ESC = chr(27)
         in_reader = lambda: sys.stdin.read(1)
-        for key in iter(in_reader, ESC):
-            if key == 'q':
-                return False
+        for key in iter(in_reader, 'q'):
             if key in '.>':
                 return (+1, 0)
             if key in ',<':
                 return (-1, 0)
-        key_1 = in_reader()
-        if '[' not in key_1:
-            return (0,0)
-        key_2 = in_reader()
-        # Arrow keys
-        return {
-            'C': (0, +1),
-            'D': (0, -1),
-        }.get(key_2, (0,0))
+            if key in '-_':
+                return (0, -1)
+            if key in '=+':
+                return (0, +1)
+        return False
 
 def cycle_rel(v, min, max):
     return (v - min) % (max - min) + min
@@ -107,9 +100,6 @@ def index_cache(k_rel, o_ij, c_ij, n=1):
     k_i_c = list(zip(k_rel, o_ij, c_ij))
     return tuple(cycle_rel(i+n*k, *c) for k,i,c in k_i_c)
 
-def add_delta(*args):
-    return tuple(map(sum, zip(*args)))
-
 def see_cache(dn, args):
     rn = 2*dn + 1
     vi = args[-1][0]
@@ -122,9 +112,11 @@ def see_cache(dn, args):
         'ij': list(map(list, ij_viz.split(' '))),
         'rel': list(map(list, rel_viz.split(' '))),
     }
-    def add_viz(sym, k_rel, _i, _j):
+    def add_viz(symbols, k_rel, _i, _j):
+        sym = symbols[any(k_rel)]
         viz['ij'][_i-vi[0]][_j-vj[0]] = sym
         viz['rel'][k_rel[0]+dn][k_rel[1]+dn] = sym
+
     def show_viz(k):
         k_viz = viz.get(k, 'ij')[::-1]
         k_str = '\n'.join(map(''.join, k_viz))
@@ -144,11 +136,10 @@ def delete_cache(cache, k):
     delete_proc(p_proc)
     return True
 
-def update_proc(cache, *args):
-    n_c = 4
-    shift_sym = '.'
+def update_proc(state, *args):
     n_rel, o_ij, c_ij = args
     ndim = len(o_ij)
+    n_c = 4
     # Clamp new indices
     p_ij = index_cache(*args, n=-1) 
     n_ij = index_cache(*args, n=1)
@@ -159,37 +150,32 @@ def update_proc(cache, *args):
     # Ensure exactly one index changed
     if len(n_new) is not 1:
         return o_ij
+    # Make a new state
+    cache = state.pop('cache')
+    state['cache'] = {}
     # Which index changed?
     idx = n_abs.index(n_new[0])
-    n_sign = 1 if n_rel[idx] > 0 else -1
     add_viz, see_viz = see_cache(n_c, args)
     # Filter cache keys
-    p_rel = tuple(-n for n in n_rel)
     in_bound = lambda k: abs(k[idx]) <= n_c
-    get_idx = lambda k: k[idx]*n_sign
-    # Get orignal values
-    input_k = sorted(cache.keys(), key=get_idx)
-    for ko_rel in input_k:
-        kn_rel = add_delta(ko_rel, n_rel)
-        kp_rel = add_delta(ko_rel, p_rel)
-        ko_ij = index_cache(ko_rel, o_ij, c_ij)
-        kn_ij = index_cache(kn_rel, o_ij, c_ij)
-        kp_ij = index_cache(kp_rel, o_ij, c_ij)
-        sym = shift_sym if any(ko_rel) else '@'
-        ko_proc = cache.pop(ko_rel)
-        shift_rel = kp_rel
-        # Loop to next
-        if kp_ij == kn_ij:
-            shift_rel = kn_rel
-        # Uncache if too far
-        if not in_bound(shift_rel):
-            add_viz('x', ko_rel, *ko_ij)
-            delete_proc(ko_proc)
+    for o_to_k, k_proc in cache.items():
+        # Where is the process in ij indices?
+        k_ij = index_cache(o_to_k, o_ij, c_ij, n=1)
+        # How far is the process from to next ij?
+        n_to_k = tuple(k-n for n,k in zip(n_ij, k_ij))
+        # Delete if too far away
+        if not in_bound(n_to_k):
+            add_viz('xx', o_to_k, *k_ij)
+            delete_proc(k_proc)
             continue
-        # Shift proc to new slot
-        add_viz(sym, ko_rel, *ko_ij)
-        delete_cache(cache, shift_rel)
-        cache[shift_rel] = ko_proc
+        # Delete if redundant
+        if n_to_k in state['cache']:
+            add_viz('@+', o_to_k, *k_ij)
+            delete_proc(k_proc)
+            continue
+        # Shift process to new slot
+        add_viz('@+', o_to_k, *k_ij)
+        state['cache'][n_to_k] = k_proc
     # Visualize options
     see_viz('ij')
     # Return next values
@@ -242,7 +228,7 @@ def read_in(_task, _ba, o_ij=(0,0), state={}):
             break
         o_proc.suspend()
         # Change watched command
-        n_ij = update_proc(state['cache'], delta, o_ij, c_ij)
+        n_ij = update_proc(state, delta, o_ij, c_ij)
         return read_in(_task, _ba, n_ij, state)
     # Exit
     sys_kill()
@@ -254,9 +240,11 @@ def tmp_task(id):
         'n': 3,
     }
 
-task = tmp_task('B')
-after = [tmp_task('C')]
-before = [tmp_task('A')]
+A,B,C = "ABC"
+
+task = tmp_task(B)
+after = [tmp_task(C)]
+before = [tmp_task(A)]
 
 read_in(task, [before, after])
 
