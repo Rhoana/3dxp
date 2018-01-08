@@ -16,6 +16,10 @@ import six
 import tty
 import os
 
+# Hack
+import watchall
+WATCH_PY = watchall.__file__
+
 # http://ballingt.com/nonblocking-stdin-in-python-3/
 class raw_in(object):
     def __init__(self, stream):
@@ -255,76 +259,31 @@ def get_watch(_task, _i=0):
 
 def index_proc(_task, _i):
     _dir, _cmd, _max = get_watch(_task, _i)
-    out_tmp = get_logs(_task, 'out.tmp', _i) 
     # Set up watch subproccess
-    w_flags = {
-        'stdout': open(out_tmp, 'a+', 0),
-    }
+    w_flags = {}
     if _dir:
         w_flags['cwd'] = _dir
-    w_cmd = ['watch', '-n', '1'] + _cmd
+    w_cmd = ['python', WATCH_PY, '-n', '1'] + _cmd
     return w_cmd, w_flags, _max
 
 def start_proc(proc_args):
     w_cmd = proc_args['cmd']
     w_flags = proc_args['flags']
-    w_proc = psutil.Popen(w_cmd, **w_flags)
-    # Return watch process and less output
-    w_out = w_flags['stdout']
-    return w_proc, w_out
-
-def watch_proc(_p, _out):
-    ti = 0.1
-    pause_set = {'stopped'}
-    short_name = os.path.basename(_out.name)
-    killer = lambda x: psutil.wait_procs([x], ti)[0]
-    pauser = lambda x: x.status() in pause_set
-    for _ in iter(_p.is_running, False):
-        was_paused = pauser(_p)
-        # Killed or paused
-        if killer(_p):
-            break
-        if not psutil.pid_exists(_p.pid):
-            break
-        if not os.path.exists(_out.name):
-            break
-        if pauser(_p):
-            continue
-        if was_paused:
-            _out.write('\r')
-        # Read the watched file
-        with open(_out.name, 'r') as read_out:
-            for c in read_out.read():
-                sys.stdout.write(c)
-                sys.stdout.flush()
-    # Delete temp files
-    _out.close()
-    try:
-        os.remove(_out.name)
-    except OSError:
-        pass
-    sys.stdout.flush()
+    return psutil.Popen(w_cmd, **w_flags)
 
 def watch_user():
     with raw_in(sys.stdin):
-        reader = lambda: sys.stdin.read(1)
-        for key in iter(reader, chr(27)):
-            if 'q' in key:
-                return False
-            if key in ',<':
-                return (), -1
+        in_reader = lambda: sys.stdin.read(1)
+        for key in iter(in_reader, 'q'):
             if key in '.>':
-                return (), +1
-        if '[' not in reader():
-            return False
-        # Arrow keys
-        delta = {
-            'A': (+1, 0),
-            'B': (-1, 0),
-            'C': (0, +1),
-            'D': (0, -1),
-        }.get(reader(), (0,0))
-        return delta, 0
+                return (+1, 0)
+            if key in ',<':
+                return (-1, 0)
+            if key in '-_':
+                return (0, -1)
+            if key in '=+':
+                return (0, +1)
+        return False
 
 def cycle_rel(v, min, max):
     return (v - min) % (max - min) + min
@@ -352,9 +311,6 @@ def index_cache(k_rel, o_ij, c_ij, n=1):
     k_i_c = list(zip(k_rel, o_ij, c_ij))
     return tuple(cycle_rel(i+n*k, *c) for k,i,c in k_i_c)
 
-def add_delta(*args):
-    return tuple(map(sum, zip(*args)))
-
 def see_cache(dn, args):
     rn = 2*dn + 1
     vi = args[-1][0]
@@ -367,9 +323,11 @@ def see_cache(dn, args):
         'ij': list(map(list, ij_viz.split(' '))),
         'rel': list(map(list, rel_viz.split(' '))),
     }
-    def add_viz(sym, k_rel, _i, _j):
+    def add_viz(symbols, k_rel, _i, _j):
+        sym = symbols[any(k_rel)]
         viz['ij'][_i-vi[0]][_j-vj[0]] = sym
         viz['rel'][k_rel[0]+dn][k_rel[1]+dn] = sym
+
     def show_viz(k):
         k_viz = viz.get(k, 'ij')[::-1]
         k_str = '\n'.join(map(''.join, k_viz))
@@ -389,11 +347,10 @@ def delete_cache(cache, k):
     delete_proc(p_proc)
     return True
 
-def update_proc(cache, *args):
-    n_c = 4
-    shift_sym = '.'
+def update_proc(state, *args):
     n_rel, o_ij, c_ij = args
     ndim = len(o_ij)
+    n_c = 4
     # Clamp new indices
     p_ij = index_cache(*args, n=-1) 
     n_ij = index_cache(*args, n=1)
@@ -404,37 +361,32 @@ def update_proc(cache, *args):
     # Ensure exactly one index changed
     if len(n_new) is not 1:
         return o_ij
+    # Make a new state
+    cache = state.pop('cache')
+    state['cache'] = {}
     # Which index changed?
     idx = n_abs.index(n_new[0])
-    n_sign = 1 if n_rel[idx] > 0 else -1
     add_viz, see_viz = see_cache(n_c, args)
     # Filter cache keys
-    p_rel = tuple(-n for n in n_rel)
     in_bound = lambda k: abs(k[idx]) <= n_c
-    get_idx = lambda k: k[idx]*n_sign
-    # Get orignal values
-    input_k = sorted(cache.keys(), key=get_idx)
-    for ko_rel in input_k:
-        kn_rel = add_delta(ko_rel, n_rel)
-        kp_rel = add_delta(ko_rel, p_rel)
-        ko_ij = index_cache(ko_rel, o_ij, c_ij)
-        kn_ij = index_cache(kn_rel, o_ij, c_ij)
-        kp_ij = index_cache(kp_rel, o_ij, c_ij)
-        sym = shift_sym if any(ko_rel) else '@'
-        ko_proc = cache.pop(ko_rel)
-        shift_rel = kp_rel
-        # Loop to next
-        if kp_ij == kn_ij:
-            shift_rel = kn_rel
-        # Uncache if too far
-        if not in_bound(shift_rel):
-            add_viz('x', ko_rel, *ko_ij)
-            delete_proc(ko_proc)
+    for o_to_k, k_proc in cache.items():
+        # Where is the process in ij indices?
+        k_ij = index_cache(o_to_k, o_ij, c_ij, n=1)
+        # How far is the process from to next ij?
+        n_to_k = tuple(k-n for n,k in zip(n_ij, k_ij))
+        # Delete if too far away
+        if not in_bound(n_to_k):
+            add_viz('xx', o_to_k, *k_ij)
+            delete_proc(k_proc)
             continue
-        # Shift proc to new slot
-        add_viz(sym, ko_rel, *ko_ij)
-        delete_cache(cache, shift_rel)
-        cache[shift_rel] = ko_proc
+        # Delete if redundant
+        if n_to_k in state['cache']:
+            add_viz('@+', o_to_k, *k_ij)
+            delete_proc(k_proc)
+            continue
+        # Shift process to new slot
+        add_viz('@+', o_to_k, *k_ij)
+        state['cache'][n_to_k] = k_proc
     # Visualize options
     see_viz('ij')
     # Return next values
@@ -458,21 +410,13 @@ def get_proc(proc_args, state, loc=(0,0)):
     cache = state['cache']
     # Get existing process
     if loc in cache:
-        o_proc = cache.get(loc)
-        return o_proc
+        return cache.get(loc)
     # Make a new process
-    o_proc, o_out = start_proc(proc_args)
+    o_proc = start_proc(proc_args)
     cache[loc] = o_proc
-    # Stream output of task
-    Thread(**{
-        'target': watch_proc,
-        'args': (o_proc, o_out),
-    }).start()
+    # Pause new task
     o_proc.suspend()
     return o_proc
-
-def set_line(scroll={}, line=0):
-    pass
 
 def read_in(_task, _ba, o_ij=(0,0), state={}):
     state = state or {
@@ -482,30 +426,23 @@ def read_in(_task, _ba, o_ij=(0,0), state={}):
     # Get command parameters and bounds
     proc_args, c_ij = prep_proc(_task, _ba, o_ij)
     o_proc = get_proc(proc_args, state)
-    os.system('stty sane')
     o_proc.resume()
     def sys_kill(*_):
-        for k in state['cache']:
-            p = state['cache'].get(k)
-            p.kill()
+        for k in state['cache'].keys():
+            delete_cache(state['cache'], k)
+        os.system('reset')
         raise KeyboardInterrupt()
     signal.signal(signal.SIGINT, sys_kill)
     # Respond to standard input
-    for delta, line in iter(watch_user, False):
-        if line:
-            set_line(state['scroll'], line)
-            continue
+    for delta in iter(watch_user, False):
         if not delta:
             break
-        # Chanege file input
         o_proc.suspend()
-        # Update if any change
-        n_ij = update_proc(state['cache'], delta, o_ij, c_ij)
         # Change watched command
+        n_ij = update_proc(state, delta, o_ij, c_ij)
         return read_in(_task, _ba, n_ij, state)
     # Exit
     sys_kill()
-
 
 def run_watch(_task, *args):
     watch_t = _task['Slyml']['WATCH']
