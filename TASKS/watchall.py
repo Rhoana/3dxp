@@ -234,7 +234,8 @@ class Watchall(object):
         output, stderr = process.communicate()
         retcode = process.poll()
         if retcode:
-            return stderr.splitlines()
+            msg = 'ERR {}:\n {}'.format(retcode, stderr)
+            return msg.splitlines()
 
         return output.splitlines()
 
