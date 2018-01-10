@@ -14,7 +14,7 @@ Misc:
       Runs: "{N_BOX}**3"
     - &tif_h5-0
       Slurm: ./SLURM/one.sbatch
-      python: ./PYTHON//tif2hd.py
+      python: ./PYTHON/conversion/tif2hd.py
     - &boss_tif-0
       python: ./PYTHON/conversion/boss2stack.py
       Slurm: ./SLURM/many.sbatch
@@ -61,6 +61,7 @@ Default:
         WWW: ./WWW
     Inputs:
         OUT: "{OUT_ROOT}/{TODAY}/{NAME}"
+    Workdir: "git rev-parse --show-toplevel"
     Logs: "./LOGS/{TODAY}/{NAME}"
     Exports: [python, args]
     Flags: [partition]
