@@ -50,9 +50,7 @@ pre_120nm: &pre_120nm
         NAME: 'nm_zx_120_128'
         ID_OFF: "-d 0:1024:1024"
         LIST: "1:2:3"
-    Needs:
-        <<: *h5_pre-0
-        Needs: *boss_h5-id
+    Needs: *boss_h5-id
 Default:
     Constants:
         BOSS_EM: /n/coxfs01/leek/data/JWR_boss-no-duplicates.json
