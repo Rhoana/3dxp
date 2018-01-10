@@ -126,6 +126,7 @@ class ThreeD:
         out[arr == val] = 1
 
         return out
+
     @staticmethod
     def create_stl(vol, filename, blockshape, Z=0, Y=0, X=0):
 
@@ -142,14 +143,22 @@ class ThreeD:
             mesh_data[i][1] = v + offset
 
         m = mesh.Mesh(mesh_data)
-        # with open(filename, 'w') as f:
         m.save(filename)
 
-        return m
-
-
     @staticmethod
-    def run(datafile, Z, Y, X, outdir, blockshape=200, idlist=[], order='zyx'):
+    def create_pre(vol, filename, blockshape, Z=0, Y=0, X=0):
+
+        verts, faces = measure.marching_cubes(vol, 0, gradient_direction='ascent')[:2]
+        all_verts = verts[faces].reshape(-1, 3) + [Z, Y, X] * blockshape
+        n_verts = len(all_verts)
+
+        mesh_data = np.float32([n_verts] + all_verts.flatten())
+
+        with open(filename, 'w') as wf:
+            wf.write(mesh_data.tobytes())
+ 
+    @staticmethod
+    def run(datafile, Z, Y, X, outdir, blockshape=200, idlist=[], order='zyx', is_pre=False):
 
         # Validate axis order
         if set('zyx') != set(order):
@@ -189,16 +198,21 @@ class ThreeD:
         using_ids = np.intersect1d(idlist, all_ids)
         print 'Using Loaded IDs: {}'.format(using_ids)
 
+        MESH_EXT = 'stl'
+        if is_pre:
+            MESH_EXT = 'pre'
+
         for id in using_ids:
 
             # Get the output name and folder
             outfolder = os.path.join(outdir, str(id))
             name_fmt = '{{}}_{{}}_{{}}'.format(*axis_order)
-            name_fmt = '{}_{}.stl'.format(order, name_fmt)
+            name_fmt = '{}_{}'.format(order, name_fmt)
             # Simple name for old assumptions
             if axis_order == [0,1,2]:
-                name_fmt = '{0}_{1}_{2}.stl'
+                name_fmt = '{0}_{1}_{2}'
             outname = name_fmt.format(Z,Y,X)
+            outname += '.{}'.format(MESH_EXT)
             # Make outfolder if doesn't yet exist
             if not os.path.exists(outfolder):
                 os.makedirs(outfolder)
@@ -222,7 +236,10 @@ class ThreeD:
                 thresh_padded = np.swapaxes(thresh_padded, 0, 1) # Z,Y,X
                 final_padded = np.transpose(thresh_padded, axis_order)
                 # Create mesh with given axis order
-                ThreeD.create_stl(final_padded, outpath, blockshape, Z=Z, Y=Y, X=X)
+                if is_pre:
+                    ThreeD.create_pre(final_padded, outpath, blockshape, Z=Z, Y=Y, X=X)
+                else:
+                    ThreeD.create_stl(final_padded, outpath, blockshape, Z=Z, Y=Y, X=X)
 
                 print 'Stored {}/{}'.format(id, outname)
 
