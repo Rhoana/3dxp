@@ -25,6 +25,7 @@ def start(_argv):
     ROOTOUT = realpath(args['out'])
     STLFOLDER = sharepath(ROOTOUT, 'stl')
     ORDER = ['zyx', 'xyz'][args['xyz']]
+    FOLDER = args['folder']
     PRE = args['pre']
     RUN = ThreeD.run
 
@@ -59,7 +60,7 @@ def start(_argv):
 
         z,y,x = subvols[TRIAL]
 
-        RUN(DATA, z, y, x, STLFOLDER, block_size, LIST, ORDER, PRE)
+        RUN(DATA, z, y, x, STLFOLDER, block_size, LIST, ORDER, PRE, FOLDER)
 
         print('All done with stl block {},{},{}'.format(z,y,x))
 
@@ -102,7 +103,7 @@ def start(_argv):
         found_counts = [len(glob.glob(re_file)) for re_file in re_path]
         top_stl_ids = top_ids[top_counts>found_counts]
         if len(top_stl_ids):
-            RUN(DATA, z, y, x, STLFOLDER, block_size, top_stl_ids, [], ORDER, PRE)
+            RUN(DATA, z, y, x, STLFOLDER, block_size, top_stl_ids, [], ORDER, PRE, FOLDER)
 
         print('All done with stl block {},{},{}'.format(z,y,x))
 
@@ -117,6 +118,7 @@ def parseArgv(argv):
         't': 'Which of the b*b*b tiles to generate (default 0)',
         'n': 'make meshes for the top n ids (default 1)',
         'l': 'make meshes for : separated list of ids',
+        'f': 'folder format for meshes of id %d (default %d)',
         'p': 'Use NG prerendered format instead (default stl)',
         'xyz': 'Store meshes with xyz coordinates (default zyx)!',
         'help': 'Make an hdf5 file into stl meshes!'
@@ -126,6 +128,7 @@ def parseArgv(argv):
     parser.add_argument('ids', help=help['ids'])
     parser.add_argument('out', help=help['out'])
     parser.add_argument('--xyz', action='store_true', help=help['xyz'])
+    parser.add_argument('-f','--folder', default='%d', help=help['f'])
     parser.add_argument('-p','--pre', action='store_true', help=help['p'])
     parser.add_argument('-d','--deep',type=int, default=0, help=help['d'])
     parser.add_argument('-t','--trial', type=int, default=0, help=help['t'])

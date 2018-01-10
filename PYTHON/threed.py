@@ -158,7 +158,7 @@ class ThreeD:
             wf.write(mesh_data.tobytes())
  
     @staticmethod
-    def run(datafile, Z, Y, X, outdir, blockshape=200, idlist=[], order='zyx', is_pre=False):
+    def run(datafile, Z, Y, X, outdir, blockshape=200, idlist=[], order='zyx', is_pre=False, out_fmt='%d'):
 
         # Validate axis order
         if set('zyx') != set(order):
@@ -205,7 +205,7 @@ class ThreeD:
         for id in using_ids:
 
             # Get the output name and folder
-            outfolder = os.path.join(outdir, str(id))
+            outfolder = os.path.join(outdir, out_fmt % id)
             name_fmt = '{{}}_{{}}_{{}}'.format(*axis_order)
             name_fmt = '{}_{}'.format(order, name_fmt)
             # Simple name for old assumptions
