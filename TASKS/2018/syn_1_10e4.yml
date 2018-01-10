@@ -23,7 +23,8 @@ Misc:
       Needs:
           <<: *tif_h5-0
           args: "{OUT}/tif/id {OUT}/id.h5"
-          CROP: "-s {ID_Z}:{ID_YX}:{ID_YX}"
+          Inputs:
+              CROP: "-s {ID_Z}:{ID_YX}:{ID_YX}"
           Needs:
               <<: *boss_tif-0 
               args: "{BOSS_ID} -o {OUT}/tif/id {CROP} {ID_OFF} -f tif"
@@ -31,7 +32,8 @@ Misc:
       Needs:
           <<: *tif_h5-0
           args: "{OUT}/tif/em {OUT}/em.h5"
-          CROP: "-s {EM_Z}:{EM_YX}:{EM_YX}"
+          Inputs:
+              CROP: "-s {EM_Z}:{EM_YX}:{EM_YX}"
           Needs:
               <<: *boss_tif-0 
               args: "{BOSS_EM} -o {OUT}/tif/em {CROP} -f tif"
@@ -59,6 +61,8 @@ Default:
         MESH_RUN: 10
         ANISO: 7.5
         WWW: ./WWW
+    Inputs:
+        OUT: "{OUT_ROOT}/{TODAY}/{NAME}"
     Logs: "./LOGS/{TODAY}/{NAME}"
     Exports: [python, args]
     Flags: [partition]
