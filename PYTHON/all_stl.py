@@ -23,11 +23,13 @@ def start(_argv):
     N_TOP_IDS = args['number'] + 1
     DATA = realpath(args['ids'])
     ROOTOUT = realpath(args['out'])
-    STLFOLDER = sharepath(ROOTOUT, 'stl')
-    ORDER = ['zyx', 'xyz'][args['xyz']]
-    FOLDER = args['folder']
-    PRE = args['pre']
+    # New options
     RUN = ThreeD.run
+    PRE = args['pre']
+    FOLDER = args['folder']
+    MESH_NAME = ['stl', 'pre'][PRE]
+    ORDER = ['zyx', 'xyz'][args['xyz']]
+    STLFOLDER = sharepath(ROOTOUT, MESH_NAME)
 
     #
     # IF A LIST OF IDS IS PASSED

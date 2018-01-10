@@ -174,7 +174,10 @@ class ThreeD:
 
         # create output folder
         if not os.path.exists(outdir):
-            os.makedirs(outdir)
+            try:
+                os.makedirs(outdir)
+            except OSError as e:
+                print e
 
         with h5py.File(datafile, 'r') as f:
             zo,ze = np.array([Z,Z+1])*blockshape[0]
