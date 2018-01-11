@@ -7,11 +7,14 @@ def write_json(parent, fold, fold_files):
     index_file = os.path.basename(fold)
     index_path = os.path.join(parent, index_file)
     www_file = lambda x: os.path.relpath(x, parent)
-    with open(index_path, 'w') as wf:
-        mesh_info = {
-            'fragments': list(map(www_file, fold_files))
-        }
-        json.dump(mesh_info, wf)
+    try:
+        with open(index_path, 'w') as wf:
+            mesh_info = {
+                'fragments': list(map(www_file, fold_files))
+            }
+            json.dump(mesh_info, wf)
+    except OSError as e:
+        print e
 
 def start(_argv):
 
