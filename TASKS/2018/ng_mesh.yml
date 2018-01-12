@@ -54,7 +54,7 @@ konsta_in: &konsta_in-0
         ID_OFF: "-d 0:0:0"
         ID_H5: /n/coxfs01/kdmitriev/neuronseg/rhoana/microns-seg-450-test.h5
         3D: 'nrn_in_v1'
-        LIST: "1:2:3"
+        LIST: "499-500"
     For: *mesh_json-0
 konsta_out: &konsta_out-0
     <<: *h5_mesh-0
@@ -71,7 +71,7 @@ konsta_out: &konsta_out-0
         ID_OFF: "-d 0:0:0"
         ID_H5: /n/coxfs01/kdmitriev/corrected_results/v1/corrected_labels.h5
         3D: 'nrn_out_v1'
-        LIST: "1:2:3"
+        LIST: "499-500"
     For: *mesh_json-0
 konsta_all:
     Needs:
