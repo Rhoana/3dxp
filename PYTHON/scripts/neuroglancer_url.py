@@ -350,7 +350,7 @@ LABEL_MAP ={
 
 first_labels = sorted(LABEL_MAP.keys())
 
-URL = "https://dojo.rc.fas.harvard.edu/ng/#!{'layers':{'em':{'type':'image'_'source':'ndstore://https://dojo.rc.fas.harvard.edu/JWR::2018_01_10::konsta_450/em'}_'gt':{'type':'segmentation'_'source':'precomputed://https://dojo.rc.fas.harvard.edu/pre/JWR::2018_01_10::konsta_450/gt'_'selectedAlpha':1_'objectAlpha':0.94_'segments':[%s]}_'id':{'type':'segmentation'_'source':'precomputed://https://dojo.rc.fas.harvard.edu/pre/JWR::2018_01_10::konsta_450/id'_'selectedAlpha':0.39_'objectAlpha':0.94_'segments':[%s]}}_'navigation':{'pose':{'position':{'voxelSize':[4_4_30]_'voxelCoordinates':[1172.7698974609375_1341.9620361328125_15.751522064208984]}}_'zoomFactor':8.757702536470093}_'perspectiveOrientation':[0.8022819757461548_-0.2906529903411865_0.18861187994480133_-0.4860967695713043]_'perspectiveZoom':65.21623631776924}"
+URL = "https://dojo.rc.fas.harvard.edu/ng/#!{'layers':{'em':{'type':'image'_'source':'ndstore://https://dojo.rc.fas.harvard.edu/JWR::2018_01_10::konsta_450/em'}_'gt':{'type':'segmentation'_'source':'precomputed://https://dojo.rc.fas.harvard.edu/pre/JWR::2018_01_10::konsta_450/gt'_'selectedAlpha':1_'objectAlpha':1_'segments':[%s]}_'id':{'type':'segmentation'_'source':'precomputed://https://dojo.rc.fas.harvard.edu/pre/JWR::2018_01_10::konsta_450/id'_'selectedAlpha':0.39_'objectAlpha':0.94_'segments':[%s]}}_'navigation':{'pose':{'position':{'voxelSize':[4_4_30]_'voxelCoordinates':[227.84408569335938_1159.0234375_133.25015258789062]}}_'zoomFactor':6.76439449176896}_'perspectiveOrientation':[0.8022819757461548_-0.2906529903411865_0.18861187994480133_-0.4860967695713043]_'perspectiveZoom':188.88551101387154}"
 
 def get_labels(index):
     label_0 = first_labels[index]

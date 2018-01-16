@@ -10,6 +10,7 @@ from stl import mesh
 from skimage import measure
 from xml.etree import ElementTree
 
+VOXEL_ZYX = np.uint32([30,4,4])
 
 class ThreeD:
 
@@ -128,16 +129,19 @@ class ThreeD:
         return out
 
     @staticmethod
-    def create_stl(vol, filename, blockshape, Z=0, Y=0, X=0):
+    def create_stl(vol, filename, blockshape, offset, axis_order):
 
         verts, faces = measure.marching_cubes(vol, 0, gradient_direction='ascent')[:2]
+        verts = verts + offset * blockshape
+        verts = verts[:,axis_order]
+        # Get all vertices for all faces
         applied_verts = verts[faces]
-        vert_count = applied_verts.shape[0]
+        vert_count = len(applied_verts)
 
         mesh_data = np.zeros(vert_count, dtype=mesh.Mesh.dtype)
 
         # Z, Y and X offsets
-        offset = [Z, Y, X] * blockshape
+        offset = offset * blockshape
 
         for i, v in enumerate(applied_verts):
             mesh_data[i][1] = v + offset
@@ -146,16 +150,20 @@ class ThreeD:
         m.save(filename)
 
     @staticmethod
-    def create_pre(vol, filename, blockshape, Z=0, Y=0, X=0):
+    def create_pre(vol, filename, blockshape, offset, axis_order):
 
         verts, faces = measure.marching_cubes(vol, 0, gradient_direction='ascent')[:2]
-        all_verts = verts[faces].reshape(-1, 3) + [Z, Y, X] * blockshape
-        n_verts = len(all_verts)
-
-        mesh_data = np.float32([n_verts] + all_verts.flatten())
+        verts = (verts + offset * blockshape) * VOXEL_ZYX
+        verts = verts[:,axis_order]
+        # Count total vertices
+        n_verts = np.uint32([len(verts)])
+        # Flatten and format verts and faces
+        flat_verts = np.float32(verts.flatten())
+        flat_faces = np.uint32(faces.flatten())
 
         with open(filename, 'w') as wf:
-            wf.write(mesh_data.tobytes())
+            out = n_verts.tobytes() + flat_verts.tobytes() + flat_faces.tobytes()
+            wf.write(out)
  
     @staticmethod
     def run(datafile, Z, Y, X, outdir, blockshape=200, idlist=[], order='zyx', is_pre=False, out_fmt='%d'):
@@ -209,8 +217,9 @@ class ThreeD:
 
             # Get the output name and folder
             outfolder = os.path.join(outdir, out_fmt % id)
-            name_fmt = '{{}}_{{}}_{{}}'.format(*axis_order)
+            name_fmt = '{%d}_{%d}_{%d}' % tuple(axis_order)
             name_fmt = '{}_{}'.format(order, name_fmt)
+            print 'fmt '+name_fmt
             # Simple name for old assumptions
             if axis_order == [0,1,2]:
                 name_fmt = '{0}_{1}_{2}'
@@ -237,17 +246,18 @@ class ThreeD:
 
                 # 3. marching cubes
                 thresh_padded = np.swapaxes(thresh_padded, 0, 1) # Z,Y,X
-                final_padded = np.transpose(thresh_padded, axis_order)
                 # Create mesh with given axis order
+                offset = np.uint32([Z,Y,X])
                 if is_pre:
-                    ThreeD.create_pre(final_padded, outpath, blockshape, Z=Z, Y=Y, X=X)
+                    ThreeD.create_pre(thresh_padded, outpath, blockshape, offset, axis_order)
                 else:
-                    ThreeD.create_stl(final_padded, outpath, blockshape, Z=Z, Y=Y, X=X)
+                    ThreeD.create_stl(thresh_padded, outpath, blockshape, offset, axis_order)
 
                 print 'Stored {}/{}'.format(id, outname)
 
-            except:
+            except Exception as e:
 
+                print 'error: {}'.format(e) 
                 print 'Skipped', id
                 continue
 
