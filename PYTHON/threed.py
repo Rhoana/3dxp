@@ -154,7 +154,9 @@ class ThreeD:
 
         verts, faces = measure.marching_cubes(vol, 0, gradient_direction='ascent')[:2]
         verts = (verts + offset * blockshape) * VOXEL_ZYX
+        # Use the correct coordinate and vertex order
         verts = verts[:,axis_order]
+        faces = faces[:,::-1]
         # Count total vertices
         n_verts = np.uint32([len(verts)])
         # Flatten and format verts and faces
