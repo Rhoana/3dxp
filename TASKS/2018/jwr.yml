@@ -11,11 +11,6 @@ Misc:
       python: ./PYTHON/all_stl.py
       args: "{OUT}/{ID}.h5 {OUT}/{3D} {MESH_FMT} -f %d:{MESH_RES} -b {N_BOX} -l {LIST}"
       Runs: "{N_BOX}**3"
-    - &tif_mojo-id
-      Slurm: ./SLURM/many.sbatch
-      python: ./PYTHON/conversion/tif2mojo.py
-      args: "{TIF_ID} --id -o {MOJO_OUT}"
-      Runs: "{Z_RUN}"
     - &boss_mojo-id
       Slurm: ./SLURM/many.sbatch
       python: ./PYTHON/conversion/boss2mojo.py
@@ -292,9 +287,7 @@ nrn_2x: &nrn_2x
         ID: "nrn_2x"
         MJ: 'nrn_2x_v0/mojo'
     Needs:
-        - <<: *tif_mojo-id
-          Needs:
-              - *boss_tif-id
+        - *boss_mojo-id
 em_2x: &em_2x
     Inputs:
         MJ: '2x_v0/mojo'
@@ -312,11 +305,9 @@ nrn_1x: &nrn_1x
         ID: "nrn_1x"
         3D: 'nrn_1x'
         MJ: 'nrn_1x_v0/mojo'
-        Z_RUN: 100
+        Z_RUN: 200
     Needs:
-        - <<: *tif_mojo-id
-          Needs:
-              - *boss_tif-id
+        - *boss_mojo-id
 em_1x: &em_1x
     Inputs:
         MJ: '1x_v0/mojo'
