@@ -7,6 +7,7 @@ import argparse
 import numpy as np
 import tifffile as tiff
 from formats.fromStack import tif2np
+from formats.common import make_path
 
 help = {
     'out': 'output file (default out.h5)',
@@ -41,6 +42,8 @@ span_pairs = map(fmt_span, span_args)
 tif_gen = tif2np(in_path, span_pairs)
 # Get the shape and data type
 out_shape, out_type = tif_gen.next()
+
+make_path(os.path.dirname(out_path))
 
 # open an output file
 with h5py.File(out_path, 'w') as hf:

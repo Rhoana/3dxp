@@ -6,6 +6,7 @@ import glob
 import argparse
 import numpy as np
 from formats.fromStack import opencv2np
+from formats.common import make_path
 
 help = {
     'out': 'output file (default out.h5)',
@@ -55,6 +56,8 @@ k_jpg = ['jpg', 'jpeg', 'JPG', 'JPEG']
 jpg_gen = opencv2np(in_path, k_jpg, out_type, order, span_pairs)
 # Get the shape for the volume
 out_shape = jpg_gen.next()
+
+make_path(os.path.dirname(out_path))
 
 # open an output file
 with h5py.File(out_path, 'w') as hf:
