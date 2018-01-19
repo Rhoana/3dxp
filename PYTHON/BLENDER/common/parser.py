@@ -27,7 +27,7 @@ def key(k):
         'list': '%%d:%%d:%%d... list for %%d in folder and file', 
         'output': 'Output folder to render scene images',
         'blend': 'Blender file to save output',
-        'um/VOL': 'Set D:H:W size of volume measured in μm (default {})',
+        'um/VOL': 'Set D:H:W size of volume measured in um (default {})',
         'um/XYZ': 'Set X:Y:Z origin of full volume in microns (default {})',
         'vol/VOL': 'Xn:Yn:Zn subvolumes in full volume (default {})',
         'vol/xyz': 'Xi:Yi:Zi # subvolumes offset from origin (default {})',
@@ -81,8 +81,10 @@ def add_argument(cmd, i):
     words = flags.get(i,[i])
     cmd.add_argument(*words, **key(i))
 
-def setup(_filename, _describe, _items=[]):
-    COMMAND = 'blender -P '+_filename+' --'
+def setup(_filename, _describe, _items=[], ez=False):
+    COMMAND = _filename
+    if not ez:
+        COMMAND = 'blender -P '+_filename+' --'
     DETAILS = _describe + '\n'
     'The "folder" and "file" can take %%d'
     ' from --list %%d:%%d:%%d. At least one *'
