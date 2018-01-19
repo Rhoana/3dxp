@@ -455,8 +455,8 @@ def run_watch(_task, *args):
 
 def get_entry_path(task):
      keys = [
-         task['Slyml']['FILE'][:3],
-         task['Slyml']['ENTRY'][:4],
+         task['Slyml']['FILE'],
+         task['Slyml']['ENTRY'],
      ]
      return [k for k in keys if k != 'Main']
 
