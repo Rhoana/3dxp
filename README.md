@@ -14,6 +14,8 @@ pip install -r ./PYTHON/requirements.txt
 
 Find many working examples using the [Sly Markup Language](TASKS/readme.md)
 
+![visual result](https://github.com/thejohnhoffer/img/raw/master/bfly/100um_20ids.gif)
+
 ### Detailed Usage
 
 To go from [a boss index](https://github.com/microns-ariadne/pipeline_engine#output) to an image stack, use `./PYTHON/conversion/boss2stack.py`
