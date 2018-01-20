@@ -24,7 +24,7 @@ python slyml.py my_config.yaml
 
 #### Wait, but first, write a config
 
-Run marching cubes over [many jobs](demos/many.yaml) on a hdf5 volume handled in parallel in blocks.
+*Example:* go from volume to meshes in [many blocks](demos/many.yaml) handled in parallel.
 ```
 cp demos/many.yaml my_config.yaml
 ```
