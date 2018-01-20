@@ -12,17 +12,8 @@ cd 3dxp/TASKS
 
 0.5) Only if using 3DXP:
 
-_(On the Harvard Odyssey Cluster)[†](#custom-setup)_
-
-```
-. harvard/environment.sh
-```
-
-_(Elsewhere...)_
-
-```
-pip install -r ../PYTHON/requirements.txt
-```
+`. harvard/environment.sh` _(On the Harvard Odyssey Cluster)[†](#custom-setup)_
+`pip install -r ../PYTHON/requirements.txt` _(Anwhere with pip...)_
 
 ## 1.0) Get started:
 
