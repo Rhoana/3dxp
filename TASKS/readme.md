@@ -1,7 +1,7 @@
 ## SlyML
 __Version 2.2.2__
 
-Here is a python script to run and monitor [Slurm](https://slurm.schedmd.com/) jobs from yaml config files.
+Here is a python script to run and monitor [Slurm](https://slurm.schedmd.com/) jobs from yaml configurations.
 
 ### 0.0) Get ready:
 
