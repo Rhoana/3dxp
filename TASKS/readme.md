@@ -24,7 +24,7 @@ _(Elsewhere...)_
 pip install -r ../PYTHON/requirements.txt
 ```
 
-### 1.0) Get started:
+## 1.0) Get started:
 
 ```
 python slyml.py my_config.yaml
