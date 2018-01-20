@@ -3,30 +3,34 @@ __Version 2.2.2__
 
 A python script to run slum jobs from yaml config files.
 
-### Running
-
-Get ready:
+### 0.0) Get ready:
 
 ```
 git clone https://github.com/Rhoana/3dxp.git
 cd 3dxp/TASKS
 ```
 
-Get set:
+0.5) Only if using 3DXP:
 
-_(for python on Harvard Odyssey Cluster)[†](#custom-setup)_
+_(On the Harvard Odyssey Cluster)[†](#custom-setup)_
 
 ```
 . harvard/environment.sh
 ```
 
-Go:
+_(Elsewhere...)_
+
+```
+pip install -r ../PYTHON/requirements.txt
+```
+
+### 1.0) Get started:
 
 ```
 python slyml.py my_config.yaml
 ```
 
-### Wait, but first, write a config
+#### Wait, but first, write a config
 
 Run marching cubes over [many jobs](demos/many.yaml) on a hdf5 volume handled in parallel in blocks.
 ```
