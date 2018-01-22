@@ -60,7 +60,9 @@ def log_yaml(i, y, quiet=False):
     pretty = {
         'default_flow_style': False,
     }
-    out = {str(i):safe_yaml(y)}
+    out = safe_yaml(y)
+    if i is not None:
+        out = {str(i):out}
     y_str = yaml.safe_dump(out, **pretty)
     log_quiet(y_str.rstrip('\n'), quiet)
 
@@ -631,7 +633,7 @@ def run_slurm(slurm_job, task):
     # Submit and collect the job id
     try:
         submitted = run_subprocess(slurm_job)
-        log_yaml('Queued', job_meta(task), is_quiet(task))
+        log_yaml(None, job_meta(task), is_quiet(task))
     except subprocess.CalledProcessError as e:
         raise ScriptError(e.output.rstrip())
     # Return the id number identifying the job
