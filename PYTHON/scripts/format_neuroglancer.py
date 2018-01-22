@@ -32,7 +32,7 @@ def start(_argv):
     url_str = '%s'
     with open(url_file, 'r') as f:
         for line in f:
-            if len(line) and line[0] != '#':
+            if len(line) and line[0] not in ('#','\n'):
                 url_str = line.rstrip('\n')
                 continue
 
@@ -48,6 +48,7 @@ def start(_argv):
     num_lists = url_str.count('%')
     list_iter = get_labels(label_str)
     print url_str % tuple(list_iter)
+
 
 def parseArgv(argv):
     sys.argv = argv
