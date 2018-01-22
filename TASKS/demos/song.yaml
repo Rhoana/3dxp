@@ -17,7 +17,7 @@ Default:
     partition: general
     Exports: [lyric]
     time: "1:00"
-    Constants:
+    Inputs:
         IT: love
         A: do,
         B: re,
