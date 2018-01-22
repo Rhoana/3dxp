@@ -1,32 +1,22 @@
 # slyml.py v2.2
-# 
-Code:
-    - &first
-      args: "It's easy as A, B, {C}"
-    - &second
-      args: "As simple as {A} {B} {C}"
-    - &third
-      args: "A B C, {A} {B} {C}: Thatʼs {THAT}"
-Logic:
-    - &song
-      <<: *second
-      Needs: 
-          <<: *first
-          Inputs:
-              C: see?
-      For:
-          <<: *third
-          Inputs:
-              THAT: "how easy {IT} can be."
-              A: 1
-              B: 2
-              C: 3
-Main: *song
+#
+Main:
+    lyric: "As simple as {A} {B} {C}"
+    Needs:
+        lyric: "Itʼs easy as A, B, C."
+    For:
+        lyric: "A B C, {A} {B} {C}: Thatʼs {THAT}"
+        Inputs:
+            THAT: "how easy {IT} can be."
+            A: 1
+            B: 2
+            C: 3
 Default:
-    Slurm: ./tests/slurm/one.sbatch
-    Flags: [partition]
+    Slurm: ./tests/slurm/something.sbatch
+    Flags: [partition, time]
     partition: general
-    Exports: [args]
+    Exports: [lyric]
+    time: "1:00"
     Constants:
         IT: love
         A: do,

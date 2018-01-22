@@ -776,11 +776,6 @@ def end_task(_task, _before=[], _after=[]):
         b_o = iter(map(get_out, _before))
         b_n = [name_fmt(**o) for o in b_o]
         log_yaml(t_msg, b_n, _quiet)
-    if _after:
-        t_msg = t_out['NAME']+' For'
-        a_o = iter(map(get_out, _after))
-        a_n = [name_fmt(**o) for o in a_o]
-        log_yaml(t_msg, a_n, _quiet)
     # End current node
     if not _quiet:
         print(end_tree(t_out['ID']))
