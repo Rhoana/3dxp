@@ -1,4 +1,11 @@
 # -*- coding: utf-8 -*-
+# Python 2 and 3
+from __future__ import unicode_literals
+
+# Hack
+import watchall
+WATCH_PY = watchall.__file__
+
 from itertools import groupby
 from threading import Thread
 from pydoc import pipepager
@@ -16,9 +23,6 @@ import six
 import tty
 import os
 
-# Hack
-import watchall
-WATCH_PY = watchall.__file__
 
 # http://ballingt.com/nonblocking-stdin-in-python-3/
 class raw_in(object):
@@ -56,15 +60,24 @@ def safe_yaml(y):
         return repr(y)
     return y
 
+def get_safe_utf(s):
+    try:
+        return s.decode('utf')
+    except AttributeError:
+        return s
+
 def log_yaml(i, y, quiet=False):
     pretty = {
         'default_flow_style': False,
+        'allow_unicode': True,
+        'encoding': 'utf-8',
     }
     out = safe_yaml(y)
     if i is not None:
         out = {str(i):out}
     y_str = yaml.safe_dump(out, **pretty)
-    log_quiet(y_str.rstrip('\n'), quiet)
+    y_utf = get_safe_utf(y_str)
+    log_quiet(y_utf.rstrip('\n'), quiet)
 
 def logEvalError(task_id, e, quiet=False):
     code, name, err = e.args
@@ -556,7 +569,10 @@ def set_exports(task):
     exports = get_exports(task)
     # Export all environment variables
     for k,v in exports.items():
-        os.environ[k] = v
+        try:
+            os.environ[k] = v
+        except UnicodeEncodeError:
+            os.environ[k] = v.encode('utf8')
     return "ALL"
 
 def get_array(task):

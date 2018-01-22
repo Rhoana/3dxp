@@ -6,7 +6,7 @@ Code:
     - &second
       args: "As simple as {A} {B} {C}"
     - &third
-      args: "A B C, {A} {B} {C}: That's {THAT}"
+      args: "A B C, {A} {B} {C}: Thatʼs {THAT}"
 Logic:
     - &song
       <<: *second
