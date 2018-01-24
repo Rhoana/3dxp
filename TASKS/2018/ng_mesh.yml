@@ -7,6 +7,10 @@ Misc:
       args: "-r {MESH_RUN} -V {ANISO} -R {EM_Z}:{EM_XY} -I {ID_Z}:{ID_XY} {WEB}"  
       Inputs:
           WEB: "-l {LIST} -w {WWW} {OUT}/em.h5 {OUT}/tif/em {OUT}/{3D}"
+    - &mesh_json-0
+      Slurm: ./SLURM/one.sbatch
+      python: ./PYTHON/json_index.py
+      args: "{OUT}/{3D}/pre"
     - &h5_mesh-0
       Slurm: ./SLURM/many.sbatch
       python: ./PYTHON/all_stl.py
@@ -35,7 +39,58 @@ Misc:
       Needs:
           <<: *boss_tif-0 
           args: "{BOSS_EM} -o {OUT}/tif/em {CROP} -f tif"
-mesh_120nm: &mesh_120nm
+konsta_in: &konsta_in-0
+    <<: *h5_mesh-0
+    args: "{ID_H5} {OUT}/{3D} {MESH_FMT} -f %d:{MESH_RES} -b {N_BOX} -l {LIST}"
+    Constants:
+        ID_Z: 0
+        EM_Z: 0
+        ID_YX: 0
+        EM_YX: 0
+        N_BOX: 3
+        MESH_RES: 0
+        NAME: 'konsta'
+        TODAY: "2018_01_10"
+        ID_OFF: "-d 0:0:0"
+        ID_H5: /n/coxfs01/kdmitriev/neuronseg/rhoana/microns-seg-450-test.h5
+        3D: 'nrn_in_v1'
+        LIST: "160-161"
+    For: *mesh_json-0
+konsta_out: &konsta_out-0
+    <<: *h5_mesh-0
+    args: "{ID_H5} {OUT}/{3D} {MESH_FMT} -f %d:{MESH_RES} -b {N_BOX} -l {LIST}"
+    Constants:
+        ID_Z: 0
+        EM_Z: 0
+        ID_YX: 0
+        EM_YX: 0
+        N_BOX: 3
+        MESH_RES: 0
+        NAME: 'konsta'
+        TODAY: "2018_01_10"
+        ID_OFF: "-d 0:0:0"
+        ID_H5: /n/coxfs01/kdmitriev/corrected_results/v1/corrected_labels.h5
+        3D: 'nrn_out_v1'
+        LIST: "499-500"
+    For: *mesh_json-0
+konsta_all:
+    Needs:
+        - <<: *konsta_in-0    
+          Inputs: {LIST: "1-2000"}
+        - <<: *konsta_in-0    
+          Inputs: {LIST: "2000-4000"}
+        - <<: *konsta_in-0    
+          Inputs: {LIST: "4000-6000"}
+        - <<: *konsta_out-0    
+          Inputs: {LIST: "1-2000"}
+        - <<: *konsta_out-0    
+          Inputs: {LIST: "2000-4000"}
+        - <<: *konsta_out-0    
+          Inputs: {LIST: "4000-6000"}
+    Constants:
+        TODAY: "2018_01_11"
+        NAME: konsta_all
+syn_10e4:
     <<: *h5_mesh-0
     Constants:
         ID_Z: 3
@@ -47,14 +102,15 @@ mesh_120nm: &mesh_120nm
         TODAY: "2018_01_10"
         NAME: 'nm_zx_120_128'
         ID_OFF: "-d 0:1024:1024"
-        3D: 'preformat_mesh'
-        LIST: "1:2:3"
-    Needs: *boss_h5-id
+        3D: 'syn_10e4'
+        LIST: "1-10"
+    #Needs: *boss_h5-id
+    For: *mesh_json-0
 Default:
     Constants:
         BOSS_EM: /n/coxfs01/leek/data/JWR_boss-no-duplicates.json
         BOSS_ID: /n/coxfs01/leek/results/2017-12-04_100um-cube/boss/final-synapse-segmentation/boss.json
-        OUT_ROOT: /n/coxfs01/thejohnhoffer/JWR/syn_1_10e4/
+        OUT_ROOT: /n/coxfs01/thejohnhoffer/JWR/ng_mesh/
         MESH_FMT: "--pre --xyz"
         MESH_RUN: 10
         ANISO: 7.5

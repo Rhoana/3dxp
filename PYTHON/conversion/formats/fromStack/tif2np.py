@@ -4,6 +4,12 @@ import numpy as np
 from ..common import progress
 import tifffile as tiff
 
+def read_gray_tif(tif_path):
+    tif_img = tiff.imread(tif_path)
+    if len(tif_img.shape) == 3:
+        return tif_img[:,:,0]
+    return tif_img
+
 def tif2np(path_in, span_pairs=[[],[],[]]):
     """
     Arguments
@@ -25,15 +31,17 @@ def tif2np(path_in, span_pairs=[[],[],[]]):
     stack = sorted(glob.glob(search))
 
     # Size input files
-    ex_img = tiff.imread(stack[0])
+    ex_img = read_gray_tif(stack[0])
     shape = (len(stack),) + ex_img.shape
+
+    print('stack shape {}'.format(shape))
 
     # Get the full spans as default
     spans = np.uint64([[0,0,0], shape]).T
     # Set the spans if not default
     for i, pair in enumerate(span_pairs):
         if len(pair) == 2:
-            spans[i] = pair
+            spans[i] = np.clip(pair, *spans[i])
 
     # Expand the spans
     [z0,z1], [y0, y1], [x0, x1] = spans
@@ -45,4 +53,4 @@ def tif2np(path_in, span_pairs=[[],[],[]]):
     # Then yield each section from a file
     for zi, zfile in enumerate(stack[z0:z1]):
         progress(zi, z1-z0)
-        yield tiff.imread(zfile)[y0:y1, x0:x1]
+        yield read_gray_tif(zfile)[y0:y1, x0:x1]

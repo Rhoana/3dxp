@@ -120,7 +120,7 @@ def parseArgv(argv):
         't': 'Which of the b*b*b tiles to generate (default 0)',
         'n': 'make meshes for the top n ids (default 1)',
         'l': 'make meshes for : separated list of ids',
-        'f': 'folder format for meshes of id %d (default %d)',
+        'f': 'folder format for meshes of id %%d (default %%d)',
         'p': 'Use NG prerendered format instead (default stl)',
         'xyz': 'Store meshes with xyz coordinates (default zyx)!',
         'help': 'Make an hdf5 file into stl meshes!'

@@ -1,0 +1,341 @@
+# slyml.py v2.2
+#
+Misc:
+    - &mesh_json-0
+      Slurm: ./SLURM/one.sbatch
+      python: ./PYTHON/json_index.py
+      args: "{OUT}/{3D}/pre"
+    - &h5_mesh-0
+      For: *mesh_json-0
+      Slurm: ./SLURM/many.sbatch
+      python: ./PYTHON/all_stl.py
+      args: "{OUT}/{ID}.h5 {OUT}/{3D} {MESH_FMT} -f %d:{MESH_RES} -b {N_BOX} -l {LIST}"
+      Runs: "{N_BOX}**3"
+    - &boss_mojo-id
+      Slurm: ./SLURM/many.sbatch
+      python: ./PYTHON/conversion/boss2mojo.py
+      args: "{BOSS_ID} -o {MOJO_OUT}/{MJ} {CROP} {ID_OFF}"
+      Runs: "{Z_RUN}"
+    - &boss_mojo-em
+      Slurm: ./SLURM/many.sbatch
+      python: ./PYTHON/conversion/boss2mojo.py
+      args: "{BOSS_EM} -o {MOJO_OUT}/{MJ} {CROP}"
+      Runs: "{Z_RUN}"
+    - &boss_tif-id
+      Slurm: ./SLURM/many.sbatch
+      python: ./PYTHON/conversion/boss2stack.py
+      args: "{BOSS_ID} -o {OUT}/tif/{ID} {CROP} {ID_OFF} -f tif"
+      Runs: "{Z_RUN}"
+    - &tif_h5-id
+      Slurm: ./SLURM/one.sbatch
+      python: ./PYTHON/conversion/tif2hd.py
+      args: "{OUT}/tif/{ID} {OUT}/{ID}.h5"
+hd2pre-1M: &hd2pre-1M
+    For:
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "1-10000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "10000-20000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "20000-30000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "40000-50000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "50000-60000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "60000-70000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "70000-80000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "80000-90000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "90000-100000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "100000-110000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "110000-120000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "120000-130000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "130000-140000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "140000-150000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "150000-160000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "160000-170000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "170000-180000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "180000-190000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "190000-200000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "200000-210000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "210000-220000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "220000-230000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "230000-240000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "240000-250000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "250000-260000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "260000-270000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "270000-280000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "280000-290000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "290000-300000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "300000-310000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "310000-320000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "320000-330000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "330000-340000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "340000-350000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "350000-360000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "360000-370000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "370000-380000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "380000-390000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "390000-400000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "400000-410000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "410000-420000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "420000-430000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "430000-440000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "440000-450000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "450000-460000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "460000-470000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "470000-480000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "480000-490000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "490000-500000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "500000-510000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "510000-520000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "520000-530000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "530000-540000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "540000-550000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "550000-560000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "560000-570000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "570000-580000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "580000-590000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "590000-600000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "600000-610000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "610000-620000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "620000-630000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "630000-640000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "640000-650000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "650000-660000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "660000-670000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "670000-680000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "680000-690000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "690000-700000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "700000-710000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "710000-720000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "720000-730000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "730000-740000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "740000-750000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "750000-760000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "760000-770000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "770000-780000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "780000-790000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "790000-800000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "800000-810000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "810000-820000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "820000-830000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "830000-840000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "840000-850000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "850000-860000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "860000-870000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "870000-880000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "880000-890000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "890000-900000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "900000-910000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "910000-920000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "920000-930000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "930000-940000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "940000-950000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "950000-960000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "960000-970000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "970000-980000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "980000-990000"}
+        - <<: *h5_mesh-0
+          Inputs: {LIST: "990000-1000000"}
+    Constants:
+        N_BOX: 5
+        MESH_RES: 0
+boss2pre-1M: &boss2pre-1M
+    <<: *hd2pre-1M
+    Needs:
+        <<: *tif_h5-id
+        Needs: *boss_tif-id
+syn_8x: &syn_8x
+    Constants:
+        BOSS_ID: /n/coxfs01/leek/results/2017-12-04_100um-cube/boss/final-synapse-segmentation/boss.json 
+    Inputs:
+        ID_OFF: "-d 0:1024:1024"
+        CROP: "-s 3:3:3"
+        ID: "syn_8x"
+        3D: 'syn_8x'
+        MJ: 'syn_8x_v0/mojo'
+    Needs:
+        - *boss_mojo-id
+#        - *boss2pre-1M
+        - <<: *boss2pre-1M
+          For:
+              - <<: *h5_mesh-0
+                Inputs: {LIST: "1-100"}
+nrn_8x: &nrn_8x
+    Constants:
+        BOSS_ID: /n/coxfs01/leek/results/2017-12-04_100um-cube/boss/final-segmentation_3.1/boss.json
+    Inputs:
+        ID_OFF: "-d 0:1024:1024"
+        CROP: "-s 3:3:3"
+        ID: "nrn_8x"
+        3D: 'nrn_8x'
+        MJ: 'nrn_8x_v0/mojo'
+    Needs:
+#        - *boss_mojo-id
+#        - *boss2pre-1M
+        - <<: *boss2pre-1M
+          For:
+              - <<: *h5_mesh-0
+          Inputs: {LIST: "4:294539:2847817:14028151:13915505:65234:3617633:3092:5577:5592:5599:8241:16132:38095:52800:203204:320603:995796:2127752:6616805:6763415:6824636:7515201:11542254:14098640:14133924:14241571:20702119:20918463:21069083:21226001:21471903:21598483:21780408:21921439:22716693:23364797:28737326:28871798:28900430:29207791:29521317:29542267:29776379:29972790:30063935:30065400:30429930:30834358:32753318:33521099:34708053:35097761:35109685:35137427:35239410:35339151:35641534:60478347:60478365:60478367"}
+em_8x: &em_8x
+    Inputs:
+        MJ: '8x_v0/mojo'
+        CROP: "-s 3:3:3"
+    Constants:
+        BOSS_EM: /n/coxfs01/leek/data/JWR_boss-no-duplicates.json  
+    Needs:
+        - *boss_mojo-em
+nrn_2x: &nrn_2x
+    Constants:
+        BOSS_ID: /n/coxfs01/leek/results/2017-12-04_100um-cube/boss/final-segmentation_3.1/boss.json
+    Inputs:
+        ID_OFF: "-d 0:1024:1024"
+        CROP: "-s 1:1:1"
+        ID: "nrn_2x"
+        MJ: 'nrn_2x_v0/mojo'
+    Needs:
+        - *boss_mojo-id
+em_2x: &em_2x
+    Inputs:
+        MJ: '2x_v0/mojo'
+        CROP: "-s 1:1:1"
+    Constants:
+        BOSS_EM: /n/coxfs01/leek/data/JWR_boss-no-duplicates.json  
+    Needs:
+        - *boss_mojo-em
+nrn_1x: &nrn_1x
+    Constants:
+        BOSS_ID: /n/coxfs01/leek/results/2017-12-04_100um-cube/boss/final-segmentation_3.1/boss.json
+    Inputs:
+        ID_OFF: "-d 0:1024:1024"
+        CROP: "-s 0:0:0"
+        ID: "nrn_1x"
+        3D: 'nrn_1x'
+        MJ: 'nrn_1x_v0/mojo'
+        Z_RUN: 200
+    Needs:
+        - *boss_mojo-id
+em_1x: &em_1x
+    Inputs:
+        MJ: '1x_v0/mojo'
+        CROP: "-s 0:0:0"
+        Z_RUN: 100
+    Constants:
+        BOSS_EM: /n/coxfs01/leek/data/JWR_boss-no-duplicates.json  
+    Needs:
+        - *boss_mojo-em
+Main:
+    Needs:
+        - *syn_8x
+        - *nrn_8x
+        - *em_8x
+Default:
+    Constants:
+        OUT_ROOT: /n/coxfs01/thejohnhoffer/JWR/ng_mesh/
+        MOJO_ROOT: /n/coxfs01/thejohnhoffer/mojo/
+        MESH_FMT: "--pre --xyz"
+        TODAY: "2018_01_18"
+        NAME: jwr_v2
+        Z_RUN: 50
+    Inputs:
+        OUT: "{OUT_ROOT}/{TODAY}/{NAME}"
+        MOJO_OUT: "{MOJO_ROOT}/{TODAY}/{NAME}"
+    Workdir: "git rev-parse --show-toplevel"
+    Logs: "./LOGS/{TODAY}/{NAME}"
+    Exports: [python, args]
+    Flags: [partition, time]
+    partition: seas_dgx1
+    time: "3-0:00"

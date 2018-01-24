@@ -3,7 +3,7 @@ from operator import mul
 
 from . import err
 
-# 10μm per world unit
+# 10um per world unit
 UM = 10
 
 def raise_nonzero(key, value):

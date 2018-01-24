@@ -14,17 +14,20 @@ class ListParseError(ValueError):
 class TempPathError(OSError):
     pass
 
-def wrap(parser, main, *args):
+def wrap(parser, main, *args, **kwargs):
     # Parse all arguments after double dash
     argv = []
-    try:
-        arg0 = sys.argv.index('--')
-        argv = list(sys.argv)[arg0+1:]
-    except ValueError as e:
-        log.yaml('Usage Error', {
-            'Missing -- in': ' '.join(sys.argv),
-            'Usage': parser.format_usage(),
-        })
+    if 'ez' not in kwargs:
+        try:
+            arg0 = sys.argv.index('--')
+            argv = list(sys.argv)[arg0+1:]
+        except ValueError as e:
+            log.yaml('Usage Error', {
+                'Missing -- in': ' '.join(sys.argv),
+                'Usage': parser.format_usage(),
+            })
+    else:
+        argv = sys.argv[1:]
     try:
         parsed = parser.parse_args(argv)
         main(parsed, *args)
