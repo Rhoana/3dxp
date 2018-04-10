@@ -115,7 +115,7 @@ def parseArgv(argv):
     help = {
         'ids': 'input hd5 id volume (default in.h5)',
         'out': 'output web directory (default .)',
-        'd': 'rank top ids by depth (default 0)',
+        'd': 'rank top ids by depth=0,height=1,width=2 (default 0)',
         'b': 'Number of blocks in each dimension (default 10)',
         't': 'Which of the b*b*b tiles to generate (default 0)',
         'n': 'make meshes for the top n ids (default 1)',
