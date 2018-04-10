@@ -105,7 +105,7 @@ def start(_argv):
         found_counts = [len(glob.glob(re_file)) for re_file in re_path]
         top_stl_ids = top_ids[top_counts>found_counts]
         if len(top_stl_ids):
-            RUN(DATA, z, y, x, STLFOLDER, block_size, top_stl_ids, [], ORDER, PRE, FOLDER)
+            RUN(DATA, z, y, x, STLFOLDER, block_size, top_stl_ids, ORDER, PRE, FOLDER)
 
         print('All done with stl block {},{},{}'.format(z,y,x))
 
