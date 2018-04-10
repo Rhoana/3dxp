@@ -119,7 +119,7 @@ def parseArgv(argv):
         'b': 'Number of blocks in each dimension (default 10)',
         't': 'Which of the b*b*b tiles to generate (default 0)',
         'n': 'make meshes for the top n ids (default 1)',
-        'l': 'make meshes for : separated list of ids',
+        'l': 'make meshes for id:id:id:id or min-max list of ids',
         'f': 'folder format for meshes of id %%d (default %%d)',
         'p': 'Use NG prerendered format instead (default stl)',
         'xyz': 'Store meshes with xyz coordinates (default zyx)!',
